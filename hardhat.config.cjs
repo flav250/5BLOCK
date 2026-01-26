@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-verify");
+require("hardhat-ethers");
 require("dotenv").config();
 
 module.exports = {
@@ -11,6 +12,24 @@ module.exports = {
         mnemonic: process.env.PASS_PHRASE,
       },
     },
+    localhost: {
+      url: "http://127.0.0.1:8545",
+    },
   },
-  solidity: "0.8.28",
+  solidity: {
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    artifacts: "./artifacts",
+  },
 };
+
+
