@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../node_modules/@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ArenaCards is ERC721URIStorage, Ownable {
 
@@ -21,7 +21,7 @@ contract ArenaCards is ERC721URIStorage, Ownable {
     }
 
     mapping(uint256 => CardData) public cardDetails;
-    mapping(uint256 => address[]) public playerCards;
+    mapping(uint256 => address[]) public previousOwners;
 
     mapping(address => uint256) public lastAction;
     mapping(uint256 => uint256) public lockUntil;
@@ -29,7 +29,7 @@ contract ArenaCards is ERC721URIStorage, Ownable {
     constructor() ERC721("Arena Cards", "ACARD") Ownable(msg.sender){}
 
     modifier cooldown(address user) {
-        require(block.timestamp >= lastAction[user] + COOLDOWN, "Action on cooldown");
+        require(lastAction[user] == 0 || block.timestamp >= lastAction[user] + COOLDOWN,"Action on cooldown");
         _;
     }
 
@@ -67,4 +67,65 @@ contract ArenaCards is ERC721URIStorage, Ownable {
         tokenCounter++;
     }   
 
+    function _update(
+        address to,
+        uint256 tokenId,
+        address auth
+    ) internal override returns (address) {
+
+        address from = ownerOf(tokenId);
+        
+        if (from != address(0)) {
+            require(block.timestamp >= lockUntil[tokenId], "Card locked");
+
+            previousOwners[tokenId].push(from);
+            cardDetails[tokenId].lastTransferAt = block.timestamp;
+        }
+
+        return super._update(to, tokenId, auth);
+    }
+
+    function fusecards(uint256 tokenId1, uint256 tokenId2, string memory newTokenURI) 
+        external 
+        cooldown(msg.sender) 
+        maxCards(msg.sender) 
+    {
+        require(ownerOf(tokenId1) == msg.sender, "Not owner of tokenId1");
+        require(ownerOf(tokenId2) == msg.sender, "Not owner of tokenId2");
+        require(tokenId1 != tokenId2, "Cannot fuse same card");
+
+        CardData storage card1 = cardDetails[tokenId1];
+        CardData storage card2 = cardDetails[tokenId2];
+
+        require(keccak256(bytes(card1.rarity)) == keccak256(bytes(card2.rarity)), "Rarities must match");
+
+        uint256 newLevel = card1.level + card2.level;
+
+        _burn(tokenId1);
+        _burn(tokenId2);
+
+        delete cardDetails[tokenId1];
+        delete cardDetails[tokenId2];
+
+        uint256 newTokenId = tokenCounter;
+        _safeMint(msg.sender, newTokenId);
+        _setTokenURI(newTokenId, newTokenURI);
+
+        cardDetails[newTokenId] = CardData({
+            level: newLevel,
+            rarity: card1.rarity,
+            name: string(abi.encodePacked(card1.name, "-", card2.name)),
+            createdAt: block.timestamp,
+            lastTransferAt: block.timestamp
+        });
+
+        lockUntil[newTokenId] = block.timestamp + LOCK_TIME;
+        lastAction[msg.sender] = block.timestamp;
+
+        tokenCounter++;
+    }
+
+    function getPreviousOwners(uint256 tokenId) external view returns (address[] memory) {
+        return previousOwners[tokenId];
+    }
 }

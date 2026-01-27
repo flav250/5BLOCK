@@ -12,9 +12,9 @@ module.exports = {
       },
     },
   },
-  solidity: "0.8.28",
+  solidity: "0.8.20",
   paths: {
-    sources: "./blockchain/contracts",
+    sources: "./contracts",
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts"
