@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import type { Signer } from 'ethers';
 import BoosterABI from '../abis/Booster.json';
 
-const BOOSTER_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+const BOOSTER_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
 
 export const getBoosterContract = (signer: Signer) => {
   return new ethers.Contract(BOOSTER_ADDRESS, BoosterABI.abi, signer);
@@ -13,7 +13,7 @@ export const getBoosterContract = (signer: Signer) => {
 export const openBooster = async (signer: Signer) => {
   try {
     const contract = getBoosterContract(signer);
-    const tx = await contract.openBooster();
+    const tx = await contract.openBooster({ gasLimit: 1_500_500});
     const receipt = await tx.wait();
 
     // Extraire les cartes des events

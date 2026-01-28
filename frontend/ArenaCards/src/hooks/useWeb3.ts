@@ -116,7 +116,7 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
       console.log('✅ Wallet connecté:', accounts[0]);
       console.log('🌐 Réseau:', network.name, '(Chain ID:', network.chainId, ')');
 
-      const allowedChainIds = [31337, 11155111]; // localhost + sepolia
+      const allowedChainIds = [31337, 11155111];
 
       if (!allowedChainIds.includes(Number(network.chainId))) {
         alert("Mauvais réseau. Mets-toi sur Localhost 8545 (31337) ou Sepolia (11155111).");

@@ -156,10 +156,9 @@ const BoosterOpener: React.FC = () => {
                 <li>Commune: 40% de chance</li>
                 <li>Rare: 30% de chance</li>
                 <li>Épique: 20% de chance</li>
-                <li>Légendaire: 10% de chance</li>
+                <li>Légendaire: 1% de chance</li>
               </ul>
             </li>
-            <li><strong>Limite :</strong> Maximum 4 cartes par compte</li>
           </ul>
         </div>
       </div>

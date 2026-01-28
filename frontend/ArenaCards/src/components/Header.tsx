@@ -13,11 +13,12 @@ const Header: React.FC = () => {
 
   const getNetworkName = (chainId: number): string => {
     const networks: Record<number, string> = {
-      1: 'Ethereum Mainnet',
-      11155111: 'Sepolia Testnet',
-      5: 'Goerli Testnet',
-      137: 'Polygon',
-      80001: 'Mumbai Testnet',
+      1: "Ethereum Mainnet",
+      11155111: "Sepolia Testnet",
+      31337: "Hardhat Localhost",
+      5: "Goerli Testnet",
+      137: "Polygon",
+      80001: "Mumbai Testnet",
     };
     return networks[chainId] || `Unknown (${chainId})`;
   };
