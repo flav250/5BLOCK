@@ -116,9 +116,10 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
       console.log('✅ Wallet connecté:', accounts[0]);
       console.log('🌐 Réseau:', network.name, '(Chain ID:', network.chainId, ')');
 
-      if (Number(network.chainId) !== 11155111) {
-        console.warn("⚠️ Tu n'es pas sur Sepolia testnet!");
-        alert('Attention: Tu n\'es pas sur le réseau Sepolia. Change de réseau dans MetaMask.');
+      const allowedChainIds = [31337, 11155111]; // localhost + sepolia
+
+      if (!allowedChainIds.includes(Number(network.chainId))) {
+        alert("Mauvais réseau. Mets-toi sur Localhost 8545 (31337) ou Sepolia (11155111).");
       }
     } catch (error) {
       console.error('❌ Erreur de connexion:', error);

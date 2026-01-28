@@ -3,6 +3,7 @@
 import { Web3Provider } from './hooks/useWeb3.ts';
 import TeamBuilder from './components/TeamBuilder.tsx';
 import Header from './components/Header.tsx';
+import BoosterOpener from "./components/BoosterOpener.tsx";
 import './App.css';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
         <Header />
         <main className="main-content">
           <TeamBuilder />
+          <BoosterOpener />
         </main>
         <footer className="app-footer">
           <p>Arena Cards - Draft League Fantasy</p>

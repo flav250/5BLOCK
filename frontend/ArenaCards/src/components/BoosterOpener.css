@@ -1,0 +1,147 @@
+/* === CONTAINER PRINCIPAL === */
+.booster-opener {
+    background: linear-gradient(145deg, #1b1f2a, #12141c);
+    border: 2px solid #2c3142;
+    border-radius: 16px;
+    padding: 24px;
+    margin: 24px auto;
+    max-width: 520px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+}
+
+/* === TITRE === */
+.booster-opener h2 {
+    margin-bottom: 16px;
+    font-size: 1.6rem;
+    letter-spacing: 0.5px;
+}
+
+/* === TEXTE INFO === */
+.booster-info {
+    font-size: 0.95rem;
+    color: #b6bddb;
+    margin-bottom: 20px;
+}
+
+/* === BOUTON BOOSTER === */
+.btn-open-booster {
+    background: linear-gradient(135deg, #ffb347, #ffcc33);
+    color: #1a1a1a;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 14px rgba(255, 179, 71, 0.35);
+}
+
+.btn-open-booster:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 10px 24px rgba(255, 179, 71, 0.55);
+}
+
+.btn-open-booster:active {
+    transform: scale(0.97);
+}
+
+/* === BOUTON DÉSACTIVÉ === */
+.btn-open-booster:disabled {
+    background: #444;
+    color: #aaa;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* === COOLDOWN === */
+.booster-cooldown {
+    margin-top: 14px;
+    font-size: 0.9rem;
+    color: #ff6b6b;
+}
+
+/* === ANIMATION OUVERTURE === */
+.booster-opening {
+    margin-top: 20px;
+    font-size: 1.1rem;
+    animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.04);
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+/* === CARTES OBTENUES === */
+.booster-results {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+/* === CARTE SIMPLE (résultat booster) === */
+.booster-card {
+    background: linear-gradient(160deg, #2a2f42, #1c2030);
+    border: 2px solid #3a3f55;
+    border-radius: 14px;
+    padding: 16px;
+    width: 160px;
+    text-align: center;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
+    animation: cardPop 0.4s ease;
+}
+
+@keyframes cardPop {
+    from {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.booster-card-name {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* === RARETÉS === */
+.booster-card.Common {
+    border-color: #a0a0a0;
+}
+
+.booster-card.Rare {
+    border-color: #4da6ff;
+}
+
+.booster-card.Epic {
+    border-color: #b36bff;
+}
+
+.booster-card.Legendary {
+    border-color: #ffae00;
+    box-shadow: 0 0 14px rgba(255, 174, 0, 0.6);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 480px) {
+    .booster-results {
+        flex-direction: column;
+        align-items: center;
+    }
+}
