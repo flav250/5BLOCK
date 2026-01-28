@@ -1,35 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// App.tsx
+
+import { Web3Provider } from './hooks/useWeb3.ts';
+import TeamBuilder from './components/TeamBuilder.tsx';
+import Header from './components/Header.tsx';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Web3Provider>
+      <div className="app">
+        <Header />
+        <main className="main-content">
+          <TeamBuilder />
+        </main>
+        <footer className="app-footer">
+          <p>Arena Cards - Draft League Fantasy</p>
+          <p>Powered by Ethereum • Sepolia Testnet</p>
+        </footer>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </Web3Provider>
+  );
 }
 
-export default App
+export default App;

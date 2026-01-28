@@ -1,0 +1,269 @@
+/* components/CardSlot.css */
+
+.card-slot {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  position: relative;
+  border: 3px solid #e5e7eb;
+}
+
+.card-slot.empty {
+  border-style: dashed;
+  background: #f9fafb;
+}
+
+.card-slot.filled {
+  border-color: #667eea;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-slot.drag-over {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+/* Slot vide */
+.empty-slot-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.slot-number {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #e5e7eb;
+  color: #6b7280;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.slot-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #9ca3af;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.slot-placeholder p {
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Slot rempli */
+.filled-slot-content {
+  height: 100%;
+  cursor: move;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.filled-slot-content:active {
+  cursor: grabbing;
+}
+
+/* Badge de position pour slot rempli */
+.position-badge {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+  z-index: 10;
+}
+
+/* Bouton de suppression */
+.remove-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+}
+
+.remove-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+/* Image de la carte */
+.card-image-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.card-image {
+  width: 100%;
+  max-width: 140px;
+  aspect-ratio: 3/4;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder-image {
+  font-size: 3rem;
+  opacity: 0.3;
+}
+
+/* Badge de rareté */
+.rarity-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  align-self: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Informations de la carte */
+.card-info {
+  text-align: center;
+}
+
+.card-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f3f4f6;
+  padding: 0.3rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.stat-icon {
+  font-size: 1rem;
+}
+
+/* Indicateur de lock */
+.lock-indicator {
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.8rem;
+  background: #fbbf24;
+  color: #78350f;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.card-slot.drag-over .slot-placeholder {
+  animation: pulse 1s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-slot {
+    padding: 1rem;
+    min-height: 240px;
+  }
+
+  .card-image {
+    max-width: 100px;
+  }
+
+  .placeholder-icon {
+    font-size: 3rem;
+  }
+
+  .card-name {
+    font-size: 1rem;
+  }
+
+  .position-badge,
+  .remove-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+}
