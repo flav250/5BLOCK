@@ -1,0 +1,242 @@
+/* components/InventoryCard.css */
+
+.inventory-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: grab;
+  transition: all 0.3s ease;
+  position: relative;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: #667eea;
+}
+
+.inventory-card.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  cursor: grabbing;
+}
+
+.inventory-card.locked {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.inventory-card.locked:hover {
+  transform: none;
+  border-color: #e5e7eb;
+}
+
+/* Badge de rareté */
+.inventory-card .rarity-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 0.25rem 0.6rem;
+  border-radius: 15px;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  z-index: 5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Image de la carte */
+.card-image-wrapper {
+  position: relative;
+  margin-bottom: 0.8rem;
+}
+
+.inventory-card .card-image {
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-card .card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.inventory-card .placeholder-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+}
+
+.inventory-card .placeholder-icon {
+  font-size: 3rem;
+  opacity: 0.3;
+}
+
+/* Overlay de lock */
+.lock-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.lock-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.lock-timer {
+  font-size: 1.1rem;
+  font-weight: bold;
+  background: rgba(251, 191, 36, 0.9);
+  padding: 0.3rem 0.8rem;
+  border-radius: 10px;
+  color: #78350f;
+}
+
+/* Détails de la carte */
+.card-details {
+  text-align: center;
+}
+
+.inventory-card .card-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 0.5rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-value.power {
+  color: #fbbf24;
+}
+
+.card-id {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-family: 'Courier New', monospace;
+}
+
+/* Indicateur de drag */
+.drag-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(102, 126, 234, 0.9);
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.inventory-card:hover .drag-hint {
+  opacity: 1;
+}
+
+.drag-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.inventory-card:hover .drag-hint {
+  animation: float 1.5s ease-in-out infinite;
+}
+
+/* États de rareté avec glow */
+.inventory-card:hover .rarity-badge.bg-gradient-to-r {
+  box-shadow: 0 0 15px currentColor;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .inventory-card {
+    padding: 0.8rem;
+  }
+
+  .inventory-card .card-name {
+    font-size: 0.9rem;
+  }
+
+  .lock-icon {
+    font-size: 2rem;
+  }
+
+  .lock-timer {
+    font-size: 0.9rem;
+  }
+
+  .drag-hint {
+    width: 25px;
+    height: 25px;
+  }
+
+  .drag-icon {
+    font-size: 1rem;
+  }
+}

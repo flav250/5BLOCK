@@ -1,0 +1,631 @@
+/* components/BoosterOpener.css - VERSION COMPLÈTE REDESIGNÉE */
+
+.booster-opener {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Message de connexion */
+.booster-message {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.booster-message h2 {
+    color: #667eea;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+}
+
+.booster-message p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Header */
+.booster-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    color: white;
+    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+}
+
+.booster-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+}
+
+.booster-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+/* Container principal */
+.booster-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Booster Pack */
+.booster-pack {
+    width: 250px;
+    height: 350px;
+    margin: 0 auto;
+    perspective: 1000px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.booster-pack:hover {
+    transform: scale(1.05);
+}
+
+.booster-pack.opening {
+    animation: shake 0.5s infinite;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+}
+
+.booster-front {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+.booster-shine {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+            45deg,
+            transparent 30%,
+            rgba(255, 255, 255, 0.1) 50%,
+            transparent 70%
+    );
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.booster-logo {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+}
+
+.booster-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    margin-bottom: 0.5rem;
+}
+
+.booster-subtitle {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.booster-stars {
+    margin-top: 1rem;
+    font-size: 1.5rem;
+}
+
+/* Status Card - COMPACT */
+.booster-status {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading state */
+.status-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1rem;
+}
+
+.status-loading .status-icon {
+    font-size: 1.5rem;
+}
+
+.status-loading .status-text {
+    font-size: 1rem;
+    color: #666;
+}
+
+/* Ready state */
+.status-ready {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 10px;
+    animation: pulse-ready 2s infinite;
+}
+
+@keyframes pulse-ready {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 6px 25px rgba(16, 185, 129, 0.5);
+    }
+}
+
+.status-ready .status-icon {
+    font-size: 1.8rem;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.status-ready .status-text {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Cooldown state - COMPACT */
+.status-cooldown-new {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cooldown-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cooldown-label {
+    font-size: 0.95rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.cooldown-time {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+    text-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+}
+
+/* Progress bar - COMPACT */
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.progress-bar-wrapper {
+    flex: 1;
+    height: 24px;
+    background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #e5e7eb;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg,
+    #667eea 0%,
+    #764ba2 50%,
+    #667eea 100%
+    );
+    border-radius: 10px;
+    transition: width 1s ease-out;
+    position: relative;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
+    overflow: hidden;
+}
+
+.progress-shimmer {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.progress-label {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #667eea;
+    min-width: 45px;
+    text-align: right;
+}
+
+/* Button */
+.btn-open-booster {
+    width: 100%;
+    padding: 1.2rem 2rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-open-booster:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.btn-open-booster:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.button-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Info Box */
+.booster-info {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.booster-info h3 {
+    color: #333;
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+}
+
+.booster-info ul {
+    margin: 0;
+    padding-left: 1.5rem;
+    color: #666;
+}
+
+.booster-info li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.booster-info ul ul {
+    margin-top: 0.3rem;
+}
+
+/* Modal */
+.cards-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.cards-modal {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #f3f4f6;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: #e5e7eb;
+    transform: rotate(90deg);
+}
+
+.cards-modal h2 {
+    color: #667eea;
+    margin: 0 0 0.5rem 0;
+    text-align: center;
+    font-size: 1.8rem;
+}
+
+.cards-modal p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.new-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.new-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1rem;
+    text-align: center;
+    border: 3px solid;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: cardAppear 0.5s ease-out;
+}
+
+@keyframes cardAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) rotateY(90deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+    }
+}
+
+.new-card.rarity-commune {
+    border-color: #9ca3af;
+    background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+}
+
+.new-card.rarity-rare {
+    border-color: #60a5fa;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+
+.new-card.rarity-epique {
+    border-color: #c084fc;
+    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+}
+
+.new-card.rarity-legendaire {
+    border-color: #fbbf24;
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+}
+
+.card-rarity-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.rarity-commune .card-rarity-badge {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+}
+
+.rarity-rare .card-rarity-badge {
+    background: linear-gradient(135deg, #60a5fa, #2563eb);
+}
+
+.rarity-epique .card-rarity-badge {
+    background: linear-gradient(135deg, #c084fc, #9333ea);
+}
+
+.rarity-legendaire .card-rarity-badge {
+    background: linear-gradient(135deg, #fbbf24, #d97706);
+}
+
+.card-placeholder {
+    font-size: 4rem;
+    margin: 1rem 0;
+}
+
+.card-name {
+    font-weight: bold;
+    color: #333;
+    font-size: 1rem;
+}
+
+.btn-modal-close {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-modal-close:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Animation d'ouverture */
+.opening-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.pack-opening {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}
+
+.burst {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #667eea, transparent);
+    animation: burst 2s infinite;
+}
+
+@keyframes burst {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 1;
+    }
+}
+
+.sparkles {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .booster-opener {
+        padding: 1rem;
+    }
+
+    .booster-header {
+        padding: 1.5rem;
+    }
+
+    .booster-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .booster-pack {
+        width: 200px;
+        height: 280px;
+    }
+
+    .booster-logo {
+        font-size: 4rem;
+    }
+
+    .booster-title {
+        font-size: 1.4rem;
+    }
+
+    .cooldown-info {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+
+    .cooldown-time {
+        font-size: 1.8rem;
+    }
+
+    .progress-bar-wrapper {
+        height: 20px;
+    }
+
+    .new-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
