@@ -5,9 +5,8 @@ import type { Signer, Contract } from 'ethers';
 import type { ArenaCard } from '../types/ArenaCard';
 import ArenaCardsABI from '../abis/ArenaCards.json';
 
-// Adresse du contrat (à mettre à jour après déploiement)
-const ARENA_CARDS_ADDRESS = '0x...'; // Remplacer par ton adresse
 
+const ARENA_CARDS_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
 export const getArenaCardsContract = (signerOrProvider: Signer): Contract => {
   return new ethers.Contract(
       ARENA_CARDS_ADDRESS,

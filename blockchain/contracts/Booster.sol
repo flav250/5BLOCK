@@ -46,7 +46,7 @@ contract Booster {
         cardTemplates.push(CardTemplate({
             name: "Dragon Dore",
             rarity: "legendaire",
-            image: "",
+            imageURI: "https://via.placeholder.com/300x400/FF4500/FFFFFF?text=Dragon"
         }));
         
         cardTemplates.push(CardTemplate({
