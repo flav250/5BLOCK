@@ -29,7 +29,7 @@ module.exports = {
         auto: true,
         interval: 1000
       }
-    },/*
+    }/*
     sepolia: {
       url: process.env.SEPOLIA_RPC_URL || "",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],

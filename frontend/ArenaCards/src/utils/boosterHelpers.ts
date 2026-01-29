@@ -4,7 +4,12 @@ import { ethers } from 'ethers';
 import type { Signer } from 'ethers';
 import BoosterABI from '../abis/Booster.json';
 
-const BOOSTER_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
+const BOOSTER_ADDRESS = import.meta.env.VITE_BOOSTER_ADDRESS as string;
+
+if (!BOOSTER_ADDRESS) {
+  throw new Error("❌ VITE_BOOSTER_ADDRESS non défini dans .env");
+}
+
 
 export const getBoosterContract = (signer: Signer) => {
   return new ethers.Contract(BOOSTER_ADDRESS, BoosterABI.abi, signer);

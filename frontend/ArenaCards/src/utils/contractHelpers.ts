@@ -6,7 +6,12 @@ import type { ArenaCard } from '../types/ArenaCard';
 import ArenaCardsABI from '../abis/ArenaCards.json';
 
 
-const ARENA_CARDS_ADDRESS = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+const ARENA_CARDS_ADDRESS = import.meta.env.VITE_ARENA_CARDS_ADDRESS as string;
+
+if (!ARENA_CARDS_ADDRESS) {
+  throw new Error("❌ VITE_BOOSTER_ADDRESS non défini dans .env");
+}
+
 export const getArenaCardsContract = (signerOrProvider: Signer): Contract => {
   return new ethers.Contract(
       ARENA_CARDS_ADDRESS,
