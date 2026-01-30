@@ -12,6 +12,34 @@ if (!ARENA_CARDS_ADDRESS) {
   throw new Error("❌ VITE_BOOSTER_ADDRESS non défini dans .env");
 }
 
+/**
+ * Parse le tokenURI (format base64 JSON) et extrait l'URL de l'image
+ */
+const parseTokenURI = (tokenURI: string): string => {
+  try {
+    // Vérifier si c'est un data URI en base64
+    if (tokenURI.startsWith('data:application/json;base64,')) {
+      // Extraire la partie base64
+      const base64Data = tokenURI.replace('data:application/json;base64,', '');
+      
+      // Décoder le base64
+      const jsonString = atob(base64Data);
+      
+      // Parser le JSON
+      const metadata = JSON.parse(jsonString);
+      
+      // Retourner l'URL de l'image
+      return metadata.image || '';
+    }
+    
+    // Si ce n'est pas un data URI, retourner tel quel (ancien format)
+    return tokenURI;
+  } catch (error) {
+    console.error('Erreur lors du parsing du tokenURI:', error);
+    return '';
+  }
+};
+
 export const getArenaCardsContract = (signerOrProvider: Signer): Contract => {
   return new ethers.Contract(
       ARENA_CARDS_ADDRESS,
@@ -60,7 +88,7 @@ export const loadUserCards = async (
             name: cardData.name,
             rarity: cardData.rarity,
             level: Number(cardData.level),
-            imageURI: tokenURI,
+            imageURI: parseTokenURI(tokenURI),
             createdAt: Number(cardData.createdAt),
             lastTransferAt: Number(cardData.lastTransferAt),
             isLocked: isLocked,

@@ -29,12 +29,17 @@ module.exports = {
         auto: true,
         interval: 1000
       }
-    }/*
+    },
     sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 11155111
-    } */
+      url: process.env.API_KEY 
+        ? `https://sepolia.infura.io/v3/${process.env.API_KEY}`
+        : "",
+      accounts: process.env.PASS_PHRASE
+        ? { mnemonic: process.env.PASS_PHRASE }
+        : [],
+      chainId: 11155111,
+      gasPrice: "auto",
+    },
   },
   paths: {
     sources: "./contracts",

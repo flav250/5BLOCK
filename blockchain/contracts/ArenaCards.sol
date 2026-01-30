@@ -1,14 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 
 /**
  * @title ArenaCards
  * @dev Contrat de cartes NFT avec système de fusion, cooldown et support booster
+ * Métadonnées on-chain pour affichage dans MetaMask
  */
-contract ArenaCards is ERC721URIStorage, Ownable {
+contract ArenaCards is ERC721, Ownable {
+    using Strings for uint256;
 
     uint256 public tokenCounter;
 
@@ -30,6 +34,9 @@ contract ArenaCards is ERC721URIStorage, Ownable {
     // Mapping des détails de chaque carte
     mapping(uint256 => CardData) public cardDetails;
     
+    // Mapping pour stocker les URLs des images: rarity => name => imageURI
+    mapping(string => mapping(string => string)) private imageURIs;
+    
     // Historique des propriétaires pour chaque carte
     mapping(uint256 => address[]) public previousOwners;
 
@@ -45,7 +52,36 @@ contract ArenaCards is ERC721URIStorage, Ownable {
     event CardLocked(uint256 indexed tokenId, uint256 unlockTime);
     event AuthorizedMinterUpdated(address indexed newMinter);
 
-    constructor() ERC721("Arena Cards", "ACARD") Ownable(msg.sender) {}
+    constructor() ERC721("Arena Cards", "ACARD") Ownable(msg.sender) {
+        _initializeImageURIs();
+    }
+    
+    /**
+     * @dev Initialise les URLs des images pour chaque carte
+     */
+    function _initializeImageURIs() private {
+        string memory defaultURI = "https://plum-wrong-dog-715.mypinata.cloud/ipfs/bafkreidmuc2dqodhwfozbl6thnbr4bhvpmqf6xhvwmnn45m7qfycphtxvy";
+        
+        // Légendaires
+        imageURIs["legendaire"]["Dragon Dore"] = defaultURI;
+        imageURIs["legendaire"]["Phoenix Immortel"] = defaultURI;
+        
+        // Épiques
+        imageURIs["epique"]["Chevalier Noir"] = defaultURI;
+        imageURIs["epique"]["Mage des Glaces"] = defaultURI;
+        imageURIs["epique"]["Assassin Fantome"] = defaultURI;
+        
+        // Rares
+        imageURIs["rare"]["Archer Elfe"] = defaultURI;
+        imageURIs["rare"]["Paladin Sacre"] = defaultURI;
+        imageURIs["rare"]["Druide Ancien"] = defaultURI;
+        
+        // Communes
+        imageURIs["commune"]["Guerrier Brave"] = defaultURI;
+        imageURIs["commune"]["Gobelin Ruse"] = defaultURI;
+        imageURIs["commune"]["Squelette Soldat"] = defaultURI;
+        imageURIs["commune"]["Slime Gluant"] = defaultURI;
+    }
 
     /**
      * @dev Définit l'adresse autorisée à mint (contrat Booster)
@@ -88,7 +124,6 @@ contract ArenaCards is ERC721URIStorage, Ownable {
      */
     function mintCard(
         address to,
-        string memory tokenURI, 
         string memory name, 
         string memory rarity
     ) 
@@ -111,7 +146,6 @@ contract ArenaCards is ERC721URIStorage, Ownable {
 
         uint256 tokenId = tokenCounter;
         _safeMint(to, tokenId);
-        _setTokenURI(tokenId, tokenURI);
 
         cardDetails[tokenId] = CardData({
             level: 1,
@@ -138,8 +172,7 @@ contract ArenaCards is ERC721URIStorage, Ownable {
      */
     function fusecards(
         uint256 tokenId1,
-        uint256 tokenId2,
-        string memory newTokenURI
+        uint256 tokenId2
     ) 
         external 
         cooldown(msg.sender)
@@ -170,7 +203,6 @@ contract ArenaCards is ERC721URIStorage, Ownable {
 
         uint256 newTokenId = tokenCounter;
         _safeMint(msg.sender, newTokenId);
-        _setTokenURI(newTokenId, newTokenURI);
 
         cardDetails[newTokenId] = CardData({
             level: newLevel,
@@ -190,10 +222,65 @@ contract ArenaCards is ERC721URIStorage, Ownable {
     }
 
     /**
+     * @dev Override tokenURI pour générer les métadonnées on-chain
+     * Retourne un JSON encodé en base64 compatible avec le standard ERC721
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
+        
+        CardData memory card = cardDetails[tokenId];
+        
+        // Récupérer l'URL de l'image
+        string memory imageURL = imageURIs[card.rarity][card.name];
+        
+        
+        // Construire le JSON des métadonnées
+        string memory json = string(abi.encodePacked(
+            '{"name":"',
+            card.name,
+            ' #',
+            tokenId.toString(),
+            '","image":"',
+            imageURL,
+            '","attributes":[',
+            '{"trait_type":"Rarity","value":"',
+            card.rarity,
+            '"},',
+            '{"trait_type":"Level","value":',
+            card.level.toString(),
+            '},',
+            '{"trait_type":"Created At","value":',
+            card.createdAt.toString(),
+            '}',
+            ']}'
+        ));
+        
+        // Encoder en base64
+        string memory base64Json = Base64.encode(bytes(json));
+        
+        // Retourner avec le préfixe data URI
+        return string(abi.encodePacked('data:application/json;base64,', base64Json));
+    }
+    
+    /**
      * @dev Retourne l'historique des propriétaires d'une carte
      */
     function getPreviousOwners(uint256 tokenId) external view returns (address[] memory) {
         return previousOwners[tokenId];
+    }
+    
+    /**
+     * @dev Permet de mettre à jour l'URL d'une image (owner seulement)
+     */
+    function setImageURI(string memory rarity, string memory name, string memory newImageURI) external onlyOwner {
+        imageURIs[rarity][name] = newImageURI;
+    }
+    
+    /**
+     * @dev Retourne l'URL de l'image pour une carte donnée
+     */
+    function getImageURI(string memory rarity, string memory name) external view returns (string memory) {
+        return imageURIs[rarity][name];
     }
 
     /**
