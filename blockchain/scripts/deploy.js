@@ -47,10 +47,10 @@ async function main() {
     console.log("✅ Marketplace déployé à:", marketplaceAddr);
 
     console.log("\n🎉 Déploiement terminé !");
-    console.log("ArenaCards:      ", arenaAddr);
-    console.log("FreeBooster:     ", freeBoosterAddr);
-    console.log("PremiumBooster:  ", premiumBoosterAddr);
-    console.log("Marketplace:     ", marketplaceAddr);
+    console.log("VITE_ARENA_CARDS_ADDRESS=",arenaAddr);
+    console.log("VITE_FREE_BOOSTER_ADDRESS=",freeBoosterAddr);
+    console.log("VITE_PREMIUM_BOOSTER_ADDRESS=",premiumBoosterAddr);
+    console.log("VITE_MARKETPLACE_ADDRESS=",marketplaceAddr);
 }
 
 main()
