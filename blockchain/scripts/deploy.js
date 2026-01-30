@@ -29,6 +29,13 @@ async function main() {
     await marketplace.waitForDeployment();
     const marketplaceAddr = await marketplace.getAddress();
     console.log("Marketplace deployed to:", marketplaceAddr);
+
+    // 5) Deploy Team
+    const Team = await hre.ethers.getContractFactory("Team");
+    const team = await Team.deploy(arenaAddr);
+    await team.waitForDeployment();
+    const teamAddr = await team.getAddress();
+    console.log("Team deployed to:", teamAddr);
 }
 
 main()

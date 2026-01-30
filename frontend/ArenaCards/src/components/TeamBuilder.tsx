@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { ArenaCard, TeamSlot } from '../types/ArenaCard';
 import { useWeb3 } from '../hooks/useWeb3';
-import { loadUserCards } from '../utils/contractHelpers';
+import { loadUserCards, saveTeam as saveTeamOnChain, loadTeam as loadTeamFromChain } from '../utils/contractHelpers';
 import CardSlot from './CardSlot';
 import InventoryCard from './InventoryCard';
 import './TeamBuilder.css';
@@ -46,10 +46,62 @@ const TeamBuilder: React.FC = () => {
     }
   }, [signer, account]);
 
-  // Charger les cartes au montage et quand account/signer change
+  // Charger l'équipe sauvegardée depuis la blockchain
+  const loadSavedTeam = useCallback(async () => {
+    if (!signer || !account) return;
+
+    try {
+      const savedCardIds = await loadTeamFromChain(signer);
+      
+      if (savedCardIds.length === 0) {
+        console.log('Aucune équipe sauvegardée');
+        return;
+      }
+
+      // Charger toutes les cartes de l'utilisateur
+      const allCards = await loadUserCards(signer, account);
+      
+      // Créer les nouveaux slots avec les cartes sauvegardées
+      const newTeamSlots: TeamSlot[] = Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
+        position: i,
+        card: null,
+      }));
+
+      const cardsInTeam: ArenaCard[] = [];
+      
+      savedCardIds.forEach((tokenId, index) => {
+        const card = allCards.find(c => c.tokenId === tokenId);
+        if (card && index < MAX_TEAM_SIZE) {
+          newTeamSlots[index] = {
+            position: index,
+            card: card
+          };
+          cardsInTeam.push(card);
+        }
+      });
+
+      // Mettre à jour l'état
+      setTeamSlots(newTeamSlots);
+      
+      // Retirer les cartes de l'équipe de l'inventaire
+      setInventory(allCards.filter(card => 
+        !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
+      ));
+
+      console.log('✅ Équipe chargée avec succès');
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'équipe:', error);
+    }
+  }, [signer, account]);
+
+  // Charger les cartes et l'équipe sauvegardée au montage
   useEffect(() => {
-    loadCards();
-  }, [loadCards]);
+    const init = async () => {
+      await loadCards();
+      await loadSavedTeam();
+    };
+    init();
+  }, [loadCards, loadSavedTeam]);
 
   // Calculer la puissance totale de l'équipe
   const getTotalPower = (): number => {
@@ -162,7 +214,7 @@ const TeamBuilder: React.FC = () => {
     }
   };
 
-  // Sauvegarder l'équipe on-chain (optionnel)
+  // Sauvegarder l'équipe on-chain
   const saveTeam = async () => {
     if (!signer) return;
 
@@ -172,17 +224,17 @@ const TeamBuilder: React.FC = () => {
           .filter(slot => slot.card !== null)
           .map(slot => slot.card!.tokenId);
 
-      // Appeler le contrat Team.sol (si tu l'as intégré)
       console.log('Sauvegarde de l\'équipe:', teamCardIds);
 
-      // TODO: Implémenter l'appel au contrat
-      // const teamContract = getTeamContract(signer);
-      // await teamContract.setTeam(teamCardIds);
+      // Appeler le contrat Team.sol
+      const success = await saveTeamOnChain(signer, teamCardIds);
 
-      alert('Équipe sauvegardée !');
+      if (success) {
+        alert('✅ Équipe sauvegardée sur la blockchain !');
+      }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      alert('Erreur lors de la sauvegarde de l\'équipe');
+      alert('❌ Erreur lors de la sauvegarde de l\'équipe');
     } finally {
       setIsSaving(false);
     }

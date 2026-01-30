@@ -4,12 +4,18 @@ import { ethers } from 'ethers';
 import type { Signer, Contract } from 'ethers';
 import type { ArenaCard } from '../types/ArenaCard';
 import ArenaCardsABI from '../abis/ArenaCards.json';
+import TeamABI from '../abis/Team.json';
 
 
 const ARENA_CARDS_ADDRESS = import.meta.env.VITE_ARENA_CARDS_ADDRESS as string;
+const TEAM_ADDRESS = import.meta.env.VITE_TEAM_ADDRESS as string;
 
 if (!ARENA_CARDS_ADDRESS) {
-  throw new Error("❌ VITE_BOOSTER_ADDRESS non défini dans .env");
+  throw new Error("❌ VITE_ARENA_CARDS_ADDRESS non défini dans .env");
+}
+
+if (!TEAM_ADDRESS) {
+  throw new Error("❌ VITE_TEAM_ADDRESS non défini dans .env");
 }
 
 /**
@@ -265,5 +271,113 @@ export const getTimeUntilUnlock = async (
   } catch (error) {
     console.error('Erreur lors du calcul du temps restant:', error);
     return 0;
+  }
+};
+
+// ==================== TEAM CONTRACT ====================
+
+export const getTeamContract = (signerOrProvider: Signer): Contract => {
+  return new ethers.Contract(
+      TEAM_ADDRESS,
+      TeamABI.abi,
+      signerOrProvider
+  );
+};
+
+/**
+ * Sauvegarde une équipe sur la blockchain
+ */
+export const saveTeam = async (
+    signer: Signer,
+    cardIds: string[]
+): Promise<boolean> => {
+  try {
+    const contract = getTeamContract(signer);
+
+    const tx = await contract.saveTeam(cardIds);
+    await tx.wait();
+
+    console.log('✅ Équipe sauvegardée avec succès!');
+    return true;
+  } catch (error) {
+    console.error('❌ Erreur lors de la sauvegarde de l\'équipe:', error);
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('Team size exceeds maximum')) {
+      alert('L\'équipe ne peut pas dépasser 5 cartes !');
+    } else if (errorMessage.includes('You don\'t own this card')) {
+      alert('Tu ne possèdes pas toutes ces cartes !');
+    } else {
+      alert('Erreur lors de la sauvegarde: ' + errorMessage);
+    }
+
+    return false;
+  }
+};
+
+/**
+ * Charge l'équipe sauvegardée d'un joueur
+ */
+export const loadTeam = async (
+    signer: Signer,
+    userAddress?: string
+): Promise<string[]> => {
+  try {
+    const contract = getTeamContract(signer);
+
+    let cardIds: bigint[];
+    if (userAddress) {
+      cardIds = await contract.getTeam(userAddress);
+    } else {
+      cardIds = await contract.getMyTeam();
+    }
+
+    return cardIds.map(id => id.toString());
+  } catch (error) {
+    console.error('Erreur lors du chargement de l\'équipe:', error);
+    return [];
+  }
+};
+
+/**
+ * Efface l'équipe sauvegardée
+ */
+export const clearTeam = async (signer: Signer): Promise<boolean> => {
+  try {
+    const contract = getTeamContract(signer);
+
+    const tx = await contract.clearTeam();
+    await tx.wait();
+
+    console.log('✅ Équipe effacée avec succès!');
+    return true;
+  } catch (error) {
+    console.error('❌ Erreur lors de l\'effacement de l\'équipe:', error);
+    alert('Erreur lors de l\'effacement de l\'équipe');
+    return false;
+  }
+};
+
+/**
+ * Récupère les informations complètes d'une équipe
+ */
+export const getTeamInfo = async (
+    signer: Signer,
+    userAddress: string
+): Promise<{ cardIds: string[]; isValid: boolean; teamSize: number }> => {
+  try {
+    const contract = getTeamContract(signer);
+
+    const [cardIds, isValid, teamSize] = await contract.getTeamInfo(userAddress);
+
+    return {
+      cardIds: cardIds.map((id: bigint) => id.toString()),
+      isValid,
+      teamSize: Number(teamSize)
+    };
+  } catch (error) {
+    console.error('Erreur lors du chargement des infos de l\'équipe:', error);
+    return { cardIds: [], isValid: false, teamSize: 0 };
   }
 };
