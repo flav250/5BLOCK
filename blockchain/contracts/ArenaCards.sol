@@ -121,7 +121,7 @@ contract ArenaCards is ERC721URIStorage, Ownable {
             lastTransferAt: block.timestamp
         });
 
-        lockUntil[tokenId] = block.timestamp + LOCK_TIME;
+        //lockUntil[tokenId] = block.timestamp + LOCK_TIME;
         
         // Mettre à jour lastAction seulement si ce n'est pas le Booster
         if (msg.sender != authorizedMinter) {
