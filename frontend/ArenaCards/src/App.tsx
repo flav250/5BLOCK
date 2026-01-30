@@ -16,7 +16,6 @@ function App() {
       <Web3Provider>
         <div className="app">
           <Header />
-
           {/* Navigation */}
           <nav className="main-nav">
             <button
