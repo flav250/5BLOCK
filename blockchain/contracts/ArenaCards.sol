@@ -32,6 +32,8 @@ contract ArenaCards is ERC721, Ownable {
         authorizedMinters[_minter] = _authorized;
     }
 
+    address public fusionContract;
+
     struct CardData {
         uint256 level;
         string rarity;
@@ -122,6 +124,42 @@ contract ArenaCards is ERC721, Ownable {
         _;
     }
 
+    modifier onlyFusion() {
+        require(msg.sender == fusionContract, "Not fusion contract");
+        _;
+    }
+
+    function setFusionContract(address _fusion) external onlyOwner {
+        fusionContract = _fusion;
+    }
+
+    function burnFromFusion(uint256 tokenId) external onlyFusion {
+        _burn(tokenId);
+        delete cardDetails[tokenId];
+    }
+
+    function mintFusion(
+        address to,
+        string memory name,
+        string memory rarity,
+        uint256 level
+    ) external onlyFusion returns (uint256){
+
+        uint256 tokenId = tokenCounter;
+        _safeMint(to, tokenId);
+
+        cardDetails[tokenId] = CardData({
+            level: level,
+            rarity: rarity,
+            name: name,
+            createdAt: block.timestamp,
+            lastTransferAt: block.timestamp
+        });
+
+    tokenCounter++;
+        return tokenId;
+    }
+
     /**
      * @dev Mint une nouvelle carte
      * Peut être appelé par le owner OU le contrat autorisé (Booster)
@@ -166,61 +204,6 @@ contract ArenaCards is ERC721, Ownable {
         tokenCounter++;
 
         emit CardMinted(tokenId, to, name, rarity);
-    }
-
-
-    /**
-     * @dev Fusionne deux cartes pour en créer une plus puissante
-     */
-    function fusecards(
-        uint256 tokenId1,
-        uint256 tokenId2
-    )
-        external
-        cooldown(msg.sender)
-        maxCards(msg.sender)
-        notLocked(tokenId1)
-        notLocked(tokenId2)
-    {
-        require(ownerOf(tokenId1) == msg.sender, "Not owner of card 1");
-        require(ownerOf(tokenId2) == msg.sender, "Not owner of card 2");
-        require(tokenId1 != tokenId2, "Cannot fuse same card");
-
-        CardData memory card1 = cardDetails[tokenId1];
-        CardData memory card2 = cardDetails[tokenId2];
-
-        require(
-            keccak256(bytes(card1.rarity)) == keccak256(bytes(card2.rarity)),
-            "Rarities must match"
-        );
-
-        uint256 newLevel = card1.level + card2.level;
-        string memory fusedName = string(abi.encodePacked(card1.name, "-", card2.name));
-
-        _burn(tokenId1);
-        _burn(tokenId2);
-
-        delete cardDetails[tokenId1];
-        delete cardDetails[tokenId2];
-
-        uint256 newTokenId = tokenCounter;
-        _safeMint(msg.sender, newTokenId);
-
-        cardDetails[newTokenId] = CardData({
-            level: newLevel,
-            rarity: card1.rarity,
-            name: fusedName,
-            createdAt: block.timestamp,
-            lastTransferAt: block.timestamp
-        });
-
-        lockUntil[newTokenId] = block.timestamp + LOCK_TIME;
-        lastAction[msg.sender] = block.timestamp;
-
-        tokenCounter++;
-
-        emit CardsFused(tokenId1, tokenId2, newTokenId, newLevel);
-        emit CardLocked(newTokenId, lockUntil[newTokenId]);
     }
 
     /**
