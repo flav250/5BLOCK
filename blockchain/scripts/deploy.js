@@ -11,7 +11,7 @@ async function main() {
     const arenaAddr = await arenaCards.getAddress();
     console.log("ArenaCards deployed to:", arenaAddr);
 
-    // 2) Deploy Booster(arenaCardsAddress)
+    // 2) Deploy Booster
     const Booster = await hre.ethers.getContractFactory("Booster");
     const booster = await Booster.deploy(arenaAddr);
     await booster.waitForDeployment();
@@ -21,7 +21,14 @@ async function main() {
     // 3) Authorize Booster as minter
     const tx = await arenaCards.setAuthorizedMinter(boosterAddr);
     await tx.wait();
-    console.log("Authorized minter set to Booster:", boosterAddr);
+    console.log("Authorized minter set to Booster");
+
+    // 4) Deploy Marketplace
+    const Marketplace = await hre.ethers.getContractFactory("Marketplace");
+    const marketplace = await Marketplace.deploy(arenaAddr);
+    await marketplace.waitForDeployment();
+    const marketplaceAddr = await marketplace.getAddress();
+    console.log("Marketplace deployed to:", marketplaceAddr);
 }
 
 main()
