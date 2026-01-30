@@ -5,8 +5,9 @@ import Header from './components/Header.tsx';
 import BoosterOpener from "./components/BoosterOpener.tsx";
 import Marketplace from './components/Marketplace.tsx';
 import './App.css';
+import Fusion from "./components/Fusion.tsx";
 
-type View = 'team' | 'booster' | 'marketplace';
+type View = 'team' | 'booster' | 'marketplace' | 'fusion';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('team');
@@ -36,6 +37,12 @@ function App() {
             >
               🏪 Marketplace
             </button>
+            <button
+              className={`nav-btn ${currentView === 'fusion' ? 'active' : ''}`}
+              onClick={() => setCurrentView('fusion')}
+          >
+            🏪 Fusion
+          </button>
           </nav>
 
           {/* Main Content */}
@@ -43,6 +50,7 @@ function App() {
             {currentView === 'team' && <TeamBuilder />}
             {currentView === 'booster' && <BoosterOpener />}
             {currentView === 'marketplace' && <Marketplace />}
+            {currentView === 'fusion' && <Fusion />}
           </main>
 
           <footer className="app-footer">
