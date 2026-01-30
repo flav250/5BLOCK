@@ -192,7 +192,6 @@ contract Booster {
             // Mint la carte via le contrat ArenaCards
             arenaCards.mintCard(
                 msg.sender,
-                card.imageURI,
                 card.name,
                 card.rarity
             );
