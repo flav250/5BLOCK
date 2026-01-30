@@ -59,8 +59,7 @@ export const openPremiumBooster = async (signer: Signer) => {
   try {
     const contract = getPremiumBoosterContract(signer);
 
-    const price: bigint = await contract.getBoosterPrice();
-
+    const price = await contract.getBoosterPrice();
     const tx = await contract.openBooster({
       value: price,
       gasLimit: 1_500_000,

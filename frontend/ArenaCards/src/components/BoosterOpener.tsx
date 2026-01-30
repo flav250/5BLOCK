@@ -1,4 +1,4 @@
-// components/BoosterOpener.tsx - VERSION AVEC NOUVEAUX TAUX
+// components/BoosterOpener.tsx
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useWeb3 } from '../hooks/useWeb3';
@@ -13,6 +13,18 @@ import './BoosterOpener.css';
 
 type BoosterType = 'free' | 'premium';
 
+type OpeningAnimPhase = 'idle' | 'free' | 'premium';
+
+const PREMIUM_ANIM_MS = 2800;
+const FREE_ANIM_MS = 1700;
+
+/**
+ * Audio:
+ * - Place a file at: public/assets/sounds/booster-open.mp3
+ * - You can replace it later with your own sound (same path).
+ */
+const OPEN_SOUND_SRC = '/assets/sounds/booster-open.mp3';
+
 const BoosterOpener: React.FC = () => {
   const { account, signer } = useWeb3();
   const [isOpening, setIsOpening] = useState(false);
@@ -20,12 +32,46 @@ const BoosterOpener: React.FC = () => {
   const [timeUntilNext, setTimeUntilNext] = useState(0);
   const [premiumPrice, setPremiumPrice] = useState('0');
   const [newCards, setNewCards] = useState<Array<{ name: string; rarity: string }>>([]);
-  const [showAnimation, setShowAnimation] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<BoosterType>('free');
 
+  // animation state
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [openingPhase, setOpeningPhase] = useState<OpeningAnimPhase>('idle');
+  const [animKey, setAnimKey] = useState(0);
+
   const initialTimeRef = useRef<number>(0);
   const initialTimestampRef = useRef<number>(0);
+
+  const timeoutsRef = useRef<number[]>([]);
+  const clearAllTimeouts = () => {
+    timeoutsRef.current.forEach((t) => window.clearTimeout(t));
+    timeoutsRef.current = [];
+  };
+
+  // sound
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    audioRef.current = new Audio(OPEN_SOUND_SRC);
+    audioRef.current.preload = 'auto';
+    audioRef.current.volume = 0.6;
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const playOpenSound = () => {
+    try {
+      if (!audioRef.current) return;
+      audioRef.current.currentTime = 0;
+      void audioRef.current.play();
+    } catch {
+      // autoplay can be blocked; not critical
+    }
+  };
 
   const loadData = useCallback(async () => {
     if (!signer || !account) return;
@@ -53,9 +99,7 @@ const BoosterOpener: React.FC = () => {
   }, [signer, account]);
 
   useEffect(() => {
-    if (account && signer) {
-      loadData();
-    }
+    if (account && signer) loadData();
   }, [account, signer, loadData]);
 
   useEffect(() => {
@@ -76,6 +120,11 @@ const BoosterOpener: React.FC = () => {
     return () => clearInterval(interval);
   }, [loadData]);
 
+  useEffect(() => {
+    // cleanup timers if user navigates away / component unmounts
+    return () => clearAllTimeouts();
+  }, []);
+
   const getProgressPercentage = (): number => {
     if (timeUntilNext === 0) return 100;
     const elapsed = 600 - timeUntilNext;
@@ -94,12 +143,26 @@ const BoosterOpener: React.FC = () => {
     return `${hours}:${minutes}`;
   };
 
+  const startOpeningAnimation = (type: BoosterType) => {
+    setAnimKey((k) => k + 1); // force key-based re-mount of anim nodes
+    setOpeningPhase(type);
+    setShowAnimation(true);
+    playOpenSound();
+  };
+
+  const stopOpeningAnimation = () => {
+    setShowAnimation(false);
+    setOpeningPhase('idle');
+  };
+
   const handleOpenBooster = async () => {
     if (!signer) return;
 
+    clearAllTimeouts();
     setIsOpening(true);
-    setShowAnimation(true);
     setNewCards([]);
+
+    startOpeningAnimation(selectedType);
 
     try {
       const result = selectedType === 'free'
@@ -107,28 +170,32 @@ const BoosterOpener: React.FC = () => {
           : await openPremiumBooster(signer);
 
       if (result.success) {
-        setTimeout(() => {
-          setNewCards(result.cards);
-          setShowAnimation(false);
-        }, selectedType === 'premium' ? 3000 : 2000);
+        const animMs = selectedType === 'premium' ? PREMIUM_ANIM_MS : FREE_ANIM_MS;
 
-        setTimeout(() => {
+        // reveal cards when animation finishes
+        const t1 = window.setTimeout(() => {
+          setNewCards(result.cards);
+          stopOpeningAnimation();
+        }, animMs);
+        timeoutsRef.current.push(t1);
+
+        // refresh availability shortly after
+        const t2 = window.setTimeout(() => {
           loadData();
-        }, selectedType === 'premium' ? 3500 : 2500);
+        }, animMs + 250);
+        timeoutsRef.current.push(t2);
       } else {
-        setShowAnimation(false);
+        stopOpeningAnimation();
       }
     } catch (error) {
       console.error('Erreur ouverture:', error);
-      setShowAnimation(false);
+      stopOpeningAnimation();
     } finally {
       setIsOpening(false);
     }
   };
 
-  const closeCardsModal = () => {
-    setNewCards([]);
-  };
+  const closeCardsModal = () => setNewCards([]);
 
   if (!account) {
     return (
@@ -158,14 +225,17 @@ const BoosterOpener: React.FC = () => {
             <button
                 className={`type-btn ${selectedType === 'free' ? 'active' : ''}`}
                 onClick={() => setSelectedType('free')}
+                disabled={isOpening}
             >
               <div className="type-icon">🆓</div>
               <div className="type-name">Booster Gratuit</div>
               <div className="type-desc">Cooldown 10 min • 2 cartes</div>
             </button>
+
             <button
                 className={`type-btn ${selectedType === 'premium' ? 'active' : ''}`}
                 onClick={() => setSelectedType('premium')}
+                disabled={isOpening}
             >
               <div className="type-icon">💎</div>
               <div className="type-name">Booster Premium</div>
@@ -174,12 +244,20 @@ const BoosterOpener: React.FC = () => {
           </div>
 
           {/* Booster Pack */}
-          <div className={`booster-pack ${showAnimation ? 'opening' : ''}`}>
+          <div
+              className={`booster-pack ${showAnimation ? 'opening' : ''}`}
+              onClick={() => {
+                if (!isLoading && canOpenCurrent && !isOpening) handleOpenBooster();
+              }}
+              role="button"
+              tabIndex={0}
+          >
             <div className={`booster-front ${selectedType}`}>
               <img
-                  src={selectedType === 'free'
-                      ? '/assets/boosters/booster-2-stars.png'
-                      : '/assets/boosters/booster-3-stars.png'
+                  src={
+                    selectedType === 'free'
+                        ? '/assets/boosters/booster-2-stars.png'
+                        : '/assets/boosters/booster-3-stars.png'
                   }
                   alt={`${selectedType === 'free' ? 'Free' : 'Premium'} Booster`}
                   className="booster-image"
@@ -217,12 +295,10 @@ const BoosterOpener: React.FC = () => {
                           className="progress-bar-fill"
                           style={{ width: `${progressPercentage}%` }}
                       >
-                        <div className="progress-shimmer"></div>
+                        <div className="progress-shimmer" />
                       </div>
                     </div>
-                    <div className="progress-label">
-                      {Math.round(progressPercentage)}%
-                    </div>
+                    <div className="progress-label">{Math.round(progressPercentage)}%</div>
                   </div>
                 </div>
             )}
@@ -236,26 +312,22 @@ const BoosterOpener: React.FC = () => {
           >
             {isOpening ? (
                 <>
-                  <span className="button-spinner"></span>
+                  <span className="button-spinner" />
                   Ouverture...
                 </>
             ) : isLoading ? (
                 <>
-                  <span className="button-spinner"></span>
+                  <span className="button-spinner" />
                   Chargement...
                 </>
             ) : selectedType === 'premium' ? (
-                <>
-                  💎 Acheter ({premiumPrice} ETH)
-                </>
+                <>💎 Acheter ({premiumPrice} ETH)</>
             ) : (
-                <>
-                  🎁 Ouvrir le Booster
-                </>
+                <>🎁 Ouvrir le Booster</>
             )}
           </button>
 
-          {/* Info - Dynamic based on selected type */}
+          {/* Info */}
           <div className="booster-info">
             <h3>📋 {selectedType === 'free' ? 'Booster Gratuit' : 'Booster Premium'}</h3>
             {selectedType === 'free' ? (
@@ -277,7 +349,7 @@ const BoosterOpener: React.FC = () => {
                 <ul>
                   <li><strong>Contenu :</strong> 4 cartes aléatoires</li>
                   <li><strong>Cooldown :</strong> Aucun</li>
-                  <li><strong>Prix :</strong> {premiumPrice} ETH (~$5)</li>
+                  <li><strong>Prix :</strong> {premiumPrice} ETH</li>
                   <li><strong>Taux de drop :</strong>
                     <ul>
                       <li>💎 Légendaire: 1%</li>
@@ -317,36 +389,54 @@ const BoosterOpener: React.FC = () => {
             </div>
         )}
 
-        {/* Animation */}
+        {/* Opening Animation Overlay (rebuilt) */}
         {showAnimation && (
-            <div className={`opening-animation ${selectedType === 'premium' ? 'premium' : ''}`}>
-              <div className="pack-opening">
-                {selectedType === 'premium' ? (
-                    <>
-                      <div className="premium-burst"></div>
-                      <div className="premium-rays"></div>
-                      <div className="premium-particles">
-                        {[...Array(20)].map((_, i) => {
-                          const angle = i * 18;
-                          return (
-                              <div
+            <div
+                key={animKey}
+                className={`opening-overlay ${openingPhase}`}
+                aria-hidden="true"
+            >
+              <div className="opening-stage">
+                <div className="opening-pack">
+                  <img
+                      src={
+                        openingPhase === 'premium'
+                            ? '/assets/boosters/booster-3-stars.png'
+                            : '/assets/boosters/booster-2-stars.png'
+                      }
+                      alt=""
+                      className="opening-pack-img"
+                  />
+                  <div className="opening-glow" />
+                  <div className="opening-sparkle-layer" />
+                  {openingPhase === 'premium' && (
+                      <>
+                        <div className="premium-ring premium-ring-1" />
+                        <div className="premium-ring premium-ring-2" />
+                        <div className="premium-ring premium-ring-3" />
+                        <div className="premium-burst" />
+                        <div className="premium-stars">
+                          {Array.from({ length: 18 }).map((_, i) => (
+                              <span
                                   key={i}
-                                  className={`particle particle-${i}`}
-                                  style={{
-                                    animationDelay: `${i * 0.05}s`
-                                  }}
-                              ></div>
-                          );
-                        })}
-                      </div>
-                      <div className="premium-sparkles">✨💎✨💎✨</div>
-                    </>
-                ) : (
-                    <>
-                      <div className="burst"></div>
-                      <div className="sparkles">✨✨✨</div>
-                    </>
-                )}
+                                  className="premium-star"
+                                  style={{ ['--i' as any]: i }}
+                              />
+                          ))}
+                        </div>
+                      </>
+                  )}
+                  {openingPhase === 'free' && (
+                      <>
+                        <div className="free-pop" />
+                        <div className="free-sparkles">✨✨✨</div>
+                      </>
+                  )}
+                </div>
+
+                <div className="opening-caption">
+                  {openingPhase === 'premium' ? 'Ouverture du booster premium…' : 'Ouverture…'}
+                </div>
               </div>
             </div>
         )}
