@@ -1,77 +1,132 @@
 // utils/boosterHelpers.ts
+import { ethers } from "ethers";
+import type { Signer } from "ethers";
 
-import { ethers } from 'ethers';
-import type { Signer } from 'ethers';
-import BoosterABI from '../abis/Booster.json';
+import FreeBoosterABI from "../abis/FreeBooster.json";
+import PremiumBoosterABI from "../abis/PremiumBooster.json";
 
-const BOOSTER_ADDRESS = import.meta.env.VITE_BOOSTER_ADDRESS as string;
+const FREE_BOOSTER_ADDRESS = import.meta.env.VITE_FREE_BOOSTER_ADDRESS as string;
+const PREMIUM_BOOSTER_ADDRESS = import.meta.env.VITE_PREMIUM_BOOSTER_ADDRESS as string;
 
-if (!BOOSTER_ADDRESS) {
-  throw new Error("❌ VITE_BOOSTER_ADDRESS non défini dans .env");
-}
+if (!FREE_BOOSTER_ADDRESS) throw new Error("❌ VITE_FREE_BOOSTER_ADDRESS manquant dans .env");
+if (!PREMIUM_BOOSTER_ADDRESS) throw new Error("❌ VITE_PREMIUM_BOOSTER_ADDRESS manquant dans .env");
 
+export const getFreeBoosterContract = (signer: Signer) =>
+    new ethers.Contract(FREE_BOOSTER_ADDRESS, FreeBoosterABI.abi, signer);
 
-export const getBoosterContract = (signer: Signer) => {
-  return new ethers.Contract(BOOSTER_ADDRESS, BoosterABI.abi, signer);
-};
+export const getPremiumBoosterContract = (signer: Signer) =>
+    new ethers.Contract(PREMIUM_BOOSTER_ADDRESS, PremiumBoosterABI.abi, signer);
 
-export const openBooster = async (signer: Signer) => {
+/** Ouvrir un booster GRATUIT (cooldown) */
+export const openFreeBooster = async (signer: Signer) => {
   try {
-    const contract = getBoosterContract(signer);
-    const tx = await contract.openBooster({ gasLimit: 1_500_500});
+    const contract = getFreeBoosterContract(signer);
+
+    const tx = await contract.openBooster({ gasLimit: 1_500_000 });
     const receipt = await tx.wait();
 
-    // Extraire les cartes des events
     const cards: Array<{ name: string; rarity: string }> = [];
-    
     for (const log of receipt.logs) {
       try {
-        const parsedLog = contract.interface.parseLog(log);
-        if (parsedLog && parsedLog.name === 'CardMinted') {
-          cards.push({
-            name: parsedLog.args.name,
-            rarity: parsedLog.args.rarity
-          });
+        const parsed = contract.interface.parseLog({
+          topics: log.topics as string[],
+          data: log.data,
+        });
+        if (parsed?.name === "CardMinted") {
+          cards.push({ name: parsed.args.name, rarity: parsed.args.rarity });
         }
-      } catch (e) {
-        // Skip logs that aren't from our contract
-      }
+      } catch {}
     }
 
     return { success: true, cards };
   } catch (error) {
-    console.error('Erreur ouverture booster:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    
-    if (errorMessage.includes('Booster cooldown active')) {
-      alert('Attends 10 minutes avant d\'ouvrir le prochain booster !');
-    } else if (errorMessage.includes('Not enough space')) {
-      alert('Tu as déjà 4 cartes ! Fusionne-les ou transfère-les.');
+    const msg = error instanceof Error ? error.message : String(error);
+
+    if (msg.includes("Booster cooldown active")) {
+      alert("Tu dois attendre avant d’ouvrir un booster gratuit !");
+    } else if (msg.includes("Not enough space")) {
+      alert("Pas assez de place pour les cartes du booster (limite MAX_CARDS).");
     } else {
-      alert('Erreur: ' + errorMessage);
+      alert("Erreur: " + msg);
     }
-    
+
     return { success: false, cards: [] };
   }
 };
 
-export const getTimeUntilNextBooster = async (signer: Signer, address: string): Promise<number> => {
+/** Ouvrir un booster PREMIUM (payant) */
+export const openPremiumBooster = async (signer: Signer) => {
   try {
-    const contract = getBoosterContract(signer);
-    const time = await contract.getTimeUntilNextBooster(address);
-    return Number(time);
+    const contract = getPremiumBoosterContract(signer);
+
+    const price: bigint = await contract.getBoosterPrice();
+
+    const tx = await contract.openBooster({
+      value: price,
+      gasLimit: 1_500_000,
+    });
+    const receipt = await tx.wait();
+
+    const cards: Array<{ name: string; rarity: string }> = [];
+    for (const log of receipt.logs) {
+      try {
+        const parsed = contract.interface.parseLog({
+          topics: log.topics as string[],
+          data: log.data,
+        });
+        if (parsed?.name === "CardMinted") {
+          cards.push({ name: parsed.args.name, rarity: parsed.args.rarity });
+        }
+      } catch {}
+    }
+
+    return { success: true, cards };
   } catch (error) {
-    console.error('Erreur temps restant:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+
+    if (msg.includes("Insufficient payment")) {
+      alert("Paiement insuffisant pour le booster premium !");
+    } else if (msg.includes("Not enough space")) {
+      alert("Pas assez de place pour les cartes du booster (limite MAX_CARDS).");
+    } else {
+      alert("Erreur: " + msg);
+    }
+
+    return { success: false, cards: [] };
+  }
+};
+
+/** Cooldown FREE : temps restant */
+export const getTimeUntilNextFreeBooster = async (signer: Signer, user: string): Promise<number> => {
+  try {
+    const contract = getFreeBoosterContract(signer);
+    const t = await contract.getTimeUntilNextBooster(user);
+    return Number(t);
+  } catch (e) {
+    console.error("getTimeUntilNextFreeBooster:", e);
     return 0;
   }
 };
 
-export const canOpenBooster = async (signer: Signer, address: string): Promise<boolean> => {
+/** FREE : est-ce que je peux ouvrir ? */
+export const canOpenFreeBooster = async (signer: Signer, user: string): Promise<boolean> => {
   try {
-    const contract = getBoosterContract(signer);
-    return await contract.canOpenBooster(address);
-  } catch (error) {
-    console.error('Erreur vérification:', error);
+    const contract = getFreeBoosterContract(signer);
+    return await contract.canOpenBooster(user);
+  } catch (e) {
+    console.error("canOpenFreeBooster:", e);
     return false;
+  }
+};
+
+/** Prix du premium (en ETH string) */
+export const getPremiumBoosterPrice = async (signer: Signer): Promise<string> => {
+  try {
+    const contract = getPremiumBoosterContract(signer);
+    const price: bigint = await contract.getBoosterPrice();
+    return ethers.formatEther(price);
+  } catch (e) {
+    console.error("getPremiumBoosterPrice:", e);
+    return "0";
   }
 };

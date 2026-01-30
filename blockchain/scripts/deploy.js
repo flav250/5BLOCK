@@ -5,35 +5,57 @@ async function main() {
     console.log("Deployer:", deployer.address);
 
     // 1) Deploy ArenaCards
+    console.log("\n📦 Déploiement ArenaCards...");
     const ArenaCards = await hre.ethers.getContractFactory("ArenaCards");
     const arenaCards = await ArenaCards.deploy();
     await arenaCards.waitForDeployment();
     const arenaAddr = await arenaCards.getAddress();
-    console.log("ArenaCards deployed to:", arenaAddr);
+    console.log("✅ ArenaCards déployé à:", arenaAddr);
 
-    // 2) Deploy Booster
-    const Booster = await hre.ethers.getContractFactory("Booster");
-    const booster = await Booster.deploy(arenaAddr);
-    await booster.waitForDeployment();
-    const boosterAddr = await booster.getAddress();
-    console.log("Booster deployed to:", boosterAddr);
+    // 2) Deploy FreeBooster
+    console.log("\n📦 Déploiement FreeBooster...");
+    const FreeBooster = await hre.ethers.getContractFactory("FreeBooster");
+    const freeBooster = await FreeBooster.deploy(arenaAddr);
+    await freeBooster.waitForDeployment();
+    const freeBoosterAddr = await freeBooster.getAddress();
+    console.log("✅ FreeBooster déployé à:", freeBoosterAddr);
 
-    // 3) Authorize Booster as minter
-    const tx = await arenaCards.setAuthorizedMinter(boosterAddr);
-    await tx.wait();
-    console.log("Authorized minter set to Booster");
+    // 3) Deploy PremiumBooster
+    console.log("\n📦 Déploiement PremiumBooster...");
+    const PremiumBooster = await hre.ethers.getContractFactory("PremiumBooster");
+    const premiumBooster = await PremiumBooster.deploy(arenaAddr);
+    await premiumBooster.waitForDeployment();
+    const premiumBoosterAddr = await premiumBooster.getAddress();
+    console.log("✅ PremiumBooster déployé à:", premiumBoosterAddr);
 
-    // 4) Deploy Marketplace
+    // 4) Authorize both boosters as minters (mapping(address=>bool))
+    console.log("\n🔐 Autorisation des boosters comme minters...");
+    const tx1 = await arenaCards.setAuthorizedMinter(freeBoosterAddr, true);
+    await tx1.wait();
+    console.log("✅ FreeBooster autorisé");
+
+    const tx2 = await arenaCards.setAuthorizedMinter(premiumBoosterAddr, true);
+    await tx2.wait();
+    console.log("✅ PremiumBooster autorisé");
+
+    // 5) Deploy Marketplace
+    console.log("\n🛒 Déploiement Marketplace...");
     const Marketplace = await hre.ethers.getContractFactory("Marketplace");
     const marketplace = await Marketplace.deploy(arenaAddr);
     await marketplace.waitForDeployment();
     const marketplaceAddr = await marketplace.getAddress();
-    console.log("Marketplace deployed to:", marketplaceAddr);
+    console.log("✅ Marketplace déployé à:", marketplaceAddr);
+
+    console.log("\n🎉 Déploiement terminé !");
+    console.log("ArenaCards:      ", arenaAddr);
+    console.log("FreeBooster:     ", freeBoosterAddr);
+    console.log("PremiumBooster:  ", premiumBoosterAddr);
+    console.log("Marketplace:     ", marketplaceAddr);
 }
 
 main()
     .then(() => process.exit(0))
     .catch((error) => {
-        console.error(error);
+        console.error("❌ Deploy failed:", error);
         process.exit(1);
     });

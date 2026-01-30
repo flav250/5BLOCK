@@ -5,7 +5,6 @@ import Header from './components/Header.tsx';
 import BoosterOpener from "./components/BoosterOpener.tsx";
 import Marketplace from './components/Marketplace.tsx';
 import './App.css';
-
 type View = 'team' | 'booster' | 'marketplace';
 
 function App() {
@@ -15,7 +14,6 @@ function App() {
       <Web3Provider>
         <div className="app">
           <Header />
-
           {/* Navigation */}
           <nav className="main-nav">
             <button

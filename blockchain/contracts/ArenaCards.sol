@@ -20,11 +20,20 @@ contract ArenaCards is ERC721, Ownable {
     uint256 public constant COOLDOWN = 5 minutes;
     uint256 public constant LOCK_TIME = 10 minutes;
 
-    // Adresse autorisée à mint (le contrat Booster)
-    address public authorizedMinter;
+    mapping(address => bool) public authorizedMinters;
+
+    modifier onlyAuthorized() {
+        require(authorizedMinters[msg.sender] || msg.sender == owner(), "Not authorized");
+        _;
+    }
+
+
+    function setAuthorizedMinter(address _minter, bool _authorized) external onlyOwner {
+        authorizedMinters[_minter] = _authorized;
+    }
 
     struct CardData {
-        uint256 level;  
+        uint256 level;
         string rarity;
         string name;
         uint256 createdAt;
@@ -33,16 +42,16 @@ contract ArenaCards is ERC721, Ownable {
 
     // Mapping des détails de chaque carte
     mapping(uint256 => CardData) public cardDetails;
-    
+
     // Mapping pour stocker les URLs des images: rarity => name => imageURI
     mapping(string => mapping(string => string)) private imageURIs;
-    
+
     // Historique des propriétaires pour chaque carte
     mapping(uint256 => address[]) public previousOwners;
 
     // Dernière action de chaque utilisateur (pour cooldown)
     mapping(address => uint256) public lastAction;
-    
+
     // Timestamp jusqu'auquel une carte est verrouillée
     mapping(uint256 => uint256) public lockUntil;
 
@@ -55,27 +64,27 @@ contract ArenaCards is ERC721, Ownable {
     constructor() ERC721("Arena Cards", "ACARD") Ownable(msg.sender) {
         _initializeImageURIs();
     }
-    
+
     /**
      * @dev Initialise les URLs des images pour chaque carte
      */
     function _initializeImageURIs() private {
         string memory defaultURI = "https://plum-wrong-dog-715.mypinata.cloud/ipfs/bafkreidmuc2dqodhwfozbl6thnbr4bhvpmqf6xhvwmnn45m7qfycphtxvy";
-        
+
         // Légendaires
         imageURIs["legendaire"]["Dragon Dore"] = defaultURI;
         imageURIs["legendaire"]["Phoenix Immortel"] = defaultURI;
-        
+
         // Épiques
         imageURIs["epique"]["Chevalier Noir"] = defaultURI;
         imageURIs["epique"]["Mage des Glaces"] = defaultURI;
         imageURIs["epique"]["Assassin Fantome"] = defaultURI;
-        
+
         // Rares
         imageURIs["rare"]["Archer Elfe"] = defaultURI;
         imageURIs["rare"]["Paladin Sacre"] = defaultURI;
         imageURIs["rare"]["Druide Ancien"] = defaultURI;
-        
+
         // Communes
         imageURIs["commune"]["Guerrier Brave"] = defaultURI;
         imageURIs["commune"]["Gobelin Ruse"] = defaultURI;
@@ -86,11 +95,6 @@ contract ArenaCards is ERC721, Ownable {
     /**
      * @dev Définit l'adresse autorisée à mint (contrat Booster)
      */
-    function setAuthorizedMinter(address _minter) external onlyOwner {
-        authorizedMinter = _minter;
-        emit AuthorizedMinterUpdated(_minter);
-    }
-
     /**
      * @dev Vérifie le cooldown de l'utilisateur
      */
@@ -108,7 +112,7 @@ contract ArenaCards is ERC721, Ownable {
     modifier notLocked(uint256 tokenId) {
         require(block.timestamp >= lockUntil[tokenId], "Card is temporarily locked");
         _;
-    }   
+    }
 
     /**
      * @dev Vérifie qu'un utilisateur n'a pas atteint le maximum de cartes
@@ -116,7 +120,7 @@ contract ArenaCards is ERC721, Ownable {
     modifier maxCards(address user) {
         require(balanceOf(user) < MAX_CARDS, "Max cards reached");
         _;
-    }   
+    }
 
     /**
      * @dev Mint une nouvelle carte
@@ -124,27 +128,31 @@ contract ArenaCards is ERC721, Ownable {
      */
     function mintCard(
         address to,
-        string memory name, 
+        string memory name,
         string memory rarity
-    ) 
-        external 
-        maxCards(to)
+    )
+    external
+    maxCards(to)
     {
-        // Vérifier que l'appelant est soit le owner, soit le minter autorisé
-        require(
-            msg.sender == owner() || msg.sender == authorizedMinter,
-            "Not authorized to mint"
-        );
+        bool isMinter = authorizedMinters[msg.sender];
 
-        // Pas de cooldown pour le contrat Booster
-        if (msg.sender != authorizedMinter) {
+        require(msg.sender == owner() || isMinter, "Not authorized to mint");
+
+        // cooldown UNIQUEMENT si c'est le owner qui mint "à la main"
+        if (!isMinter) {
             require(
                 lastAction[to] == 0 || block.timestamp >= lastAction[to] + COOLDOWN,
                 "Action on cooldown"
             );
+            lastAction[to] = block.timestamp;
         }
 
         uint256 tokenId = tokenCounter;
+
+        // lock (optionnel, mais recommandé)
+        lockUntil[tokenId] = block.timestamp + LOCK_TIME;
+        emit CardLocked(tokenId, lockUntil[tokenId]);
+
         _safeMint(to, tokenId);
 
         cardDetails[tokenId] = CardData({
@@ -155,17 +163,11 @@ contract ArenaCards is ERC721, Ownable {
             lastTransferAt: block.timestamp
         });
 
-        //lockUntil[tokenId] = block.timestamp + LOCK_TIME;
-        
-        // Mettre à jour lastAction seulement si ce n'est pas le Booster
-        if (msg.sender != authorizedMinter) {
-            lastAction[to] = block.timestamp;
-        }
-
         tokenCounter++;
 
         emit CardMinted(tokenId, to, name, rarity);
     }
+
 
     /**
      * @dev Fusionne deux cartes pour en créer une plus puissante
@@ -173,8 +175,8 @@ contract ArenaCards is ERC721, Ownable {
     function fusecards(
         uint256 tokenId1,
         uint256 tokenId2
-    ) 
-        external 
+    )
+        external
         cooldown(msg.sender)
         maxCards(msg.sender)
         notLocked(tokenId1)
@@ -227,13 +229,13 @@ contract ArenaCards is ERC721, Ownable {
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
-        
+
         CardData memory card = cardDetails[tokenId];
-        
+
         // Récupérer l'URL de l'image
         string memory imageURL = imageURIs[card.rarity][card.name];
-        
-        
+
+
         // Construire le JSON des métadonnées
         string memory json = string(abi.encodePacked(
             '{"name":"',
@@ -254,28 +256,28 @@ contract ArenaCards is ERC721, Ownable {
             '}',
             ']}'
         ));
-        
+
         // Encoder en base64
         string memory base64Json = Base64.encode(bytes(json));
-        
+
         // Retourner avec le préfixe data URI
         return string(abi.encodePacked('data:application/json;base64,', base64Json));
     }
-    
+
     /**
      * @dev Retourne l'historique des propriétaires d'une carte
      */
     function getPreviousOwners(uint256 tokenId) external view returns (address[] memory) {
         return previousOwners[tokenId];
     }
-    
+
     /**
      * @dev Permet de mettre à jour l'URL d'une image (owner seulement)
      */
     function setImageURI(string memory rarity, string memory name, string memory newImageURI) external onlyOwner {
         imageURIs[rarity][name] = newImageURI;
     }
-    
+
     /**
      * @dev Retourne l'URL de l'image pour une carte donnée
      */
@@ -293,13 +295,13 @@ contract ArenaCards is ERC721, Ownable {
     {
         address from = _ownerOf(tokenId);
 
-        if (from != address(0)) {
+        if (from != address(0) && to != address(0)) {
             require(block.timestamp >= lockUntil[tokenId], "Card is temporarily locked");
-
             previousOwners[tokenId].push(from);
             cardDetails[tokenId].lastTransferAt = block.timestamp;
         }
 
-        return super._update(to, tokenId, auth);
+
+    return super._update(to, tokenId, auth);
     }
 }
