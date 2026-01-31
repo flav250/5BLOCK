@@ -356,7 +356,7 @@ const Fusion: React.FC = () => {
                             </div>
                         ) : (
                             <div className="empty-slot">
-                                <span className="slot-number">1</span>
+                                <span className="slot-number2">1</span>
                                 <p>Glisse une carte ici</p>
                             </div>
                         )}
@@ -404,7 +404,7 @@ const Fusion: React.FC = () => {
                             </div>
                         ) : (
                             <div className="empty-slot">
-                                <span className="slot-number">2</span>
+                                <span className="slot-number2">2</span>
                                 <p>Glisse une carte ici</p>
                             </div>
                         )}

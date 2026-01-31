@@ -1,442 +1,740 @@
-/* components/Marketplace.css */
+/* ============================================================
+   MARKETPLACE — STYLESHEET
+   ============================================================ */
 
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root {
+  --clr-bg:              #0d1117;
+  --clr-surface:         #131825;
+  --clr-surface-alt:     #0f1420;
+  --clr-border:          rgba(255, 255, 255, 0.07);
+  --clr-border-hover:    rgba(255, 255, 255, 0.14);
+
+  --clr-accent-gold:     #feca57;
+  --clr-accent-coral:    #ff6b6b;
+  --clr-accent-green:    #00e676;
+
+  --clr-text-primary:    #eee;
+  --clr-text-secondary:  #8a8f9e;
+  --clr-text-muted:      #556;
+
+  --rarity-common-border:  #7a8a9a;
+  --rarity-common-glow:    rgba(122, 138, 154, 0.35);
+  --rarity-common-text:    #9eb5c9;
+
+  --rarity-rare-border:    #3ea8ff;
+  --rarity-rare-glow:      rgba(62, 168, 255, 0.4);
+  --rarity-rare-text:      #3ea8ff;
+
+  --rarity-legendary-border:  #ffb840;
+  --rarity-legendary-glow:    rgba(255, 184, 64, 0.5);
+  --rarity-legendary-text:    #ffb840;
+
+  --gradient-primary: linear-gradient(135deg, var(--clr-accent-coral), var(--clr-accent-gold));
+  --radius-card:      18px;
+  --radius-sm:        12px;
+  --transition:       0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
 .marketplace-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
+  min-height: 100vh;
+  color: var(--clr-text-primary);
 }
 
-.marketplace-message {
+.marketplace-empty {
   text-align: center;
-  padding: 4rem 2rem;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 30vh;
+}
+.marketplace-empty h2 { font-size: 2rem; }
+.marketplace-empty p  { color: var(--clr-text-secondary); margin-top: 0.5rem; }
+
+.marketplace-loading {
+  text-align: center;
+  color: var(--clr-text-secondary);
+  padding: 3rem 0;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
 }
 
-.marketplace-message h2 {
-  color: #667eea;
-  margin-bottom: 1rem;
-  font-size: 2rem;
-}
-
-/* Header */
+/* ============================================================
+   HEADER
+   ============================================================ */
 .marketplace-header {
   text-align: center;
+  padding: 2.5rem 2rem;
   margin-bottom: 2rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 20px;
-  color: white;
+  background: linear-gradient(145deg, #12162a, #1c2040);
+  border: 1px solid rgba(255, 140, 0, 0.3);
+  box-shadow: 0 0 30px rgba(255, 140, 0, 0.2);
 }
 
-.marketplace-header h2 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2rem;
+.marketplace-header__title {
+  font-size: 2.3rem;
+  margin: 0;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.marketplace-header p {
-  margin: 0 0 1rem 0;
-  opacity: 0.9;
+.marketplace-header__sub {
+  color: var(--clr-text-secondary);
+  margin: 0.5rem 0 0;
 }
 
-.btn-approve {
-  background: white;
-  color: #667eea;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-}
-
-.btn-approve:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
-}
-
-/* Actions */
+/* ============================================================
+   ACTIONS BAR
+   ============================================================ */
 .marketplace-actions {
   display: flex;
-  gap: 1rem;
   justify-content: center;
-  margin-bottom: 2rem;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
 }
 
-.btn-create-trade,
-.btn-refresh {
-  padding: 1rem 2rem;
+/* ============================================================
+   BUTTONS (shared)
+   ============================================================ */
+.btn {
   border: none;
-  border-radius: 12px;
-  font-weight: bold;
+  border-radius: 40px;
+  font-weight: 700;
+  font-size: 1rem;
   cursor: pointer;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
+  letter-spacing: 0.3px;
+  transition: all var(--transition);
+  outline: none;
 }
-
-.btn-create-trade {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-}
-
-.btn-refresh {
-  background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
-}
-
-.btn-create-trade:hover,
-.btn-refresh:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.btn-create-trade:disabled {
-  opacity: 0.5;
+.btn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
-/* Trades Section */
+/* primary gradient buttons */
+.btn--approve,
+.btn--create,
+.btn--accept,
+.btn--submit {
+  background: var(--gradient-primary);
+  color: #1a1a1a;
+  padding: 0.85rem 2rem;
+  box-shadow: 0 0 20px rgba(255, 160, 60, 0.35);
+}
+.btn--approve:hover,
+.btn--create:hover,
+.btn--accept:hover,
+.btn--submit:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 30px rgba(255, 160, 60, 0.55);
+}
+.btn--submit:disabled {
+  background: rgba(60, 60, 70, 0.5);
+  color: var(--clr-text-muted);
+  box-shadow: none;
+  opacity: 1;
+}
+
+/* ghost button */
+.btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--clr-border-hover);
+  color: var(--clr-text-secondary);
+  padding: 0.7rem 1.6rem;
+}
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.11);
+  color: var(--clr-text-primary);
+}
+
+/* refresh circle */
+.btn--refresh {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1c2040, #0f1325);
+  border: 2px solid rgba(254, 202, 87, 0.6);
+  color: var(--clr-accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+          0 0 15px rgba(254, 202, 87, 0.4),
+          inset 0 0 10px rgba(254, 202, 87, 0.25);
+}
+.btn--refresh:hover {
+  transform: rotate(180deg) scale(1.1);
+  box-shadow:
+          0 0 30px rgba(254, 202, 87, 0.65),
+          inset 0 0 15px rgba(254, 202, 87, 0.5);
+}
+.btn--refresh:hover svg {
+  animation: spin 0.7s ease-in-out;
+}
+
+/* cancel-small (inside trade card) */
+.btn--cancel-small {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  transition: background var(--transition);
+}
+.btn--cancel-small:hover {
+  background: rgba(255, 107, 107, 0.15);
+}
+
+/* accept (inside trade card) */
+.btn--accept {
+  width: 100%;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  padding: 0.7rem 1rem;
+}
+
+/* ============================================================
+   TRADE SECTIONS
+   ============================================================ */
 .trades-section {
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
 }
 
-.trades-section h3 {
-  color: #333;
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
+.trades-section__title {
+  color: var(--clr-accent-gold);
+  letter-spacing: 0.6px;
+  margin-bottom: 1.2rem;
+  text-align: center;
+  font-size: 1.1rem;
+}
+.trades-section__count {
+  color: var(--clr-text-muted);
+  font-weight: 400;
 }
 
+/* ============================================================
+   TRADE GRID + TRADE CARD
+   ============================================================ */
 .trades-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 1.5rem;
 }
 
-/* Trade Card */
 .trade-card {
-  background: white;
-  border-radius: 15px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border-radius: var(--radius-card);
+  padding: 1.4rem;
+  border: 1px solid var(--clr-border);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.55);
+  transition: all var(--transition);
+  position: relative;
 }
-
 .trade-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 0 35px rgba(255, 200, 120, 0.3);
 }
 
-.trade-card.my-trade {
-  border-color: #667eea;
+/* own trade highlight */
+.trade-card--mine {
+  border-color: var(--clr-accent-gold);
 }
 
-.trade-card.can-accept {
-  border-color: #10b981;
+/* acceptible trade highlight */
+.trade-card--acceptible {
+  border-color: var(--clr-accent-green);
+  box-shadow: 0 0 28px rgba(0, 255, 174, 0.3);
 }
 
-.trade-header {
+/* header row */
+.trade-card__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
-
-.trade-id {
-  font-weight: bold;
-  color: #667eea;
-}
-
-.trade-creator {
+.trade-card__id {
+  color: var(--clr-accent-gold);
+  font-weight: 700;
   font-size: 0.9rem;
-  color: #666;
+}
+.trade-card__creator {
   font-family: monospace;
+  color: var(--clr-text-muted);
+  font-size: 0.82rem;
 }
 
-.btn-cancel-small {
-  background: #ef4444;
-  color: white;
-  border: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.btn-cancel-small:hover {
-  transform: scale(1.1);
-}
-
-/* Trade Content */
-.trade-content {
+/* body (two sides + arrow) */
+.trade-card__body {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.8rem;
 }
 
-.trade-side {
+.trade-card__side {
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
+  min-width: 0;
 }
 
-.trade-label {
-  font-size: 0.9rem;
-  color: #666;
-  font-weight: 600;
+.trade-card__label {
+  color: var(--clr-text-secondary);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
 }
 
-.trade-arrow {
+.trade-card__arrow {
   font-size: 2rem;
-  color: #667eea;
+  color: var(--clr-accent-gold);
+  text-shadow: 0 0 14px rgba(254, 202, 87, 0.5);
+  flex-shrink: 0;
 }
 
-/* Mini Card */
+/* ============================================================
+   MINI CARD (inside trade cards)
+   ============================================================ */
 .mini-card {
-  background: #f9fafb;
-  border-radius: 10px;
-  padding: 1rem;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 14px;
+  padding: 0.8rem;
   text-align: center;
+  border: 1px solid var(--clr-border);
+  transition: border-color var(--transition);
   position: relative;
-  transition: all 0.3s ease;
 }
+
+/* rarity border tints */
+.mini-card.rarity--rare        { border-color: rgba(62, 168, 255, 0.3); }
+.mini-card.rarity--legendary   { border-color: rgba(255, 184, 64, 0.4); }
 
 .mini-card img {
   width: 100%;
-  height: 120px;
+  height: 110px;
   object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
+  border-radius: 10px;
+  margin-bottom: 0.45rem;
 }
 
-.mini-card span {
+.mini-card__name {
   display: block;
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--clr-text-primary);
 }
 
-.card-rarity {
-  font-size: 0.75rem !important;
-  color: #667eea !important;
+.mini-card__rarity {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
-  margin-top: 0.3rem;
+  letter-spacing: 0.8px;
+  margin-top: 2px;
+}
+.mini-card__rarity.rarity--common    { color: var(--rarity-common-text); }
+.mini-card__rarity.rarity--rare      { color: var(--rarity-rare-text); }
+.mini-card__rarity.rarity--legendary { color: var(--rarity-legendary-text); }
+
+/* drop-zone dashed border */
+.mini-card--drop-zone {
+  border: 2px dashed var(--clr-accent-gold);
+  background: radial-gradient(circle, rgba(254, 202, 87, 0.18), transparent 70%);
 }
 
-.mini-card.drop-zone {
-  border: 2px dashed #10b981;
-  background: #f0fdf4;
-}
-
-.drop-hint {
+.mini-card__drop-hint {
   position: absolute;
-  bottom: 0.5rem;
+  bottom: 0.45rem;
   left: 50%;
   transform: translateX(-50%);
-  background: #10b981;
-  color: white;
-  padding: 0.3rem 0.8rem;
-  border-radius: 15px;
-  font-size: 0.75rem;
-  font-weight: bold;
+  background: var(--clr-accent-gold);
+  color: #1a1a1a;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-/* Accept Button */
-.btn-accept {
-  width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-}
-
-.btn-accept:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-}
-
-/* Modal */
+/* ============================================================
+   MODAL — OVERLAY
+   ============================================================ */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 100;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-}
-
-.modal-content {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
+  padding-top: 40px;
   overflow-y: auto;
 }
 
-.modal-content h3 {
-  color: #333;
-  margin: 0 0 1.5rem 0;
-  font-size: 1.8rem;
+/* ============================================================
+   MODAL — SHELL
+   ============================================================ */
+.modal {
+  position: relative;
+  width: 90%;
+  max-width: 780px;
+  margin-bottom: 40px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, var(--clr-surface) 0%, var(--clr-surface-alt) 100%);
+  border: 1px solid var(--clr-border);
+  box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.7),
+          0 0 40px rgba(254, 202, 87, 0.06);
+  overflow: hidden;
+  animation: modalIn 0.28s var(--transition) both;
 }
 
-.modal-section {
-  margin-bottom: 1.5rem;
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
-.modal-section label {
-  display: block;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 0.5rem;
+/* top accent line */
+.modal__accent {
+  height: 3px;
+  background: linear-gradient(
+          90deg,
+          transparent,
+          var(--clr-accent-gold) 30%,
+          var(--clr-accent-coral) 70%,
+          transparent
+  );
 }
 
-.modal-section small {
-  display: block;
-  color: #666;
-  font-size: 0.85rem;
-  margin-top: 0.3rem;
+/* header row */
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 28px 8px;
 }
 
+.modal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--clr-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal__title-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  color: var(--clr-text-muted);
+  font-size: 1.3rem;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition), background var(--transition);
+}
+.modal__close:hover {
+  color: var(--clr-text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* body */
+.modal__body {
+  padding: 16px 28px 28px;
+}
+
+/* actions row */
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+/* ============================================================
+   MODAL — STEP
+   ============================================================ */
+.modal-step {
+  margin-bottom: 20px;
+}
+
+/* label row (dot + text) */
+.modal-step__label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.modal-step__dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #334;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  transition: background var(--transition);
+}
+.modal-step__dot--done {
+  background: var(--clr-accent-green);
+}
+
+.modal-step__text {
+  color: var(--clr-accent-gold);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* panel (card grid / input wrapper) */
+.modal-step__panel {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+/* ============================================================
+   MODAL — DIVIDER
+   ============================================================ */
+.modal-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 20px;
+}
+
+.modal-divider__line {
+  flex: 1;
+  height: 1px;
+}
+.modal-divider__line--left  { background: linear-gradient(90deg,  transparent, rgba(255,255,255,0.1)); }
+.modal-divider__line--right { background: linear-gradient(270deg, transparent, rgba(255,255,255,0.1)); }
+
+.modal-divider__arrow {
+  font-size: 1.4rem;
+  color: var(--clr-accent-gold);
+  text-shadow: 0 0 12px rgba(254, 202, 87, 0.5);
+}
+
+/* ============================================================
+   MODAL — INPUT
+   ============================================================ */
+.modal-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  color: var(--clr-text-primary);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  box-sizing: border-box;
+}
+.modal-input:focus {
+  border-color: var(--clr-accent-gold);
+  box-shadow: 0 0 14px rgba(254, 202, 87, 0.25);
+}
+
+/* hide native number spinners */
+.modal-input::-webkit-outer-spin-button,
+.modal-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.modal-input { -moz-appearance: textfield; }
+
+.modal-input__hint {
+  margin: 10px 0 0;
+  color: var(--clr-text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.2px;
+}
+
+/* ============================================================
+   MODAL — SELECTABLE CARDS GRID
+   ============================================================ */
 .cards-select {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
 }
 
 .selectable-card {
-  background: #f9fafb;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 0.5rem;
-  text-align: center;
+  position: relative;
+  background: linear-gradient(170deg, rgba(30,30,50,0.9), #0d1117);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px 10px 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.selectable-card:hover {
-  border-color: #667eea;
-  transform: scale(1.05);
-}
-
-.selectable-card.selected {
-  border-color: #667eea;
-  background: #eff6ff;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-}
-
-.selectable-card img {
-  width: 100%;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 0.3rem;
-}
-
-.selectable-card span {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: #333;
-}
-
-.input-token-id {
-  width: 100%;
-  padding: 0.8rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.input-token-id:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.modal-actions {
+  text-align: center;
   display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+.selectable-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.btn-submit,
-.btn-cancel {
-  flex: 1;
-  padding: 1rem;
-  border: none;
+/* rarity-tinted border on idle */
+.selectable-card.rarity--rare      { border-color: rgba(62, 168, 255, 0.2); }
+.selectable-card.rarity--legendary { border-color: rgba(255, 184, 64, 0.25); }
+
+/* ── selected state ── */
+.selectable-card--selected {
+  transform: translateY(-4px) scale(1.04) !important;
+}
+.selectable-card--selected.rarity--common {
+  border-color: var(--rarity-common-border);
+  box-shadow: 0 0 22px var(--rarity-common-glow), 0 0 6px var(--rarity-common-glow);
+}
+.selectable-card--selected.rarity--rare {
+  border-color: var(--rarity-rare-border);
+  box-shadow: 0 0 22px var(--rarity-rare-glow), 0 0 6px var(--rarity-rare-glow);
+}
+.selectable-card--selected.rarity--legendary {
+  border-color: var(--rarity-legendary-border);
+  box-shadow: 0 0 22px var(--rarity-legendary-glow), 0 0 6px var(--rarity-legendary-glow);
+}
+
+/* rarity badge */
+.selectable-card__badge {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 3px 9px;
+  border-radius: 20px;
+  z-index: 2;
+}
+.selectable-card__badge.rarity--common    { color: var(--rarity-common-text);    border: 1px solid rgba(122,138,154,0.35); }
+.selectable-card__badge.rarity--rare      { color: var(--rarity-rare-text);      border: 1px solid rgba(62,168,255,0.35);  }
+.selectable-card__badge.rarity--legendary { color: var(--rarity-legendary-text); border: 1px solid rgba(255,184,64,0.4);   }
+
+/* art container */
+.selectable-card__art {
+  width: 100%;
+  aspect-ratio: 3 / 4;
   border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  margin-top: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.selectable-card__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.btn-submit {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+/* shimmer overlay on selected */
+.selectable-card__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+          135deg,
+          transparent 30%,
+          rgba(255, 255, 255, 0.09) 50%,
+          transparent 70%
+  );
+  animation: shimmer 1.8s infinite linear;
+  pointer-events: none;
 }
 
-.btn-cancel {
-  background: #f3f4f6;
-  color: #666;
+/* name */
+.selectable-card__name {
+  color: var(--clr-text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
-.btn-submit:hover,
-.btn-cancel:hover {
-  transform: translateY(-2px);
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
-.loading {
-  text-align: center;
-  padding: 4rem;
-  color: #666;
-  font-size: 1.1rem;
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%);  }
 }
 
-/* Responsive */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 768px) {
-  .marketplace-container {
-    padding: 1rem;
+  .marketplace-container { padding: 1rem; }
+
+  .trade-card__body {
+    flex-direction: column;
+  }
+  .trade-card__arrow {
+    transform: rotate(90deg);
   }
 
   .trades-grid {
     grid-template-columns: 1fr;
   }
 
-  .trade-content {
-    flex-direction: column;
+  .modal {
+    width: 95%;
+    margin-top: 20px;
   }
-
-  .trade-arrow {
-    transform: rotate(90deg);
-  }
-
-  .cards-select {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .modal-actions {
-    flex-direction: column;
+  .modal__header,
+  .modal__body {
+    padding-left: 18px;
+    padding-right: 18px;
   }
 }
