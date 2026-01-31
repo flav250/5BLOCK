@@ -86,8 +86,8 @@ const TeamBuilder: React.FC = () => {
 
     const teamData = {
       cardIds: slots
-        .filter(slot => slot.card !== null)
-        .map(slot => slot.card!.tokenId),
+          .filter(slot => slot.card !== null)
+          .map(slot => slot.card!.tokenId),
       timestamp: Date.now(),
     };
 
@@ -143,7 +143,7 @@ const TeamBuilder: React.FC = () => {
         setIsInitialLoading(false);
         return;
       }
-      
+
       try {
         setIsInitialLoading(true);
         
@@ -174,8 +174,8 @@ const TeamBuilder: React.FC = () => {
           });
 
           setTeamSlots(newTeamSlots);
-          setInventory(allCards.filter(card => 
-            !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
+          setInventory(allCards.filter(card =>
+              !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
           ));
           
           console.log('💾 Équipe chargée depuis localStorage');
@@ -189,7 +189,7 @@ const TeamBuilder: React.FC = () => {
         setIsInitialLoading(false);
       }
     };
-    
+
     init();
   }, [signer, account, loadTeamFromLocalStorage]);
 
@@ -253,7 +253,7 @@ const TeamBuilder: React.FC = () => {
     }
 
     setTeamSlots(newTeamSlots);
-    
+
     // Auto-sauvegarde locale
     saveTeamToLocalStorage(newTeamSlots);
     
@@ -277,7 +277,7 @@ const TeamBuilder: React.FC = () => {
       }
       return [...prev, draggedCard];
     });
-    
+
     // Auto-sauvegarde locale
     saveTeamToLocalStorage(newTeamSlots);
     
@@ -299,7 +299,7 @@ const TeamBuilder: React.FC = () => {
       }
       return [...prev, card];
     });
-    
+
     // Auto-sauvegarde locale
     saveTeamToLocalStorage(newTeamSlots);
   };

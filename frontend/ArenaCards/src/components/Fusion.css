@@ -3,7 +3,6 @@
     margin: 0 auto;
     padding: 2rem;
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     color: #fff;
 }
 
@@ -116,7 +115,7 @@
 /* Slots de fusion */
 .fusion-slot {
     width: 280px;
-    height: 400px;
+    height: 500px;
     border: 3px dashed rgba(255, 255, 255, 0.2);
     border-radius: 15px;
     background: rgba(0, 0, 0, 0.3);
@@ -133,13 +132,23 @@
     transform: scale(1.02);
 }
 
+.fusion-slot:has(.fusion-card) {
+    border: 2px solid #feca57;
+    background:
+            radial-gradient(circle at center, rgba(254,202,87,0.25), transparent 65%),
+            linear-gradient(145deg, #0f1325, #1a1f3d);
+    box-shadow:
+            inset 0 0 40px rgba(254,202,87,0.35),
+            0 0 35px rgba(254,202,87,0.45);
+}
+
 .empty-slot {
     text-align: center;
     color: #666;
     padding: 2rem;
 }
 
-.slot-number {
+.slot-number2 {
     display: block;
     font-size: 4rem;
     font-weight: bold;
@@ -164,7 +173,7 @@
 
 .fusion-card img {
     width: 100%;
-    height: 250px;
+    height: 80%;
     object-fit: cover;
     border-radius: 10px;
     margin-bottom: 1rem;
@@ -334,6 +343,7 @@
 .inventory-header h2 {
     margin: 0;
     font-size: 1.5rem;
+    color: #fff
 }
 
 .rarity-filters {
@@ -401,7 +411,7 @@
 
 .inventory-card img {
     width: 100%;
-    height: 180px;
+    height: 80%;
     object-fit: cover;
 }
 

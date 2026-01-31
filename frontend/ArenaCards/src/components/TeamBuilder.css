@@ -264,11 +264,6 @@
   transition: all 0.3s ease;
 }
 
-.btn-refresh:hover:not(:disabled) {
-  background: #2563eb;
-  transform: rotate(180deg);
-}
-
 .btn-refresh:disabled {
   opacity: 0.5;
   cursor: not-allowed;

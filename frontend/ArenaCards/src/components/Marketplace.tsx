@@ -1,4 +1,4 @@
-// components/Marketplace.tsx - Marketplace P2P avec drag & drop
+// components/Marketplace.tsx
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useWeb3 } from '../hooks/useWeb3';
@@ -17,23 +17,25 @@ import './Marketplace.css';
 
 const Marketplace: React.FC = () => {
   const { account, signer } = useWeb3();
-  
-  // States
+
+  // ── States ────────────────────────────────────────────────────
   const [myCards, setMyCards] = useState<ArenaCard[]>([]);
   const [allTrades, setAllTrades] = useState<Trade[]>([]);
   const [myTrades, setMyTrades] = useState<Trade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(false);
-  
-  // Create trade modal
+
+  // Create-trade modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOffered, setSelectedOffered] = useState<ArenaCard | null>(null);
   const [requestedTokenId, setRequestedTokenId] = useState('');
-  
-  // Trade details
-  const [tradeCards, setTradeCards] = useState<Map<string, { offered: ArenaCard | null, requested: ArenaCard | null }>>(new Map());
 
-  // Charger les données
+  // Trade card-details cache
+  const [tradeCards, setTradeCards] = useState<
+      Map<string, { offered: ArenaCard | null; requested: ArenaCard | null }>
+  >(new Map());
+
+  // ── Load data ─────────────────────────────────────────────────
   const loadData = useCallback(async () => {
     if (!signer || !account) return;
 
@@ -43,53 +45,49 @@ const Marketplace: React.FC = () => {
       const [cards, trades, userTrades] = await Promise.all([
         loadUserCards(signer, account),
         getActiveTrades(signer),
-        getUserTrades(signer, account)
+        getUserTrades(signer, account),
       ]);
 
-      setMyCards(cards.filter(c => !c.isLocked));
+      setMyCards(cards.filter((c) => !c.isLocked));
       setAllTrades(trades);
       setMyTrades(userTrades);
 
-      // Charger les détails des cartes pour chaque trade
       const cardsMap = new Map();
       for (const trade of trades) {
         const [offered, requested] = await Promise.all([
           getCardDetails(signer, trade.offeredTokenId),
-          getCardDetails(signer, trade.requestedTokenId)
+          getCardDetails(signer, trade.requestedTokenId),
         ]);
         cardsMap.set(trade.tradeId, { offered, requested });
       }
       setTradeCards(cardsMap);
-
     } catch (error) {
-      console.error('Erreur chargement:', error);
+      console.error('Erreur chargement :', error);
     } finally {
       setIsLoading(false);
     }
   }, [signer, account]);
 
   useEffect(() => {
-    if (account && signer) {
-      loadData();
-    }
+    if (account && signer) loadData();
   }, [account, signer, loadData]);
 
-  // Approuver le marketplace
+  // ── Handlers ──────────────────────────────────────────────────
   const handleApprove = async () => {
     if (!signer) return;
-    
     const success = await approveMarketplace(signer);
-    if (success) {
-      setIsApproved(true);
-    }
+    if (success) setIsApproved(true);
   };
 
-  // Créer un trade
   const handleCreateTrade = async () => {
     if (!signer || !selectedOffered || !requestedTokenId) return;
 
-    const success = await createTrade(signer, selectedOffered.tokenId, requestedTokenId);
-    
+    const success = await createTrade(
+        signer,
+        selectedOffered.tokenId,
+        requestedTokenId
+    );
+
     if (success) {
       setShowCreateModal(false);
       setSelectedOffered(null);
@@ -98,26 +96,16 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  // Accepter un trade
   const handleAcceptTrade = async (tradeId: string) => {
     if (!signer) return;
-
     const success = await acceptTrade(signer, tradeId);
-    
-    if (success) {
-      loadData();
-    }
+    if (success) loadData();
   };
 
-  // Annuler un trade
   const handleCancelTrade = async (tradeId: string) => {
     if (!signer) return;
-
     const success = await cancelTrade(signer, tradeId);
-    
-    if (success) {
-      loadData();
-    }
+    if (success) loadData();
   };
 
   // Drag & drop
@@ -133,222 +121,330 @@ const Marketplace: React.FC = () => {
     }
   };
 
+  // ── Helper: rarity class ──────────────────────────────────────
+  const rarityClass = (rarity?: string) => {
+    if (!rarity) return '';
+    const r = rarity.toLowerCase();
+    if (r.includes('légendaire') || r.includes('legendary'))
+      return 'rarity--legendary';
+    if (r.includes('rare')) return 'rarity--rare';
+    return 'rarity--common';
+  };
+
+  // ── No wallet ─────────────────────────────────────────────────
   if (!account) {
     return (
-      <div className="marketplace-container">
-        <div className="marketplace-message">
-          <h2>🏪 Marketplace</h2>
-          <p>Connecte ton wallet pour échanger des cartes</p>
+        <div className="marketplace-container">
+          <div className="marketplace-empty">
+            <h2>🏪 Marketplace</h2>
+            <p>Connecte ton wallet pour échanger des cartes</p>
+          </div>
         </div>
-      </div>
     );
   }
 
+  // ── Render ────────────────────────────────────────────────────
   return (
-    <div className="marketplace-container">
-      {/* Header */}
-      <div className="marketplace-header">
-        <h2>🏪 Marketplace P2P</h2>
-        <p>Échange tes cartes avec d'autres joueurs</p>
-        
-        {!isApproved && (
-          <button onClick={handleApprove} className="btn-approve">
-            🔐 Approuver le Marketplace
+      <div className="marketplace-container">
+        {/* ── Header ──────────────────────────────────────────── */}
+        <header className="marketplace-header">
+          <h2 className="marketplace-header__title">MarketPlace</h2>
+          <p className="marketplace-header__sub">
+            Échange tes cartes avec d'autres joueurs
+          </p>
+
+          {!isApproved && (
+              <button onClick={handleApprove} className="btn btn--approve">
+                🔐 Approuver le Marketplace
+              </button>
+          )}
+        </header>
+
+        {/* ── Actions bar ─────────────────────────────────────── */}
+        <div className="marketplace-actions">
+          <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn btn--create"
+              disabled={myCards.length === 0}
+          >
+            ➕ Créer un Échange
           </button>
-        )}
-      </div>
 
-      {/* Actions */}
-      <div className="marketplace-actions">
-        <button 
-          onClick={() => setShowCreateModal(true)} 
-          className="btn-create-trade"
-          disabled={myCards.length === 0}
-        >
-          ➕ Créer un Échange
-        </button>
-        <button onClick={loadData} className="btn-refresh">
-          🔄 Rafraîchir
-        </button>
-      </div>
-
-      {/* My Trades */}
-      {myTrades.length > 0 && (
-        <div className="trades-section">
-          <h3>📋 Mes Offres ({myTrades.length})</h3>
-          <div className="trades-grid">
-            {myTrades.map((trade) => {
-              const cards = tradeCards.get(trade.tradeId);
-              if (!cards) return null;
-
-              return (
-                <div key={trade.tradeId} className="trade-card my-trade">
-                  <div className="trade-header">
-                    <span className="trade-id">Trade #{trade.tradeId}</span>
-                    <button 
-                      onClick={() => handleCancelTrade(trade.tradeId)}
-                      className="btn-cancel-small"
-                    >
-                      ❌
-                    </button>
-                  </div>
-
-                  <div className="trade-content">
-                    <div className="trade-side">
-                      <span className="trade-label">J'offre</span>
-                      {cards.offered && (
-                        <div className="mini-card">
-                          <img src={cards.offered.imageURI} alt={cards.offered.name} />
-                          <span>{cards.offered.name}</span>
-                          <span className="card-rarity">{cards.offered.rarity}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="trade-arrow">⇄</div>
-
-                    <div className="trade-side">
-                      <span className="trade-label">Je demande</span>
-                      {cards.requested && (
-                        <div className="mini-card">
-                          <img src={cards.requested.imageURI} alt={cards.requested.name} />
-                          <span>{cards.requested.name}</span>
-                          <span className="card-rarity">{cards.requested.rarity}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <button onClick={loadData} className="btn btn--refresh" aria-label="Rafraîchir">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.5 9a9 9 0 0114.1-3.4L23 10" />
+              <path d="M20.5 15a9 9 0 01-14.1 3.4L1 14" />
+            </svg>
+          </button>
         </div>
-      )}
 
-      {/* All Trades */}
-      <div className="trades-section">
-        <h3>🌍 Tous les Échanges ({allTrades.filter(t => t.creator !== account).length})</h3>
-        
-        {isLoading ? (
-          <div className="loading">Chargement...</div>
-        ) : (
-          <div className="trades-grid">
-            {allTrades
-              .filter(trade => trade.creator !== account)
-              .map((trade) => {
-                const cards = tradeCards.get(trade.tradeId);
-                if (!cards) return null;
+        {/* ── My trades ───────────────────────────────────────── */}
+        {myTrades.length > 0 && (
+            <section className="trades-section">
+              <h3 className="trades-section__title">
+                📋 Mes Offres <span className="trades-section__count">({myTrades.length})</span>
+              </h3>
 
-                const canAccept = myCards.some(c => c.tokenId === trade.requestedTokenId);
+              <div className="trades-grid">
+                {myTrades.map((trade) => {
+                  const cards = tradeCards.get(trade.tradeId);
+                  if (!cards) return null;
 
-                return (
-                  <div 
-                    key={trade.tradeId} 
-                    className={`trade-card ${canAccept ? 'can-accept' : ''}`}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleDrop(e, trade.tradeId)}
-                  >
-                    <div className="trade-header">
-                      <span className="trade-id">Trade #{trade.tradeId}</span>
-                      <span className="trade-creator">
-                        {trade.creator.substring(0, 6)}...
-                      </span>
-                    </div>
+                  return (
+                      <article key={trade.tradeId} className="trade-card trade-card--mine">
+                        <div className="trade-card__header">
+                          <span className="trade-card__id">Trade #{trade.tradeId}</span>
+                          <button
+                              onClick={() => handleCancelTrade(trade.tradeId)}
+                              className="btn btn--cancel-small"
+                              aria-label="Annuler ce trade"
+                          >
+                            ❌
+                          </button>
+                        </div>
 
-                    <div className="trade-content">
-                      <div className="trade-side">
-                        <span className="trade-label">Offre</span>
-                        {cards.offered && (
-                          <div className="mini-card">
-                            <img src={cards.offered.imageURI} alt={cards.offered.name} />
-                            <span>{cards.offered.name}</span>
-                            <span className="card-rarity">{cards.offered.rarity}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="trade-arrow">⇄</div>
-
-                      <div className="trade-side">
-                        <span className="trade-label">Demande</span>
-                        {cards.requested && (
-                          <div className="mini-card drop-zone">
-                            <img src={cards.requested.imageURI} alt={cards.requested.name} />
-                            <span>{cards.requested.name}</span>
-                            <span className="card-rarity">{cards.requested.rarity}</span>
-                            {canAccept && (
-                              <div className="drop-hint">
-                                Glisse ta carte ici
-                              </div>
+                        <div className="trade-card__body">
+                          <div className="trade-card__side">
+                            <span className="trade-card__label">J'offre</span>
+                            {cards.offered && (
+                                <div className={`mini-card ${rarityClass(cards.offered.rarity)}`}>
+                                  <img src={cards.offered.imageURI} alt={cards.offered.name} />
+                                  <span className="mini-card__name">{cards.offered.name}</span>
+                                  <span className={`mini-card__rarity ${rarityClass(cards.offered.rarity)}`}>
+                            {cards.offered.rarity}
+                          </span>
+                                </div>
                             )}
                           </div>
-                        )}
-                      </div>
+
+                          <div className="trade-card__arrow">⇄</div>
+
+                          <div className="trade-card__side">
+                            <span className="trade-card__label">Je demande</span>
+                            {cards.requested && (
+                                <div className={`mini-card ${rarityClass(cards.requested.rarity)}`}>
+                                  <img src={cards.requested.imageURI} alt={cards.requested.name} />
+                                  <span className="mini-card__name">{cards.requested.name}</span>
+                                  <span className={`mini-card__rarity ${rarityClass(cards.requested.rarity)}`}>
+                            {cards.requested.rarity}
+                          </span>
+                                </div>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                  );
+                })}
+              </div>
+            </section>
+        )}
+
+        {/* ── All trades ──────────────────────────────────────── */}
+        <section className="trades-section">
+          <h3 className="trades-section__title">
+            🌍 Tous les Échanges{' '}
+            <span className="trades-section__count">
+            ({allTrades.filter((t) => t.creator !== account).length})
+          </span>
+          </h3>
+
+          {isLoading ? (
+              <div className="marketplace-loading">Chargement…</div>
+          ) : (
+              <div className="trades-grid">
+                {allTrades
+                    .filter((trade) => trade.creator !== account)
+                    .map((trade) => {
+                      const cards = tradeCards.get(trade.tradeId);
+                      if (!cards) return null;
+
+                      const canAccept = myCards.some(
+                          (c) => c.tokenId === trade.requestedTokenId
+                      );
+
+                      return (
+                          <article
+                              key={trade.tradeId}
+                              className={`trade-card ${canAccept ? 'trade-card--acceptible' : ''}`}
+                              onDragOver={(e) => e.preventDefault()}
+                              onDrop={(e) => handleDrop(e, trade.tradeId)}
+                          >
+                            <div className="trade-card__header">
+                              <span className="trade-card__id">Trade #{trade.tradeId}</span>
+                              <span className="trade-card__creator">
+                        {trade.creator.substring(0, 6)}…
+                      </span>
+                            </div>
+
+                            <div className="trade-card__body">
+                              <div className="trade-card__side">
+                                <span className="trade-card__label">Offre</span>
+                                {cards.offered && (
+                                    <div className={`mini-card ${rarityClass(cards.offered.rarity)}`}>
+                                      <img src={cards.offered.imageURI} alt={cards.offered.name} />
+                                      <span className="mini-card__name">{cards.offered.name}</span>
+                                      <span className={`mini-card__rarity ${rarityClass(cards.offered.rarity)}`}>
+                              {cards.offered.rarity}
+                            </span>
+                                    </div>
+                                )}
+                              </div>
+
+                              <div className="trade-card__arrow">⇄</div>
+
+                              <div className="trade-card__side">
+                                <span className="trade-card__label">Demande</span>
+                                {cards.requested && (
+                                    <div className={`mini-card mini-card--drop-zone ${rarityClass(cards.requested.rarity)}`}>
+                                      <img src={cards.requested.imageURI} alt={cards.requested.name} />
+                                      <span className="mini-card__name">{cards.requested.name}</span>
+                                      <span className={`mini-card__rarity ${rarityClass(cards.requested.rarity)}`}>
+                              {cards.requested.rarity}
+                            </span>
+                                      {canAccept && (
+                                          <span className="mini-card__drop-hint">Glisse ta carte ici</span>
+                                      )}
+                                    </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {canAccept && (
+                                <button
+                                    onClick={() => handleAcceptTrade(trade.tradeId)}
+                                    className="btn btn--accept"
+                                >
+                                  ✅ Accepter l'Échange
+                                </button>
+                            )}
+                          </article>
+                      );
+                    })}
+              </div>
+          )}
+        </section>
+
+        {/* ── Create-trade modal ──────────────────────────────── */}
+        {showCreateModal && (
+            <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+              <div className="modal" onClick={(e) => e.stopPropagation()}>
+
+                {/* top accent */}
+                <div className="modal__accent" />
+
+                {/* header */}
+                <div className="modal__header">
+                  <h3 className="modal__title">
+                    <span className="modal__title-icon">+</span>
+                    Créer un Échange
+                  </h3>
+                  <button
+                      className="modal__close"
+                      onClick={() => setShowCreateModal(false)}
+                      aria-label="Fermer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* body */}
+                <div className="modal__body">
+
+                  {/* ── Step 1 : carte offerte ── */}
+                  <div className="modal-step">
+                    <div className="modal-step__label">
+                  <span className={`modal-step__dot ${selectedOffered ? 'modal-step__dot--done' : ''}`}>
+                    {selectedOffered ? '✓' : '1'}
+                  </span>
+                      <span className="modal-step__text">Carte que tu offres</span>
                     </div>
 
-                    {canAccept && (
-                      <button 
-                        onClick={() => handleAcceptTrade(trade.tradeId)}
-                        className="btn-accept"
-                      >
-                        ✅ Accepter l'Échange
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-          </div>
-        )}
-      </div>
+                    <div className="modal-step__panel">
+                      <div className="cards-select">
+                        {myCards.map((card) => (
+                            <div
+                                key={card.tokenId}
+                                className={`selectable-card ${rarityClass(card.rarity)} ${
+                                    selectedOffered?.tokenId === card.tokenId ? 'selectable-card--selected' : ''
+                                }`}
+                                onClick={() => setSelectedOffered(card)}
+                                draggable
+                                onDragStart={() => handleDragStart(card)}
+                            >
+                              {/* rarity badge */}
+                              <span className={`selectable-card__badge ${rarityClass(card.rarity)}`}>
+                          {card.rarity}
+                        </span>
 
-      {/* Create Trade Modal */}
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>➕ Créer un Échange</h3>
-            
-            <div className="modal-section">
-              <label>Carte que tu offres :</label>
-              <div className="cards-select">
-                {myCards.map((card) => (
-                  <div
-                    key={card.tokenId}
-                    className={`selectable-card ${selectedOffered?.tokenId === card.tokenId ? 'selected' : ''}`}
-                    onClick={() => setSelectedOffered(card)}
-                    draggable
-                    onDragStart={() => handleDragStart(card)}
-                  >
-                    <img src={card.imageURI} alt={card.name} />
-                    <span>{card.name}</span>
+                              {/* art */}
+                              <div className="selectable-card__art">
+                                <img src={card.imageURI} alt={card.name} />
+                                {selectedOffered?.tokenId === card.tokenId && (
+                                    <div className="selectable-card__shimmer" />
+                                )}
+                              </div>
+
+                              {/* info */}
+                              <span className="selectable-card__name">{card.name}</span>
+                            </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ))}
+
+                  {/* ── divider ── */}
+                  <div className="modal-divider">
+                    <span className="modal-divider__line modal-divider__line--left" />
+                    <span className="modal-divider__arrow">⇄</span>
+                    <span className="modal-divider__line modal-divider__line--right" />
+                  </div>
+
+                  {/* ── Step 2 : ID demandée ── */}
+                  <div className="modal-step">
+                    <div className="modal-step__label">
+                  <span className={`modal-step__dot ${requestedTokenId ? 'modal-step__dot--done' : ''}`}>
+                    {requestedTokenId ? '✓' : '2'}
+                  </span>
+                      <span className="modal-step__text">ID de la carte demandée</span>
+                    </div>
+
+                    <div className="modal-step__panel">
+                      <input
+                          type="number"
+                          value={requestedTokenId}
+                          onChange={(e) => setRequestedTokenId(e.target.value)}
+                          placeholder="Ex : 5"
+                          className="modal-input"
+                      />
+                      <p className="modal-input__hint">
+                        Entre l'ID de la carte que tu veux recevoir en retour
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ── Actions ── */}
+                  <div className="modal__actions">
+                    <button
+                        onClick={() => setShowCreateModal(false)}
+                        className="btn btn--ghost"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                        onClick={handleCreateTrade}
+                        className="btn btn--submit"
+                        disabled={!selectedOffered || !requestedTokenId}
+                    >
+                      Créer l'Offre
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <div className="modal-section">
-              <label>ID de la carte demandée :</label>
-              <input
-                type="number"
-                value={requestedTokenId}
-                onChange={(e) => setRequestedTokenId(e.target.value)}
-                placeholder="Ex: 5"
-                className="input-token-id"
-              />
-              <small>Entre l'ID de la carte que tu veux recevoir</small>
-            </div>
-
-            <div className="modal-actions">
-              <button onClick={handleCreateTrade} className="btn-submit">
-                Créer l'Offre
-              </button>
-              <button onClick={() => setShowCreateModal(false)} className="btn-cancel">
-                Annuler
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
   );
 };
 
