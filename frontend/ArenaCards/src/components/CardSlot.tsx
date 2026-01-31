@@ -113,8 +113,8 @@ const CardSlot: React.FC<CardSlotProps> = ({
                                 <span className="stat-text">Niv. {slot.card!.level}</span>
                             </div>
                             <div className="stat-item">
-                                <span className="stat-icon">💪</span>
-                                <span className="stat-text">{slot.card!.level * 10}</span>
+                                <span className="stat-icon">⚔️</span>
+                                <span className="stat-text">{slot.card!.attack}</span>
                             </div>
                         </div>
                     </div>

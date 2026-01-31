@@ -1,104 +1,359 @@
-/* components/TeamBuilder.css */
+/* ============================================================
+   TEAM BUILDER — DARK FANTASY RESTYLE
+   Targets every className in the original TeamBuilder.tsx.
+   Zero changes to the .tsx required.
+   Visual tokens match Marketplace.css exactly.
+   ============================================================ */
 
+/* ── CSS Variables (duplicate from Marketplace if standalone) ── */
+:root {
+  --clr-bg:              #0d1117;
+  --clr-surface:         #131825;
+  --clr-surface-alt:     #0f1420;
+  --clr-border:          rgba(255, 255, 255, 0.07);
+  --clr-border-hover:    rgba(255, 255, 255, 0.14);
+
+  --clr-accent-gold:     #feca57;
+  --clr-accent-coral:    #ff6b6b;
+  --clr-accent-green:    #00e676;
+
+  --clr-text-primary:    #eee;
+  --clr-text-secondary:  #8a8f9e;
+  --clr-text-muted:      #556;
+
+  --gradient-primary: linear-gradient(135deg, #ff6b6b, #feca57);
+  --radius-card:      18px;
+  --transition:       0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   CONTAINER
+   ============================================================ */
 .team-builder-container {
-  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
   min-height: 100vh;
+  color: var(--clr-text-primary);
 }
 
-/* En-tête */
+/* ============================================================
+   HEADER
+   ============================================================ */
 .team-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2.5rem 2rem;
+  background: linear-gradient(145deg, #12162a, #1c2040);
+  border: 1px solid rgba(255, 140, 0, 0.3);
   border-radius: 20px;
-  color: white;
-  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-  width: 100%;
+  color: var(--clr-text-primary);
+  box-shadow: 0 0 30px rgba(255, 140, 0, 0.2);
 }
 
 .team-header h1 {
-  font-size: 2.5rem;
+  font-size: 2.3rem;
   margin: 0;
-  font-weight: bold;
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
+/* ── stats row ── */
 .team-stats {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .stat-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.9rem 1.6rem;
   border-radius: 15px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
+  transition: all var(--transition);
+}
+.stat-box:hover {
+  background: rgba(0, 0, 0, 0.45);
+  border-color: rgba(254, 202, 87, 0.3);
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  opacity: 0.9;
+  font-size: 0.78rem;
+  color: var(--clr-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
   margin-bottom: 0.3rem;
 }
 
 .stat-value {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--clr-text-primary);
 }
 
 .stat-value.power {
-  color: #fbbf24;
-  text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+  color: var(--clr-accent-gold);
+  text-shadow: 0 0 12px rgba(254, 202, 87, 0.5);
 }
 
-/* Section des slots d'équipe */
+/* ============================================================
+   TEAM SLOTS SECTION
+   ============================================================ */
 .team-slots-section {
-  background: white;
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--clr-border);
   border-radius: 20px;
   padding: 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
 }
 
 .team-slots-section h2 {
-  color: #333;
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
+  color: var(--clr-accent-gold);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  margin: 0 0 1.5rem 0;
 }
 
 .team-slots-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 1.5rem;
+  gap: 1.2rem;
   margin-bottom: 2rem;
 }
 
-/* Badge de synchronisation compact */
+/* ============================================================
+   TEAM ACTIONS
+   ============================================================ */
+.team-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 0.9rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: #1a1a1a;
+  box-shadow: 0 0 20px rgba(255, 160, 60, 0.35);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 0 30px rgba(255, 160, 60, 0.55);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--clr-text-secondary);
+  border: 1px solid var(--clr-border-hover);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.11);
+  color: var(--clr-text-primary);
+  transform: translateY(-2px);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   INVENTORY SECTION
+   ============================================================ */
+.inventory-section {
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--clr-border);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+  min-height: 400px;
+  transition: border-color var(--transition);
+}
+
+.inventory-section:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.inventory-header h2 {
+  color: var(--clr-accent-gold);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  margin: 0;
+}
+
+.btn-refresh {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1c2040, #0f1325);
+  border: 2px solid rgba(254, 202, 87, 0.6);
+  color: var(--clr-accent-gold);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  box-shadow: 0 0 15px rgba(254, 202, 87, 0.4),
+  inset 0 0 10px rgba(254, 202, 87, 0.25);
+}
+.btn-refresh:hover:not(:disabled) {
+  transform: rotate(180deg) scale(1.1);
+  box-shadow: 0 0 30px rgba(254, 202, 87, 0.65),
+  inset 0 0 15px rgba(254, 202, 87, 0.5);
+}
+.btn-refresh:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================================
+   INVENTORY GRID
+   ============================================================ */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.2rem;
+}
+
+/* ============================================================
+   LOADING & EMPTY STATES
+   ============================================================ */
+.initial-loading-container {
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--clr-border);
+  border-radius: 20px;
+  padding: 4rem 2rem;
+  margin: 2rem 0;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.initial-loading-container .loading-state {
+  max-width: 500px;
+  text-align: center;
+}
+
+.initial-loading-container h2 {
+  color: var(--clr-accent-gold);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+}
+
+.initial-loading-container p {
+  color: var(--clr-text-secondary);
+  font-size: 1rem;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.loading-state,
+.empty-inventory {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--clr-text-muted);
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--clr-accent-gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-inventory p {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+  color: var(--clr-text-secondary);
+}
+
+/* ============================================================
+   CONNECT PROMPT
+   ============================================================ */
+.connect-prompt {
+  text-align: center;
+  padding: 6rem 2rem;
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--clr-border);
+  border-radius: 20px;
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+}
+
+.connect-prompt h2 {
+  color: var(--clr-accent-gold);
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.connect-prompt p {
+  color: var(--clr-text-secondary);
+  font-size: 1.1rem;
+}
+
+/* ============================================================
+   SYNC BADGE (for future blockchain sync indicator)
+   ============================================================ */
 .sync-badge {
   position: relative;
   display: inline-flex;
   align-items: center;
   cursor: help;
-  transition: all 0.3s ease;
-  font-size: 1.5rem;
-}
-
-@keyframes pulse-warning {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
+  transition: all var(--transition);
+  font-size: 1.3rem;
 }
 
 .sync-badge:hover {
@@ -109,56 +364,60 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 5px;
-  padding-left: 1px;
+  padding-bottom: 4px;
 }
 
 .sync-badge.not-synced .sync-badge-icon {
   animation: pulse-warning 2s ease-in-out infinite;
 }
 
-/* Tooltip au hover */
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* tooltip */
 .sync-badge-tooltip {
   position: absolute;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 12px);
   right: 0;
   background: rgba(0, 0, 0, 0.95);
   color: white;
   padding: 1rem 1.25rem;
   border-radius: 12px;
-  font-size: 0.9rem;
-  min-width: 300px;
-  max-width: 400px;
+  font-size: 0.85rem;
+  min-width: 280px;
+  max-width: 380px;
   white-space: normal;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: all var(--transition);
   pointer-events: none;
   z-index: 1000;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
 .sync-badge-tooltip::after {
   content: '';
   position: absolute;
   top: 100%;
-  right: 10px;
+  right: 12px;
   border: 8px solid transparent;
   border-top-color: rgba(0, 0, 0, 0.95);
 }
 
 .tooltip-title {
-  font-size: 1rem;
-  font-weight: bold;
-  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
   color: #fff;
 }
 
 .tooltip-text {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   line-height: 1.5;
   margin-bottom: 0.5rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .tooltip-text:last-child {
@@ -173,194 +432,12 @@
 .sync-badge:hover .sync-badge-tooltip {
   opacity: 1;
   visibility: visible;
-  bottom: calc(100% + 15px);
+  bottom: calc(100% + 16px);
 }
 
-/* Actions de l'équipe */
-.team-actions {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.btn-primary,
-.btn-secondary {
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-}
-
-.btn-secondary {
-  background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #f3f4f6;
-  transform: translateY(-2px);
-}
-
-.btn-primary:disabled,
-.btn-secondary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Section inventaire */
-.inventory-section {
-  background: white;
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 400px;
-  width: 100%;
-  transition: background-color 0.3s ease;
-}
-
-.inventory-section:hover {
-  background: #f9fafb;
-}
-
-.inventory-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.inventory-header h2 {
-  color: #333;
-  font-size: 1.8rem;
-  margin: 0;
-}
-
-.btn-refresh {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: all 0.3s ease;
-}
-
-.btn-refresh:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Grille d'inventaire */
-.inventory-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1.5rem;
-}
-
-/* Conteneur de chargement initial */
-.initial-loading-container {
-  background: white;
-  border-radius: 20px;
-  padding: 4rem 2rem;
-  margin: 2rem 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.initial-loading-container .loading-state {
-  max-width: 500px;
-  text-align: center;
-}
-
-.initial-loading-container h2 {
-  color: #667eea;
-  font-size: 1.8rem;
-  margin: 1.5rem 0 1rem 0;
-  font-weight: bold;
-}
-
-.initial-loading-container p {
-  color: #666;
-  font-size: 1.1rem;
-  margin: 0.5rem 0;
-  line-height: 1.6;
-}
-
-/* États vides et loading */
-.loading-state,
-.empty-inventory {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  color: #9ca3af;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.empty-inventory p {
-  font-size: 1.1rem;
-  margin: 0.5rem 0;
-}
-
-/* Prompt de connexion */
-.connect-prompt {
-  text-align: center;
-  padding: 6rem 2rem;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.connect-prompt h2 {
-  color: #667eea;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.connect-prompt p {
-  color: #666;
-  font-size: 1.2rem;
-}
-
-/* Responsive */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 1200px) {
   .team-slots-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -393,7 +470,7 @@
   }
 
   .inventory-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 1rem;
   }
 
@@ -404,5 +481,23 @@
   .btn-primary,
   .btn-secondary {
     width: 100%;
+  }
+
+  .stat-box {
+    padding: 0.7rem 1.2rem;
+  }
+
+  .stat-value {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .team-slots-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   }
 }

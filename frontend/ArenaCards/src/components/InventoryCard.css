@@ -1,247 +1,285 @@
-/* components/InventoryCard.css - VERSION AVEC ATTACK STAT */
+/* ============================================================
+   INVENTORY CARD — DARK FANTASY RESTYLE
+   Targets every className in the original InventoryCard.tsx.
+   Zero changes to the .tsx required.
+   Visual tokens match Marketplace.css exactly.
+   ============================================================ */
 
+/* ============================================================
+   BASE CARD
+   ============================================================ */
 .inventory-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1rem;
-  cursor: grab;
-  transition: all 0.3s ease;
   position: relative;
-  border: 2px solid #e5e7eb;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(170deg, rgba(30, 30, 50, 0.9), #0d1117);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 12px 10px 10px;
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
 }
 
 .inventory-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  border-color: #667eea;
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 22px rgba(255, 200, 120, 0.25);
 }
 
+/* ── dragging ── */
 .inventory-card.dragging {
-  opacity: 0.5;
-  transform: scale(0.95);
+  opacity: 0.4;
+  transform: scale(0.93);
   cursor: grabbing;
+  box-shadow: none;
 }
 
+/* ── locked ── */
 .inventory-card.locked {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.55;
 }
-
 .inventory-card.locked:hover {
   transform: none;
-  border-color: #e5e7eb;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
 }
 
-/* Badge de rareté */
+/* ============================================================
+   RARITY BADGE
+   Fully overrides Tailwind bg-gradient-to-r utilities.
+   ============================================================ */
 .inventory-card .rarity-badge {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 0.25rem 0.6rem;
-  border-radius: 15px;
-  color: white;
-  font-size: 0.65rem;
-  font-weight: bold;
+  top: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  z-index: 5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.6) !important;
+  padding: 3px 9px;
+  border-radius: 20px;
+  box-shadow: none !important;
+  z-index: 2;
+  /* default = common */
+  color: #9eb5c9;
+  border: 1px solid rgba(122, 138, 154, 0.35);
 }
 
-/* Image de la carte */
+/* rare — hooks on Tailwind classes the TSX applies */
+.inventory-card .rarity-badge[class*="from-blue"],
+.inventory-card .rarity-badge[class*="from-cyan"] {
+  color: #3ea8ff;
+  border-color: rgba(62, 168, 255, 0.35);
+}
+
+/* legendary / epic */
+.inventory-card .rarity-badge[class*="from-yellow"],
+.inventory-card .rarity-badge[class*="from-amber"],
+.inventory-card .rarity-badge[class*="from-purple"],
+.inventory-card .rarity-badge[class*="from-violet"],
+.inventory-card .rarity-badge[class*="from-orange"] {
+  color: #ffb840;
+  border-color: rgba(255, 184, 64, 0.4);
+}
+
+/* ============================================================
+   IMAGE AREA
+   ============================================================ */
 .card-image-wrapper {
   position: relative;
-  margin-bottom: 0.8rem;
+  width: 100%;
+  margin-top: 12px;
 }
 
 .inventory-card .card-image {
   width: 100%;
-  aspect-ratio: 3/4;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.7), rgba(15, 15, 25, 0.9));
   border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .inventory-card .card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .inventory-card .placeholder-image {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.5), rgba(15, 15, 25, 0.8));
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
 }
 
 .inventory-card .placeholder-icon {
-  font-size: 3rem;
-  opacity: 0.3;
+  font-size: 2.4rem;
+  opacity: 0.2;
 }
 
-/* Overlay de lock */
+/* ============================================================
+   LOCK OVERLAY
+   ============================================================ */
 .lock-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
   border-radius: 10px;
+  background: rgba(0, 0, 0, 0.72);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   color: white;
 }
 
 .lock-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+  margin-bottom: 0;
 }
 
 .lock-timer {
-  font-size: 1.1rem;
-  font-weight: bold;
-  background: rgba(251, 191, 36, 0.9);
-  padding: 0.3rem 0.8rem;
-  border-radius: 10px;
-  color: #78350f;
+  background: rgba(254, 202, 87, 0.9);
+  color: #1a1a1a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
 }
 
-/* Détails de la carte */
+/* ============================================================
+   DETAILS
+   ============================================================ */
 .card-details {
+  width: 100%;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .inventory-card .card-name {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #333;
-  margin: 0 0 0.5rem 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #eee;
+  margin: 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
 }
 
 .card-stats {
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 0.5rem;
+  gap: 6px;
+  justify-content: center;
 }
 
 .stat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 3px 7px;
 }
 
 .stat-label {
-  font-size: 0.7rem;
-  color: #0f0c29;
+  font-size: 0.6rem;
+  color: #556;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
   font-weight: 600;
 }
 
 .stat-value {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #333;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #eee;
+  text-shadow: none;
 }
 
 .stat-value.attack {
-  color: #dc2626;
-  text-shadow: 0 0 5px rgba(220, 38, 38, 0.3);
-}
-
-.stat-value.power {
-  color: #fbbf24;
+  color: #ff6b6b;
+  text-shadow: 0 0 6px rgba(255, 107, 107, 0.35);
 }
 
 .card-id {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  font-family: 'Courier New', monospace;
+  font-family: monospace;
+  font-size: 0.68rem;
+  color: #556;
 }
 
-/* Indicateur de drag */
+/* ============================================================
+   DRAG HINT
+   ============================================================ */
 .drag-hint {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(102, 126, 234, 0.9);
-  color: white;
-  width: 30px;
-  height: 30px;
+  bottom: 7px;
+  right: 7px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  background: radial-gradient(circle, #1c2040, #0f1325);
+  border: 1.5px solid rgba(254, 202, 87, 0.6);
+  color: #feca57;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+  box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
 }
 
 .inventory-card:hover .drag-hint {
   opacity: 1;
+  box-shadow: 0 0 10px rgba(254, 202, 87, 0.4);
+  animation: float 1.6s ease-in-out infinite;
 }
 
 .drag-icon {
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-/* Animations */
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
 }
 
-.inventory-card:hover .drag-hint {
-  animation: float 1.5s ease-in-out infinite;
-}
-
-/* États de rareté avec glow */
-.inventory-card:hover .rarity-badge.bg-gradient-to-r {
-  box-shadow: 0 0 15px currentColor;
-}
-
-/* Responsive */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 768px) {
-  .inventory-card {
-    padding: 0.8rem;
-  }
-
-  .inventory-card .card-name {
-    font-size: 0.9rem;
-  }
-
-  .lock-icon {
-    font-size: 2rem;
-  }
-
-  .lock-timer {
-    font-size: 0.9rem;
-  }
-
-  .drag-hint {
-    width: 25px;
-    height: 25px;
-  }
-
-  .drag-icon {
-    font-size: 1rem;
-  }
+  .inventory-card          { padding: 10px 8px 8px; }
+  .inventory-card .card-name { font-size: 0.75rem; }
+  .lock-icon               { font-size: 1.5rem; }
+  .lock-timer              { font-size: 0.7rem; }
+  .drag-hint               { width: 24px; height: 24px; }
+  .drag-icon               { font-size: 0.85rem; }
 }

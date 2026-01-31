@@ -344,7 +344,7 @@ const TeamBuilder: React.FC = () => {
     return (
         <div className="team-builder-container">
           <div className="team-header">
-            <h1>⚔️ Composition d'Équipe</h1>
+            <h1>Composition d'Équipe</h1>
           </div>
           <div className="initial-loading-container">
             <div className="loading-state">
@@ -361,7 +361,7 @@ const TeamBuilder: React.FC = () => {
   return (
       <div className="team-builder-container">
         <div className="team-header">
-          <h1>⚔️ Composition d'Équipe</h1>
+          <h1>Composition d'Équipe</h1>
           <div className="team-stats">
             <div className="stat-box">
               <span className="stat-label">Cartes</span>
@@ -397,7 +397,7 @@ const TeamBuilder: React.FC = () => {
                 className="btn-secondary"
                 disabled={getTeamCount() === 0}
             >
-              🔄 Réinitialiser
+               Réinitialiser
             </button>
           </div>
           
@@ -423,7 +423,12 @@ const TeamBuilder: React.FC = () => {
           <div className="inventory-header">
             <h2>🎒 Mon Inventaire</h2>
             <button onClick={loadCards} className="btn-refresh" disabled={isLoading}>
-              {isLoading ? '⏳' : '🔄'}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.5 9a9 9 0 0114.1-3.4L23 10" />
+                <path d="M20.5 15a9 9 0 01-14.1 3.4L1 14" />
+              </svg>
             </button>
           </div>
 
