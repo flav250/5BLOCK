@@ -27,9 +27,61 @@ const TeamBuilder: React.FC = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-
+  const [dragY, setDragY] = useState<number>(0);
+  
   // État de synchronisation
   const [isSyncedWithBlockchain, setIsSyncedWithBlockchain] = useState(false);
+
+  // Auto-scroll pendant le drag
+  useEffect(() => {
+    if (!draggedCard) return;
+
+    let animationFrameId: number;
+    const scrollSpeed = 10; // pixels par frame
+    const edgeSize = 100; // zone de détection en pixels depuis le bord
+
+    const autoScroll = () => {
+      const windowHeight = window.innerHeight;
+      
+      // Scroll vers le haut
+      if (dragY < edgeSize && dragY > 0) {
+        const intensity = 1 - (dragY / edgeSize);
+        window.scrollBy(0, -scrollSpeed * intensity);
+      }
+      // Scroll vers le bas
+      else if (dragY > windowHeight - edgeSize && dragY < windowHeight) {
+        const intensity = 1 - ((windowHeight - dragY) / edgeSize);
+        window.scrollBy(0, scrollSpeed * intensity);
+      }
+
+      animationFrameId = requestAnimationFrame(autoScroll);
+    };
+
+    animationFrameId = requestAnimationFrame(autoScroll);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [draggedCard, dragY]);
+
+  // Tracker la position Y du curseur pendant le drag
+  useEffect(() => {
+    if (!draggedCard) return;
+
+    const handleDragMove = (e: DragEvent) => {
+      setDragY(e.clientY);
+    };
+
+    document.addEventListener('drag', handleDragMove);
+    document.addEventListener('dragover', handleDragMove);
+
+    return () => {
+      document.removeEventListener('drag', handleDragMove);
+      document.removeEventListener('dragover', handleDragMove);
+    };
+  }, [draggedCard]);
 
   // --- LOCAL STORAGE FUNCTIONS ---
 
