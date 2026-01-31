@@ -12,7 +12,7 @@ export async function fuseCards(
     signer: ethers.Signer,
     tokenId1: number,
     tokenId2: number
-): Promise<number> {
+): Promise<void> {
 
     const contract = new ethers.Contract(
         CARD_FUSION_ADDRESS,
@@ -20,18 +20,9 @@ export async function fuseCards(
         signer
     );
 
-    console.log('🔥 Fusion en cours', tokenId1, tokenId2);
-
-    const newTokenId = await contract
-        .getFunction("fuseCards")
-        .staticCall(tokenId1, tokenId2);
-
     const tx = await contract.fuseCards(tokenId1, tokenId2);
     await tx.wait();
-
-    return Number(newTokenId);
 }
-
 
 export async function getFusionCooldown(
     signer: ethers.Signer,
@@ -44,7 +35,7 @@ export async function getFusionCooldown(
     );
 
     const last = await contract.lastFusion(player);
-    const COOLDOWN = 300; // 5 minutes
+    const COOLDOWN = 300;
 
     const now = Math.floor(Date.now() / 1000);
     const remaining = Number(last) + COOLDOWN - now;

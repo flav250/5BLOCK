@@ -29,66 +29,64 @@
 }
 
 /* Règles de fusion */
-.fusion-rules {
-    margin-top: 24px;
+.fusion-rules-box {
+    background: linear-gradient(145deg, #12162a, #1c2040);
+    border-radius: 18px;
     padding: 24px;
-    border-radius: 16px;
-    background: linear-gradient(145deg, #15192f, #1c2140);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+    margin-bottom: 32px;
+    box-shadow: 0 0 25px rgba(255, 140, 0, 0.15);
+    border: 1px solid rgba(255, 140, 0, 0.25);
 }
 
 .fusion-rules-title {
     text-align: center;
-    font-size: 20px;
+    font-size: 1.4rem;
     margin-bottom: 20px;
+    color: #ffb86c;
+    letter-spacing: 1px;
 }
 
-.fusion-rule-main {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.fusion-rules-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 16px;
-    font-size: 18px;
+}
+
+.rule-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 14px;
+    padding: 18px 14px;
+    text-align: center;
     font-weight: 600;
-    margin-bottom: 20px;
+    color: #e5e7eb;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(255,255,255,0.08);
+    position: relative;
 }
 
-.fusion-progression {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    font-size: 16px;
-    margin-bottom: 20px;
+.rule-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
 }
 
-.arrow {
-    opacity: 0.6;
+.rule-icon {
+    display: block;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
 }
 
-.fusion-rules-bottom {
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-    flex-wrap: wrap;
+/* effet spécial */
+.rule-card.highlight {
+    background: linear-gradient(145deg, #ff8c42, #ffb347);
+    color: #1a1a1a;
+    box-shadow: 0 0 25px rgba(255, 160, 60, 0.6);
 }
 
-.fusion-rule {
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 14px;
+.rule-card.warning {
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    color: #ffd966;
 }
 
-.fusion-rule.warning {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-}
-
-.fusion-rule.bonus {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-}
 /* Zone de fusion */
 .fusion-zone {
     background: rgba(255, 255, 255, 0.05);
@@ -252,6 +250,25 @@
     text-transform: uppercase;
 }
 
+.fusion-card,
+.empty-slot {
+    pointer-events: none;
+}
+
+/* MAIS on réactive le bouton X */
+.remove-btn {
+    pointer-events: auto;
+}
+
+.fusion-slot {
+    cursor: pointer;
+}
+
+.fusion-slot.drag-over {
+    border-color: gold;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
+
 @keyframes bounce {
     0%, 100% {
         transform: translateY(0);
@@ -360,6 +377,12 @@
     cursor: grab;
     transition: all 0.3s ease;
     position: relative;
+}
+
+.inventory-card.selected {
+    outline: 3px solid gold;
+    box-shadow: 0 0 20px gold;
+    transform: scale(1.05);
 }
 
 .inventory-card:hover {
