@@ -82,6 +82,100 @@
   margin-bottom: 2rem;
 }
 
+/* Badge de synchronisation compact */
+.sync-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+  transition: all 0.3s ease;
+  font-size: 1.5rem;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.sync-badge:hover {
+  transform: scale(1.15);
+}
+
+.sync-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 5px;
+  padding-left: 1px;
+}
+
+.sync-badge.not-synced .sync-badge-icon {
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+/* Tooltip au hover */
+.sync-badge-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  background: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  min-width: 300px;
+  max-width: 400px;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.sync-badge-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 10px;
+  border: 8px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.95);
+}
+
+.tooltip-title {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+
+.tooltip-text {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.tooltip-text:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip-text strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.sync-badge:hover .sync-badge-tooltip {
+  opacity: 1;
+  visibility: visible;
+  bottom: calc(100% + 15px);
+}
+
 /* Actions de l'équipe */
 .team-actions {
   display: flex;
@@ -185,6 +279,38 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 1.5rem;
+}
+
+/* Conteneur de chargement initial */
+.initial-loading-container {
+  background: white;
+  border-radius: 20px;
+  padding: 4rem 2rem;
+  margin: 2rem 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.initial-loading-container .loading-state {
+  max-width: 500px;
+  text-align: center;
+}
+
+.initial-loading-container h2 {
+  color: #667eea;
+  font-size: 1.8rem;
+  margin: 1.5rem 0 1rem 0;
+  font-weight: bold;
+}
+
+.initial-loading-container p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  line-height: 1.6;
 }
 
 /* États vides et loading */
