@@ -10,14 +10,9 @@ interface FusionSlot {
     card: ArenaCard | null;
 }
 
-const FUSION_RULES = {
-    'commune': 'rare',
-    'rare': 'epique',
-    'epique': 'legendaire',
-};
-
 const RARITY_COLORS = {
     'commune': '#808080',
+    'peu_commune': '#228B22',
     'rare': '#1E90FF',
     'epique': '#800080',
     'legendaire': '#FF4500',
@@ -26,34 +21,26 @@ const RARITY_COLORS = {
 const Fusion: React.FC = () => {
     const { account, signer } = useWeb3();
 
-    // Slots de fusion (2 cartes)
     const [fusionSlots, setFusionSlots] = useState<FusionSlot[]>([
         { position: 1, card: null },
         { position: 2, card: null },
     ]);
 
-    // Inventaire des cartes
     const [inventory, setInventory] = useState<ArenaCard[]>([]);
     const [filteredInventory, setFilteredInventory] = useState<ArenaCard[]>([]);
 
-    // Filtre de rareté
     const [selectedRarity, setSelectedRarity] = useState<string>('all');
 
-    // États de fusion
     const [isFusing, setIsFusing] = useState(false);
     const [fusionResult, setFusionResult] = useState<ArenaCard | null>(null);
     const [showResult, setShowResult] = useState(false);
 
-    // Cooldown
     const [cooldownTime, setCooldownTime] = useState(0);
 
-    // Drag & Drop
-    const [draggedCard, setDraggedCard] = useState<ArenaCard | null>(null);
-
-    // Loading
     const [isLoading, setIsLoading] = useState(false);
 
-    // Charger les cartes
+    const [selectedCard, setSelectedCard] = useState<ArenaCard | null>(null);
+
     const loadCards = useCallback(async () => {
         if (!signer || !account) return;
 
@@ -69,7 +56,6 @@ const Fusion: React.FC = () => {
         }
     }, [signer, account]);
 
-    // Charger le cooldown
     const loadCooldown = useCallback(async () => {
         if (!signer || !account) return;
 
@@ -86,7 +72,6 @@ const Fusion: React.FC = () => {
         loadCooldown();
     }, [loadCards, loadCooldown]);
 
-    // Filtrer l'inventaire par rareté
     useEffect(() => {
         if (selectedRarity === 'all') {
             setFilteredInventory(inventory);
@@ -95,7 +80,6 @@ const Fusion: React.FC = () => {
         }
     }, [selectedRarity, inventory]);
 
-    // Countdown du cooldown
     useEffect(() => {
         if (cooldownTime <= 0) return;
 
@@ -112,7 +96,6 @@ const Fusion: React.FC = () => {
         return () => clearInterval(interval);
     }, [cooldownTime]);
 
-    // Vérifier si on peut fusionner
     const canFuse = (): { canFuse: boolean; reason: string } => {
         if (cooldownTime > 0) {
             return { canFuse: false, reason: `Cooldown: ${formatTime(cooldownTime)}` };
@@ -130,11 +113,15 @@ const Fusion: React.FC = () => {
         }
 
         if (card1.name !== card2.name) {
-            return { canFuse: false, reason: 'Les cartes doivent avoir le même nom' };
+            return { canFuse: false, reason: "Les cartes doivent être identiques" };
         }
 
-        if (card1.rarity === 'legendaire') {
-            return { canFuse: false, reason: 'Les cartes légendaires ne peuvent pas être fusionnées' };
+        if (card1.level !== card2.level) {
+            return { canFuse: false, reason: "Les cartes doivent être du même niveau" };
+        }
+
+        if (card1.level >= 5) {
+            return { canFuse: false, reason: "Niveau maximum atteint (5)" };
         }
 
         if (card1.isLocked || card2.isLocked) {
@@ -160,34 +147,26 @@ const Fusion: React.FC = () => {
                 card2: fusionSlots[1].card.tokenId,
             });
 
-            const newTokenId = await fuseCards(
+            await fuseCards(
                 signer,
                 Number(fusionSlots[0].card.tokenId),
                 Number(fusionSlots[1].card.tokenId)
             );
-            console.log('✅ Fusion réussie ! Nouvelle carte:', newTokenId);
 
-            // Recharger les cartes pour obtenir la nouvelle
             await loadCards();
 
-            // Afficher le résultat
-            const newCards = await loadUserCards(signer, account!);
-            const newCard = newCards.find(
-                c => c.tokenId === newTokenId.toString()
-            );
+            setFusionResult({
+                ...fusionSlots[0].card,
+                level: fusionSlots[0].card.level + 1
+            });
 
-            if (newCard) {
-                setFusionResult(newCard);
-                setShowResult(true);
-            }
+            setShowResult(true);
 
-            // Réinitialiser les slots
             setFusionSlots([
                 { position: 1, card: null },
                 { position: 2, card: null },
             ]);
 
-            // Recharger le cooldown
             await loadCooldown();
 
         } catch (error: any) {
@@ -198,8 +177,7 @@ const Fusion: React.FC = () => {
         }
     };
 
-    // Drag & Drop handlers
-    const handleDragStart = (card: ArenaCard) => {
+    /*const handleDragStart = (card: ArenaCard) => {
         setDraggedCard(card);
     };
 
@@ -212,7 +190,6 @@ const Fusion: React.FC = () => {
 
         const newSlots = [...fusionSlots];
 
-        // Si le slot est déjà occupé, échanger
         if (newSlots[slotIndex].card) {
             const oldCard = newSlots[slotIndex].card;
             if (oldCard) {
@@ -223,10 +200,30 @@ const Fusion: React.FC = () => {
         newSlots[slotIndex].card = draggedCard;
         setFusionSlots(newSlots);
 
-        // Retirer de l'inventaire
         setInventory(prev => prev.filter(c => c.tokenId !== draggedCard.tokenId));
         setDraggedCard(null);
+    };*/
+
+    const placeCardInSlot = (slotIndex: number) => {
+        if (!selectedCard) return;
+
+        const newSlots = [...fusionSlots];
+
+        // remettre l’ancienne carte dans l’inventaire
+        if (newSlots[slotIndex].card) {
+            setInventory(prev => [...prev, newSlots[slotIndex].card!]);
+        }
+
+        newSlots[slotIndex].card = selectedCard;
+        setFusionSlots(newSlots);
+
+        setInventory(prev =>
+            prev.filter(c => c.tokenId !== selectedCard.tokenId)
+        );
+
+        setSelectedCard(null);
     };
+
 
     const handleRemoveFromSlot = (slotIndex: number) => {
         const newSlots = [...fusionSlots];
@@ -239,16 +236,10 @@ const Fusion: React.FC = () => {
         }
     };
 
-    // Utilitaires
     const formatTime = (seconds: number): string => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const getResultRarity = (): string | null => {
-        if (!fusionSlots[0].card) return null;
-        return FUSION_RULES[fusionSlots[0].card.rarity as keyof typeof FUSION_RULES] || null;
     };
 
     if (!account) {
@@ -273,43 +264,30 @@ const Fusion: React.FC = () => {
             </div>
 
             {/* Règles de fusion */}
-            <div className="fusion-rules">
+            <div className="fusion-rules-box">
+                <h3 className="fusion-rules-title">Règles de Fusion</h3>
 
-                <h3 className="fusion-rules-title">
-                    📜 Règles de Fusion
-                </h3>
-
-                {/* règle principale */}
-                <div className="fusion-rule-main">
-                    <span>🧬 2 cartes <strong>identiques</strong></span>
-                    <span className="arrow">→</span>
-                    <span>🔥 1 carte évoluée</span>
-                </div>
-
-                {/* progression */}
-                <div className="fusion-progression">
-                    <span style={{ color: RARITY_COLORS.commune }}>Commune</span>
-                    <span className="arrow">→</span>
-                    <span style={{ color: RARITY_COLORS.rare }}>Rare</span>
-                    <span className="arrow">→</span>
-                    <span style={{ color: RARITY_COLORS.epique }}>Épique</span>
-                    <span className="arrow">→</span>
-                    <span style={{ color: RARITY_COLORS.legendaire }}>Légendaire</span>
-                </div>
-
-                {/* règles secondaires */}
-                <div className="fusion-rules-bottom">
-
-                    <div className="fusion-rule warning">
-                        ❌ Les cartes <strong>légendaires</strong> ne peuvent pas être fusionnées
+                <div className="fusion-rules-cards">
+                    <div className="rule-card">
+                        <span className="rule-icon">🧬</span>
+                        <span>Cartes identiques</span>
                     </div>
 
-                    <div className="fusion-rule bonus">
-                        ⭐ Le niveau augmente après chaque fusion
+                    <div className="rule-card">
+                        <span className="rule-icon">📊</span>
+                        <span>Même niveau</span>
                     </div>
 
-                </div>
+                    <div className="rule-card highlight">
+                        <span className="rule-icon">⬆</span>
+                        <span>Niveau +1</span>
+                    </div>
 
+                    <div className="rule-card warning">
+                        <span className="rule-icon">⭐</span>
+                        <span>Niveau max : 5</span>
+                    </div>
+                </div>
             </div>
 
             {/* Zone de fusion */}
@@ -319,9 +297,8 @@ const Fusion: React.FC = () => {
                 <div className="fusion-slots-container">
                     {/* Slot 1 */}
                     <div
-                        className={`fusion-slot ${draggedCard ? 'drag-over' : ''}`}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => handleDropOnSlot(0)}
+                        className="fusion-slot"
+                        onClick={() => placeCardInSlot(0)}
                     >
                         {fusionSlots[0].card ? (
                             <div className="fusion-card">
@@ -357,24 +334,18 @@ const Fusion: React.FC = () => {
                     {/* Icône de fusion */}
                     <div className="fusion-icon">
                         <div className="fusion-plus">+</div>
-                        {getResultRarity() && (
-                            <div className="fusion-arrow-down">
-                                <span>↓</span>
-                                <span
-                                    className="result-rarity-hint"
-                                    style={{ color: RARITY_COLORS[getResultRarity() as keyof typeof RARITY_COLORS] }}
-                                >
-                  {getResultRarity()}
-                </span>
-                            </div>
-                        )}
+                        <div className="fusion-arrow-down">
+                            <span>⬆</span>
+                            <span className="result-level">
+                                Niveau +1
+                            </span>
+                        </div>
                     </div>
 
                     {/* Slot 2 */}
                     <div
-                        className={`fusion-slot ${draggedCard ? 'drag-over' : ''}`}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => handleDropOnSlot(1)}
+                        className="fusion-slot"
+                        onClick={() => placeCardInSlot(1)}
                     >
                         {fusionSlots[1].card ? (
                             <div className="fusion-card">
@@ -448,6 +419,13 @@ const Fusion: React.FC = () => {
                             Communes
                         </button>
                         <button
+                            className={selectedRarity === 'peu commune' ? 'active' : ''}
+                            onClick={() => setSelectedRarity('peu commune')}
+                            style={{ borderColor: RARITY_COLORS.peu_commune }}
+                        >
+                            Peu Communes
+                        </button>
+                        <button
                             className={selectedRarity === 'rare' ? 'active' : ''}
                             onClick={() => setSelectedRarity('rare')}
                             style={{ borderColor: RARITY_COLORS.rare }}
@@ -460,6 +438,13 @@ const Fusion: React.FC = () => {
                             style={{ borderColor: RARITY_COLORS.epique }}
                         >
                             Épiques
+                        </button>
+                        <button
+                            className={selectedRarity === 'legendaire' ? 'active' : ''}
+                            onClick={() => setSelectedRarity('legendaire')}
+                            style={{ borderColor: RARITY_COLORS.legendaire }}
+                        >
+                            Légendaires
                         </button>
                     </div>
                 </div>
@@ -478,10 +463,15 @@ const Fusion: React.FC = () => {
                         {filteredInventory.map((card) => (
                             <div
                                 key={card.tokenId}
-                                className={`inventory-card ${card.isLocked ? 'locked' : ''}`}
-                                draggable={!card.isLocked}
-                                onDragStart={() => handleDragStart(card)}
-                                onDragEnd={handleDragEnd}
+                                className={`inventory-card 
+                                    ${card.isLocked ? 'locked' : ''}
+                                    ${selectedCard?.tokenId === card.tokenId ? 'selected' : ''}
+                                `}
+                                onClick={() => {
+                                    if (!card.isLocked) {
+                                        setSelectedCard(card);
+                                    }
+                                }}
                             >
                                 <img src={card.imageURI} alt={card.name} />
                                 <div className="card-info">
@@ -505,16 +495,10 @@ const Fusion: React.FC = () => {
             {showResult && fusionResult && (
                 <div className="fusion-result-modal" onClick={() => setShowResult(false)}>
                     <div className="result-content" onClick={(e) => e.stopPropagation()}>
-                        <h2>🎉 Fusion Réussie !</h2>
+                        <h2>Fusion Réussie !</h2>
                         <div className="result-card">
                             <img src={fusionResult.imageURI} alt={fusionResult.name} />
                             <h3>{fusionResult.name}</h3>
-                            <span
-                                className="result-rarity"
-                                style={{ color: RARITY_COLORS[fusionResult.rarity as keyof typeof RARITY_COLORS] }}
-                            >
-                {fusionResult.rarity}
-              </span>
                             <span className="result-level">Niveau {fusionResult.level}</span>
                         </div>
                         <button className="btn-close" onClick={() => setShowResult(false)}>
