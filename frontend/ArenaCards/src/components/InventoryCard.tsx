@@ -122,12 +122,6 @@ const InventoryCard: React.FC<InventoryCardProps> = ({
 
                 <div className="card-id">#{card.tokenId}</div>
             </div>
-
-            {!card.isLocked && (
-                <div className="drag-hint">
-                    <span className="drag-icon">⇅</span>
-                </div>
-            )}
         </div>
     );
 };

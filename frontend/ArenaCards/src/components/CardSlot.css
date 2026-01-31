@@ -1,269 +1,347 @@
-/* components/CardSlot.css */
+/* ============================================================
+   CARD SLOT — DARK FANTASY RESTYLE
+   Targets every className in the original CardSlot.tsx.
+   Zero changes to the .tsx required.
+   Visual tokens match Marketplace.css exactly.
+   ============================================================ */
 
+/* ============================================================
+   BASE SLOT
+   ============================================================ */
 .card-slot {
-  background: white;
-  border-radius: 15px;
-  padding: 1.5rem;
+  position: relative;
+  border-radius: 18px;
   min-height: 280px;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
-  position: relative;
-  border: 3px solid #e5e7eb;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  /* kill the old white bg */
+  background: transparent;
 }
 
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
 .card-slot.empty {
-  border-style: dashed;
-  background: #f9fafb;
+  border: 2px dashed rgba(254, 202, 87, 0.35);
+  background: rgba(254, 202, 87, 0.03);
+  padding: 1.2rem 0.8rem;
 }
 
-.card-slot.filled {
-  border-color: #667eea;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.card-slot.empty:hover {
+  border-color: rgba(254, 202, 87, 0.55);
+  background: rgba(254, 202, 87, 0.06);
 }
 
-.card-slot.drag-over {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  transform: scale(1.05);
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-}
-
-/* Slot vide */
 .empty-slot-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  gap: 10px;
   text-align: center;
 }
 
+/* position number — empty */
 .slot-number {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: #e5e7eb;
-  color: #6b7280;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(254, 202, 87, 0.3);
+  color: #feca57;
+  font-size: 0.78rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 1rem;
 }
 
 .slot-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #9ca3af;
+  gap: 8px;
 }
 
-.placeholder-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
+.card-slot .placeholder-icon {
+  font-size: 2.6rem;
+  opacity: 0.2;
 }
 
 .slot-placeholder p {
-  font-size: 0.9rem;
+  margin: 0;
+  color: #556;
+  font-size: 0.78rem;
   font-style: italic;
+  letter-spacing: 0.2px;
 }
 
-/* Slot rempli */
+/* ============================================================
+   DRAG-OVER STATE
+   ============================================================ */
+.card-slot.drag-over {
+  border-color: #00e676 !important;
+  background: rgba(0, 230, 118, 0.07) !important;
+  box-shadow: 0 0 24px rgba(0, 230, 118, 0.3),
+  inset 0 0 16px rgba(0, 230, 118, 0.08);
+  transform: scale(1.04);
+}
+
+.card-slot.drag-over .slot-placeholder p {
+  color: #00e676;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* ============================================================
+   FILLED STATE
+   ============================================================ */
+.card-slot.filled {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+}
+
+.card-slot.filled:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 28px rgba(255, 200, 120, 0.25);
+}
+
 .filled-slot-content {
-  height: 100%;
-  cursor: move;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 7px;
   position: relative;
+  cursor: move;
 }
 
 .filled-slot-content:active {
   cursor: grabbing;
 }
 
-/* Badge de position pour slot rempli */
+/* ============================================================
+   POSITION BADGE — filled
+   ============================================================ */
 .position-badge {
   position: absolute;
-  top: -10px;
-  left: -10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  width: 35px;
-  height: 35px;
+  top: -12px;
+  left: -12px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b6b, #feca57);
+  color: #1a1a1a;
+  font-size: 0.85rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 1.1rem;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
-  z-index: 10;
+  box-shadow: 0 2px 10px rgba(255, 160, 60, 0.45);
+  z-index: 3;
 }
 
-/* Bouton de suppression */
+/* ============================================================
+   REMOVE BUTTON
+   ============================================================ */
 .remove-btn {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  width: 35px;
-  height: 35px;
+  top: -12px;
+  right: -12px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
+  background: #ff6b6b;
+  border: none;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+  z-index: 3;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
 }
 
 .remove-btn:hover {
-  background: #dc2626;
-  transform: scale(1.1);
+  background: #e05555;
+  transform: scale(1.12);
+  box-shadow: 0 0 14px rgba(255, 107, 107, 0.55);
 }
 
-/* Image de la carte */
+/* ============================================================
+   CARD IMAGE (inside filled slot)
+   ============================================================ */
 .card-image-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1rem;
-}
-
-.card-image {
   width: 100%;
   max-width: 140px;
-  aspect-ratio: 3/4;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.card-image img {
+.card-slot .card-image {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.7), rgba(15, 15, 25, 0.9));
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.card-slot .card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-.placeholder-image {
-  font-size: 3rem;
-  opacity: 0.3;
+.card-slot .placeholder-image {
+  font-size: 2rem;
+  opacity: 0.2;
+  color: #eee;
 }
 
-/* Badge de rareté */
-.rarity-badge {
+/* ============================================================
+   RARITY BADGE — filled slot
+   Overrides Tailwind bg-gradient-to-r the same way as InventoryCard.
+   ============================================================ */
+.card-slot .rarity-badge {
   display: inline-block;
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: bold;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
-  align-self: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.6) !important;
+  padding: 3px 10px;
+  border-radius: 20px;
+  box-shadow: none !important;
+  /* default = common */
+  color: #9eb5c9;
+  border: 1px solid rgba(122, 138, 154, 0.35);
+  margin-bottom: 0;
 }
 
-/* Informations de la carte */
+.card-slot .rarity-badge[class*="from-blue"],
+.card-slot .rarity-badge[class*="from-cyan"] {
+  color: #3ea8ff;
+  border-color: rgba(62, 168, 255, 0.35);
+}
+
+.card-slot .rarity-badge[class*="from-yellow"],
+.card-slot .rarity-badge[class*="from-amber"],
+.card-slot .rarity-badge[class*="from-purple"],
+.card-slot .rarity-badge[class*="from-violet"],
+.card-slot .rarity-badge[class*="from-orange"] {
+  color: #ffb840;
+  border-color: rgba(255, 184, 64, 0.4);
+}
+
+/* ============================================================
+   CARD INFO
+   ============================================================ */
 .card-info {
+  width: 100%;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
 
-.card-name {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #333;
-  margin: 0 0 0.5rem 0;
+.card-slot .card-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #eee;
+  margin: 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
 }
 
+/* stats row */
 .card-stats-row {
   display: flex;
+  gap: 6px;
   justify-content: center;
-  gap: 1rem;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  background: #f3f4f6;
-  padding: 0.3rem 0.8rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 3px 8px;
 }
 
 .stat-icon {
-  font-size: 1rem;
+  font-size: 0.75rem;
 }
 
-/* Indicateur de lock */
+.stat-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #eee;
+}
+
+/* ============================================================
+   LOCK INDICATOR
+   ============================================================ */
 .lock-indicator {
-  margin-top: 0.5rem;
-  padding: 0.3rem 0.8rem;
-  background: #fbbf24;
-  color: #78350f;
-  border-radius: 10px;
-  font-size: 0.8rem;
-  font-weight: bold;
+  background: rgba(254, 202, 87, 0.15);
+  border: 1px solid rgba(254, 202, 87, 0.35);
+  color: #feca57;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.3px;
   text-align: center;
+  margin-top: auto;
 }
 
-/* Animations */
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
 }
 
-.card-slot.drag-over .slot-placeholder {
-  animation: pulse 1s infinite;
-}
-
-/* Responsive */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 768px) {
-  .card-slot {
-    padding: 1rem;
-    min-height: 240px;
-  }
-
-  .card-image {
-    max-width: 100px;
-  }
-
-  .placeholder-icon {
-    font-size: 3rem;
-  }
-
-  .card-name {
-    font-size: 1rem;
-  }
+  .card-slot          { min-height: 240px; }
+  .card-slot.filled   { padding: 0.8rem; }
+  .card-image-container { max-width: 110px; }
 
   .position-badge,
   .remove-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 1rem;
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+    top: -10px;
   }
+  .position-badge { left: -10px; }
+  .remove-btn     { right: -10px; }
+
+  .card-slot .card-name { font-size: 0.8rem; }
+  .slot-number          { width: 24px; height: 24px; font-size: 0.7rem; }
 }
