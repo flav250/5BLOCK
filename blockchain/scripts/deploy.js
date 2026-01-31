@@ -51,11 +51,6 @@ async function main() {
     // 5️⃣ Authorize CardFusion
     tx = await arenaCards.setFusionContract(fusionAddr);
     await tx.wait();
-    const Team = await hre.ethers.getContractFactory("Team");
-    const team = await Team.deploy(arenaAddr);
-    await team.waitForDeployment();
-    const teamAddr = await team.getAddress();
-    console.log("Team deployed to:", teamAddr);
     console.log("✅ CardFusion authorized");
 
     console.log("✅ Marketplace déployé à:", marketplaceAddr);
@@ -65,7 +60,6 @@ async function main() {
     console.log("VITE_PREMIUM_BOOSTER_ADDRESS=",premiumBoosterAddr);
     console.log("VITE_MARKETPLACE_ADDRESS=",marketplaceAddr);
     console.log("VITE_CARDFUSION_ADDRESS=",fusionAddr);
-    console.log("VITE_TEAM_ADDRESS=",teamAddr);
     console.log("Marketplace deployed to:", marketplaceAddr);
     console.log("🚀 Deployment completed successfully!");
 
