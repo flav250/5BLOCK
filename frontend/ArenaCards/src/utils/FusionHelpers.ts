@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-const CARD_FUSION_ADDRESS = import.meta.env.VITE_CARD_FUSION as string;
+const CARD_FUSION_ADDRESS = import.meta.env.VITE_CARDFUSION_ADDRESS as string;
 
 const CARD_FUSION_ABI = [
     'function fuseCards(uint256,uint256) external returns (uint256)',
