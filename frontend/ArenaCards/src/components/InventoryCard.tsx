@@ -1,4 +1,4 @@
-// components/InventoryCard.tsx - VERSION ESLINT 100% CLEAN ✅
+// components/InventoryCard.tsx - VERSION AVEC ATTACK STAT ✅
 
 import React, { useState, useEffect, useRef } from 'react';
 import type { ArenaCard } from '../types/ArenaCard';
@@ -115,8 +115,8 @@ const InventoryCard: React.FC<InventoryCardProps> = ({
               <span className="stat-value">{card.level}</span>
             </div>
             <div className="stat">
-              <span className="stat-label">Puissance</span>
-              <span className="stat-value power">{card.level * 10}</span>
+              <span className="stat-label">⚔️ Attack</span>
+              <span className="stat-value attack">{card.attack}</span>
             </div>
           </div>
 

@@ -11,7 +11,6 @@ const MAX_TEAM_SIZE = 5;
 const TeamBuilder: React.FC = () => {
   const { account, signer } = useWeb3();
 
-  // État de l'équipe (5 slots)
   const [teamSlots, setTeamSlots] = useState<TeamSlot[]>(
       Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
         position: i,
@@ -19,22 +18,15 @@ const TeamBuilder: React.FC = () => {
       }))
   );
 
-  // Cartes dans l'inventaire
   const [inventory, setInventory] = useState<ArenaCard[]>([]);
-
-  // Carte en cours de drag
   const [draggedCard, setDraggedCard] = useState<ArenaCard | null>(null);
   const [dragSource, setDragSource] = useState<'inventory' | 'team' | null>(null);
   const [draggedFromSlot, setDraggedFromSlot] = useState<number | null>(null);
-
-  // Loading state
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Fonction de chargement des cartes (useCallback pour éviter recréation)
   const loadCards = useCallback(async () => {
     if (!signer || !account) return;
-
     setIsLoading(true);
     try {
       const cards = await loadUserCards(signer, account);
@@ -46,55 +38,36 @@ const TeamBuilder: React.FC = () => {
     }
   }, [signer, account]);
 
-  // Charger l'équipe sauvegardée depuis la blockchain
   const loadSavedTeam = useCallback(async () => {
     if (!signer || !account) return;
-
     try {
       const savedCardIds = await loadTeamFromChain(signer);
-      
-      if (savedCardIds.length === 0) {
-        console.log('Aucune équipe sauvegardée');
-        return;
-      }
+      if (savedCardIds.length === 0) return;
 
-      // Charger toutes les cartes de l'utilisateur
       const allCards = await loadUserCards(signer, account);
-      
-      // Créer les nouveaux slots avec les cartes sauvegardées
       const newTeamSlots: TeamSlot[] = Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
         position: i,
         card: null,
       }));
 
       const cardsInTeam: ArenaCard[] = [];
-      
       savedCardIds.forEach((tokenId, index) => {
         const card = allCards.find(c => c.tokenId === tokenId);
         if (card && index < MAX_TEAM_SIZE) {
-          newTeamSlots[index] = {
-            position: index,
-            card: card
-          };
+          newTeamSlots[index] = { position: index, card: card };
           cardsInTeam.push(card);
         }
       });
 
-      // Mettre à jour l'état
       setTeamSlots(newTeamSlots);
-      
-      // Retirer les cartes de l'équipe de l'inventaire
-      setInventory(allCards.filter(card => 
-        !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
+      setInventory(allCards.filter(card =>
+          !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
       ));
-
-      console.log('✅ Équipe chargée avec succès');
     } catch (error) {
-      console.error('Erreur lors du chargement de l\'équipe:', error);
+      console.error('Erreur chargement équipe:', error);
     }
   }, [signer, account]);
 
-  // Charger les cartes et l'équipe sauvegardée au montage
   useEffect(() => {
     const init = async () => {
       await loadCards();
@@ -103,25 +76,15 @@ const TeamBuilder: React.FC = () => {
     init();
   }, [loadCards, loadSavedTeam]);
 
-  // Calculer la puissance totale de l'équipe
-  const getTotalPower = (): number => {
-    return teamSlots.reduce((total, slot) => {
-      return total + (slot.card ? slot.card.level * 10 : 0);
-    }, 0);
+  const getTotalAttack = (): number => {
+    return teamSlots.reduce((total, slot) => total + (slot.card ? slot.card.attack : 0), 0);
   };
 
-  // Compter les cartes dans l'équipe
   const getTeamCount = (): number => {
     return teamSlots.filter(slot => slot.card !== null).length;
   };
 
-  // --- DRAG & DROP HANDLERS ---
-
-  const handleDragStart = (
-      card: ArenaCard,
-      source: 'inventory' | 'team',
-      slotIndex?: number
-  ) => {
+  const handleDragStart = (card: ArenaCard, source: 'inventory' | 'team', slotIndex?: number) => {
     setDraggedCard(card);
     setDragSource(source);
     if (source === 'team' && slotIndex !== undefined) {
@@ -138,53 +101,42 @@ const TeamBuilder: React.FC = () => {
   const handleDropOnSlot = (slotIndex: number) => {
     if (!draggedCard) return;
 
-    // Vérifier si la carte est verrouillée
     if (draggedCard.isLocked) {
       alert('Cette carte est encore verrouillée !');
       handleDragEnd();
       return;
     }
 
-    const newTeamSlots = [...teamSlots];
-
     if (dragSource === 'inventory') {
-      // Déposer depuis l'inventaire vers un slot
+      // Déposer depuis inventaire
+      const newTeamSlots = [...teamSlots];
+      const targetCard = newTeamSlots[slotIndex].card;
 
-      // Si le slot est occupé, échanger
-      if (newTeamSlots[slotIndex].card) {
-        const cardToSwap = newTeamSlots[slotIndex].card;
-        newTeamSlots[slotIndex].card = draggedCard;
+      newTeamSlots[slotIndex].card = draggedCard;
+      setTeamSlots(newTeamSlots);
 
-        // Remettre l'ancienne carte dans l'inventaire
-        if (cardToSwap) {
-          setInventory(prev => [...prev, cardToSwap]);
-        }
+      // Retirer de l'inventaire
+      setInventory(prev => prev.filter(c => c.tokenId !== draggedCard.tokenId));
 
-        // Retirer la nouvelle carte de l'inventaire
-        setInventory(prev =>
-            prev.filter(c => c.tokenId !== draggedCard.tokenId)
-        );
-      } else {
-        // Slot vide
-        newTeamSlots[slotIndex].card = draggedCard;
-
-        // Retirer de l'inventaire
-        setInventory(prev =>
-            prev.filter(c => c.tokenId !== draggedCard.tokenId)
-        );
+      // Si slot occupé, remettre ancienne carte
+      if (targetCard) {
+        setInventory(prev => [...prev, targetCard]);
       }
+
     } else if (dragSource === 'team' && draggedFromSlot !== null) {
-      // Déplacer d'un slot à un autre
+      // Déplacer entre slots
+      if (draggedFromSlot === slotIndex) {
+        handleDragEnd();
+        return;
+      }
 
-      const fromSlot = newTeamSlots[draggedFromSlot];
-      const toSlot = newTeamSlots[slotIndex];
-
-      // Échanger les cartes
-      newTeamSlots[slotIndex].card = fromSlot.card;
-      newTeamSlots[draggedFromSlot].card = toSlot.card;
+      const newTeamSlots = [...teamSlots];
+      const temp = newTeamSlots[slotIndex].card;
+      newTeamSlots[slotIndex].card = newTeamSlots[draggedFromSlot].card;
+      newTeamSlots[draggedFromSlot].card = temp;
+      setTeamSlots(newTeamSlots);
     }
 
-    setTeamSlots(newTeamSlots);
     handleDragEnd();
   };
 
@@ -194,67 +146,63 @@ const TeamBuilder: React.FC = () => {
       return;
     }
 
-    // Retirer la carte du slot et la remettre dans l'inventaire
     const newTeamSlots = [...teamSlots];
     newTeamSlots[draggedFromSlot].card = null;
     setTeamSlots(newTeamSlots);
 
-    setInventory(prev => [...prev, draggedCard]);
+    setInventory(prev => {
+      if (prev.some(c => c.tokenId === draggedCard.tokenId)) {
+        console.warn('⚠️ Duplication évitée');
+        return prev;
+      }
+      return [...prev, draggedCard];
+    });
+
     handleDragEnd();
   };
 
   const removeCardFromSlot = (slotIndex: number) => {
-    const newTeamSlots = [...teamSlots];
-    const card = newTeamSlots[slotIndex].card;
+    const card = teamSlots[slotIndex].card;
+    if (!card) return;
 
-    if (card) {
-      newTeamSlots[slotIndex].card = null;
-      setTeamSlots(newTeamSlots);
-      setInventory(prev => [...prev, card]);
-    }
+    const newTeamSlots = [...teamSlots];
+    newTeamSlots[slotIndex].card = null;
+    setTeamSlots(newTeamSlots);
+
+    setInventory(prev => {
+      if (prev.some(c => c.tokenId === card.tokenId)) {
+        console.warn('⚠️ Duplication évitée');
+        return prev;
+      }
+      return [...prev, card];
+    });
   };
 
-  // Sauvegarder l'équipe on-chain
   const saveTeam = async () => {
     if (!signer) return;
-
     setIsSaving(true);
     try {
-      const teamCardIds = teamSlots
-          .filter(slot => slot.card !== null)
-          .map(slot => slot.card!.tokenId);
-
-      console.log('Sauvegarde de l\'équipe:', teamCardIds);
-
-      // Appeler le contrat Team.sol
+      const teamCardIds = teamSlots.filter(s => s.card).map(s => s.card!.tokenId);
       const success = await saveTeamOnChain(signer, teamCardIds);
-
-      if (success) {
-        alert('✅ Équipe sauvegardée sur la blockchain !');
-      }
+      if (success) alert('✅ Équipe sauvegardée !');
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
-      alert('❌ Erreur lors de la sauvegarde de l\'équipe');
+      console.error('Erreur sauvegarde:', error);
+      alert('❌ Erreur sauvegarde');
     } finally {
       setIsSaving(false);
     }
   };
 
   const resetTeam = () => {
-    // Remettre toutes les cartes dans l'inventaire
-    const cardsToReturn = teamSlots
-        .filter(slot => slot.card !== null)
-        .map(slot => slot.card!);
+    const cardsToReturn = teamSlots.filter(s => s.card).map(s => s.card!);
 
-    setInventory(prev => [...prev, ...cardsToReturn]);
+    setInventory(prev => {
+      const existingIds = new Set(prev.map(c => c.tokenId));
+      const newCards = cardsToReturn.filter(card => !existingIds.has(card.tokenId));
+      return [...prev, ...newCards];
+    });
 
-    // Réinitialiser les slots
-    setTeamSlots(
-        Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
-          position: i,
-          card: null,
-        }))
-    );
+    setTeamSlots(Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({ position: i, card: null })));
   };
 
   if (!account) {
@@ -270,7 +218,6 @@ const TeamBuilder: React.FC = () => {
 
   return (
       <div className="team-builder-container">
-        {/* En-tête avec statistiques */}
         <div className="team-header">
           <h1>⚔️ Composition d'Équipe</h1>
           <div className="team-stats">
@@ -279,13 +226,12 @@ const TeamBuilder: React.FC = () => {
               <span className="stat-value">{getTeamCount()}/{MAX_TEAM_SIZE}</span>
             </div>
             <div className="stat-box">
-              <span className="stat-label">Puissance</span>
-              <span className="stat-value power">{getTotalPower()}</span>
+              <span className="stat-label">⚔️ Attack Total</span>
+              <span className="stat-value power">{getTotalAttack()}</span>
             </div>
           </div>
         </div>
 
-        {/* Zone des 5 slots d'équipe */}
         <div className="team-slots-section">
           <h2>🎯 Mon Équipe</h2>
           <div className="team-slots-grid">
@@ -303,31 +249,17 @@ const TeamBuilder: React.FC = () => {
             ))}
           </div>
 
-          {/* Boutons d'action */}
           <div className="team-actions">
-            <button
-                onClick={resetTeam}
-                className="btn-secondary"
-                disabled={getTeamCount() === 0}
-            >
+            <button onClick={resetTeam} className="btn-secondary" disabled={getTeamCount() === 0}>
               🔄 Réinitialiser
             </button>
-            <button
-                onClick={saveTeam}
-                className="btn-primary"
-                disabled={isSaving || getTeamCount() === 0}
-            >
+            <button onClick={saveTeam} className="btn-primary" disabled={isSaving || getTeamCount() === 0}>
               {isSaving ? '💾 Sauvegarde...' : '💾 Sauvegarder l\'équipe'}
             </button>
           </div>
         </div>
 
-        {/* Inventaire des cartes */}
-        <div
-            className="inventory-section"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDropOnInventory}
-        >
+        <div className="inventory-section" onDragOver={(e) => e.preventDefault()} onDrop={handleDropOnInventory}>
           <div className="inventory-header">
             <h2>🎒 Mon Inventaire</h2>
             <button onClick={loadCards} className="btn-refresh" disabled={isLoading}>
@@ -342,7 +274,7 @@ const TeamBuilder: React.FC = () => {
               </div>
           ) : inventory.length === 0 ? (
               <div className="empty-inventory">
-                <p>📭 Ton inventaire est vide</p>
+                <p>🔭 Ton inventaire est vide</p>
                 <p>Ouvre des boosters pour obtenir des cartes !</p>
               </div>
           ) : (

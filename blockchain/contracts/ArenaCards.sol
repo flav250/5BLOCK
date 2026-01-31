@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 
 /**
  * @title ArenaCards
- * @dev Contrat de cartes NFT avec système de fusion, cooldown et support booster
- * Métadonnées on-chain pour affichage dans MetaMask
+ * @dev Contrat de cartes NFT avec système de stats
+ * Actuellement: Attaque uniquement (structure prête pour expansion)
  */
 contract ArenaCards is ERC721, Ownable {
     using Strings for uint256;
@@ -27,12 +27,20 @@ contract ArenaCards is ERC721, Ownable {
         _;
     }
 
-
     function setAuthorizedMinter(address _minter, bool _authorized) external onlyOwner {
         authorizedMinters[_minter] = _authorized;
     }
 
     address public fusionContract;
+
+    // Stats de la carte (extensible)
+    struct CardStats {
+        uint256 attack;
+        // Prêt pour expansion future:
+        // uint256 defense;
+        // uint256 health;
+        // uint256 speed;
+    }
 
     struct CardData {
         uint256 level;
@@ -40,35 +48,36 @@ contract ArenaCards is ERC721, Ownable {
         string name;
         uint256 createdAt;
         uint256 lastTransferAt;
+        CardStats stats;
     }
 
-    // Mapping des détails de chaque carte
+    // Stats de base par carte
+    struct BaseStats {
+        uint256 attack;
+        // Prêt pour expansion:
+        // uint256 defense;
+        // uint256 health;
+        // uint256 speed;
+    }
+
+    mapping(string => mapping(string => BaseStats)) private baseStats;
     mapping(uint256 => CardData) public cardDetails;
-
-    // Mapping pour stocker les URLs des images: rarity => name => imageURI
     mapping(string => mapping(string => string)) private imageURIs;
-
-    // Historique des propriétaires pour chaque carte
     mapping(uint256 => address[]) public previousOwners;
-
-    // Dernière action de chaque utilisateur (pour cooldown)
     mapping(address => uint256) public lastAction;
-
-    // Timestamp jusqu'auquel une carte est verrouillée
     mapping(uint256 => uint256) public lockUntil;
 
-    // Événements
     event CardMinted(uint256 indexed tokenId, address indexed owner, string name, string rarity);
     event CardsFused(uint256 indexed tokenId1, uint256 indexed tokenId2, uint256 indexed newTokenId, uint256 newLevel);
     event CardLocked(uint256 indexed tokenId, uint256 unlockTime);
-    event AuthorizedMinterUpdated(address indexed newMinter);
 
     constructor() ERC721("Arena Cards", "ACARD") Ownable(msg.sender) {
         _initializeImageURIs();
+        _initializeBaseStats();
     }
 
     /**
-     * @dev Initialise les URLs des images pour chaque carte
+     * @dev Initialise les URLs des images
      */
     function _initializeImageURIs() private {
         string memory defaultURI = "https://plum-wrong-dog-715.mypinata.cloud/ipfs/bafkreidmuc2dqodhwfozbl6thnbr4bhvpmqf6xhvwmnn45m7qfycphtxvy";
@@ -87,19 +96,93 @@ contract ArenaCards is ERC721, Ownable {
         imageURIs["rare"]["Paladin Sacre"] = defaultURI;
         imageURIs["rare"]["Druide Ancien"] = defaultURI;
 
+        // Peu communes
+        imageURIs["peu commune"]["Guerrier Brave"] = defaultURI;
+        imageURIs["peu commune"]["Voleur Agile"] = defaultURI;
+        imageURIs["peu commune"]["Pretre Sage"] = defaultURI;
+
         // Communes
-        imageURIs["commune"]["Guerrier Brave"] = defaultURI;
         imageURIs["commune"]["Gobelin Ruse"] = defaultURI;
+        imageURIs["commune"]["Sorciere Noire"] = defaultURI;
+        imageURIs["commune"]["Barbare Sauvage"] = defaultURI;
         imageURIs["commune"]["Squelette Soldat"] = defaultURI;
         imageURIs["commune"]["Slime Gluant"] = defaultURI;
     }
 
     /**
-     * @dev Définit l'adresse autorisée à mint (contrat Booster)
+     * @dev Initialise les stats de base pour chaque carte
      */
-    /**
-     * @dev Vérifie le cooldown de l'utilisateur
-     */
+    function _initializeBaseStats() private {
+        // LÉGENDAIRES - ATK 100-150
+        baseStats["legendaire"]["Dragon Dore"] = BaseStats({
+            attack: 150
+        });
+
+        baseStats["legendaire"]["Phoenix Immortel"] = BaseStats({
+            attack: 140
+        });
+
+        // ÉPIQUES - ATK 80-100
+        baseStats["epique"]["Chevalier Noir"] = BaseStats({
+            attack: 100
+        });
+
+        baseStats["epique"]["Mage des Glaces"] = BaseStats({
+            attack: 90
+        });
+
+        baseStats["epique"]["Assassin Fantome"] = BaseStats({
+            attack: 95
+        });
+
+        // RARES - ATK 60-80
+        baseStats["rare"]["Archer Elfe"] = BaseStats({
+            attack: 75
+        });
+
+        baseStats["rare"]["Paladin Sacre"] = BaseStats({
+            attack: 70
+        });
+
+        baseStats["rare"]["Druide Ancien"] = BaseStats({
+            attack: 65
+        });
+
+        // PEU COMMUNES - ATK 40-60
+        baseStats["peu commune"]["Guerrier Brave"] = BaseStats({
+            attack: 55
+        });
+
+        baseStats["peu commune"]["Voleur Agile"] = BaseStats({
+            attack: 50
+        });
+
+        baseStats["peu commune"]["Pretre Sage"] = BaseStats({
+            attack: 45
+        });
+
+        // COMMUNES - ATK 30-50
+        baseStats["commune"]["Gobelin Ruse"] = BaseStats({
+            attack: 45
+        });
+
+        baseStats["commune"]["Sorciere Noire"] = BaseStats({
+            attack: 40
+        });
+
+        baseStats["commune"]["Barbare Sauvage"] = BaseStats({
+            attack: 50
+        });
+
+        baseStats["commune"]["Squelette Soldat"] = BaseStats({
+            attack: 35
+        });
+
+        baseStats["commune"]["Slime Gluant"] = BaseStats({
+            attack: 30
+        });
+    }
+
     modifier cooldown(address user) {
         require(
             lastAction[user] == 0 || block.timestamp >= lastAction[user] + COOLDOWN,
@@ -108,17 +191,11 @@ contract ArenaCards is ERC721, Ownable {
         _;
     }
 
-    /**
-     * @dev Vérifie qu'une carte n'est pas verrouillée
-     */
     modifier notLocked(uint256 tokenId) {
         require(block.timestamp >= lockUntil[tokenId], "Card is temporarily locked");
         _;
     }
 
-    /**
-     * @dev Vérifie qu'un utilisateur n'a pas atteint le maximum de cartes
-     */
     modifier maxCards(address user) {
         require(balanceOf(user) < MAX_CARDS, "Max cards reached");
         _;
@@ -138,45 +215,46 @@ contract ArenaCards is ERC721, Ownable {
         delete cardDetails[tokenId];
     }
 
+    /**
+     * @dev Mint une carte depuis la fusion
+     */
     function mintFusion(
         address to,
         string memory name,
         string memory rarity,
         uint256 level
-    ) external onlyFusion returns (uint256){
-
+    ) external onlyFusion returns (uint256) {
         uint256 tokenId = tokenCounter;
         _safeMint(to, tokenId);
+
+        BaseStats memory base = baseStats[rarity][name];
 
         cardDetails[tokenId] = CardData({
             level: level,
             rarity: rarity,
             name: name,
             createdAt: block.timestamp,
-            lastTransferAt: block.timestamp
+            lastTransferAt: block.timestamp,
+            stats: CardStats({
+                attack: base.attack * level
+            })
         });
 
-    tokenCounter++;
+        tokenCounter++;
         return tokenId;
     }
 
     /**
      * @dev Mint une nouvelle carte
-     * Peut être appelé par le owner OU le contrat autorisé (Booster)
      */
     function mintCard(
         address to,
         string memory name,
         string memory rarity
-    )
-    external
-    maxCards(to)
-    {
+    ) external maxCards(to) {
         bool isMinter = authorizedMinters[msg.sender];
-
         require(msg.sender == owner() || isMinter, "Not authorized to mint");
 
-        // cooldown UNIQUEMENT si c'est le owner qui mint "à la main"
         if (!isMinter) {
             require(
                 lastAction[to] == 0 || block.timestamp >= lastAction[to] + COOLDOWN,
@@ -187,18 +265,22 @@ contract ArenaCards is ERC721, Ownable {
 
         uint256 tokenId = tokenCounter;
 
-        // lock (optionnel, mais recommandé)
         lockUntil[tokenId] = block.timestamp + LOCK_TIME;
         emit CardLocked(tokenId, lockUntil[tokenId]);
 
         _safeMint(to, tokenId);
+
+        BaseStats memory base = baseStats[rarity][name];
 
         cardDetails[tokenId] = CardData({
             level: 1,
             rarity: rarity,
             name: name,
             createdAt: block.timestamp,
-            lastTransferAt: block.timestamp
+            lastTransferAt: block.timestamp,
+            stats: CardStats({
+                attack: base.attack
+            })
         });
 
         tokenCounter++;
@@ -208,18 +290,13 @@ contract ArenaCards is ERC721, Ownable {
 
     /**
      * @dev Override tokenURI pour générer les métadonnées on-chain
-     * Retourne un JSON encodé en base64 compatible avec le standard ERC721
      */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
 
         CardData memory card = cardDetails[tokenId];
-
-        // Récupérer l'URL de l'image
         string memory imageURL = imageURIs[card.rarity][card.name];
 
-
-        // Construire le JSON des métadonnées
         string memory json = string(abi.encodePacked(
             '{"name":"',
             card.name,
@@ -234,43 +311,71 @@ contract ArenaCards is ERC721, Ownable {
             '{"trait_type":"Level","value":',
             card.level.toString(),
             '},',
-            '{"trait_type":"Created At","value":',
-            card.createdAt.toString(),
+            '{"trait_type":"Attack","value":',
+            card.stats.attack.toString(),
             '}',
             ']}'
         ));
 
-        // Encoder en base64
         string memory base64Json = Base64.encode(bytes(json));
-
-        // Retourner avec le préfixe data URI
         return string(abi.encodePacked('data:application/json;base64,', base64Json));
     }
 
     /**
-     * @dev Retourne l'historique des propriétaires d'une carte
+     * @dev Retourne les stats d'une carte
      */
+    function getCardStats(uint256 tokenId) external view returns (
+        string memory name,
+        string memory rarity,
+        uint256 level,
+        uint256 attack
+    ) {
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
+        CardData memory card = cardDetails[tokenId];
+        
+        return (
+            card.name,
+            card.rarity,
+            card.level,
+            card.stats.attack
+        );
+    }
+
+    /**
+     * @dev Retourne les stats de base d'une carte
+     */
+    function getBaseStats(string memory rarity, string memory name) external view returns (
+        uint256 attack
+    ) {
+        BaseStats memory stats = baseStats[rarity][name];
+        return stats.attack;
+    }
+
+    /**
+     * @dev Permet de modifier les stats de base (owner only)
+     */
+    function setBaseStats(
+        string memory rarity,
+        string memory name,
+        uint256 attack
+    ) external onlyOwner {
+        baseStats[rarity][name] = BaseStats({
+            attack: attack
+        });
+    }
+
     function getPreviousOwners(uint256 tokenId) external view returns (address[] memory) {
         return previousOwners[tokenId];
     }
 
-    /**
-     * @dev Permet de mettre à jour l'URL d'une image (owner seulement)
-     */
     function setImageURI(string memory rarity, string memory name, string memory newImageURI) external onlyOwner {
         imageURIs[rarity][name] = newImageURI;
     }
 
-    /**
-     * @dev Retourne l'URL de l'image pour une carte donnée
-     */
     function getImageURI(string memory rarity, string memory name) external view returns (string memory) {
         return imageURIs[rarity][name];
     }
 
-    /**
-     * @dev Override de la fonction _update pour gérer les transferts
-     */
     function _update(address to, uint256 tokenId, address auth)
         internal
         override
@@ -284,7 +389,6 @@ contract ArenaCards is ERC721, Ownable {
             cardDetails[tokenId].lastTransferAt = block.timestamp;
         }
 
-
-    return super._update(to, tokenId, auth);
+        return super._update(to, tokenId, auth);
     }
 }

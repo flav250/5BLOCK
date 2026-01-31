@@ -5,10 +5,10 @@ import "./ArenaCards.sol";
 
 /**
  * @title FreeBooster
- * @dev Système de boosters GRATUITS avec cooldown
+ * @dev Boosters GRATUITS avec cooldown
  * - 2 cartes par booster
  * - Cooldown de 10 minutes
- * - Taux de drop faibles (0.1% légendaire)
+ * - Drop rates: 0.1% legendaire, 10% epique, 20% rare, 25% peu commune, 44.9% commune
  */
 contract FreeBooster {
     ArenaCards public arenaCards;
@@ -17,10 +17,8 @@ contract FreeBooster {
     uint256 public constant FREE_BOOSTER_COOLDOWN = 10 minutes;
     uint256 public constant CARDS_PER_BOOSTER = 2;
 
-    // Dernière ouverture par utilisateur
     mapping(address => uint256) public lastBoosterOpen;
 
-    // Templates de cartes
     struct CardTemplate {
         string name;
         string rarity;
@@ -29,7 +27,6 @@ contract FreeBooster {
 
     CardTemplate[] public cardTemplates;
 
-    // Events
     event BoosterOpened(address indexed user, uint256 timestamp);
     event CardMinted(address indexed user, uint256 tokenId, string name, string rarity);
 
@@ -45,10 +42,10 @@ contract FreeBooster {
     }
 
     /**
-     * @dev Initialise les templates de cartes
+     * @dev Initialise tous les templates de cartes
      */
     function _initializeCardTemplates() private {
-        // Legendaires (0-1)
+        // LÉGENDAIRES (0-1) - 2 cartes
         cardTemplates.push(CardTemplate({
             name: "Dragon Dore",
             rarity: "legendaire",
@@ -58,20 +55,20 @@ contract FreeBooster {
         cardTemplates.push(CardTemplate({
             name: "Phoenix Immortel",
             rarity: "legendaire",
-            imageURI: "https://via.placeholder.com/300x400/FF4500/FFFFFF?text=Phoenix"
+            imageURI: "https://via.placeholder.com/300x400/FF6347/FFFFFF?text=Phoenix"
         }));
 
-        // Epiques (2-4)
+        // ÉPIQUES (2-4) - 3 cartes
         cardTemplates.push(CardTemplate({
             name: "Chevalier Noir",
             rarity: "epique",
-            imageURI: "https://via.placeholder.com/300x400/800080/FFFFFF?text=Chevalier+Noir"
+            imageURI: "https://via.placeholder.com/300x400/800080/FFFFFF?text=Chevalier"
         }));
 
         cardTemplates.push(CardTemplate({
             name: "Mage des Glaces",
             rarity: "epique",
-            imageURI: "https://via.placeholder.com/300x400/4169E1/FFFFFF?text=Mage+Glaces"
+            imageURI: "https://via.placeholder.com/300x400/4169E1/FFFFFF?text=Mage"
         }));
 
         cardTemplates.push(CardTemplate({
@@ -80,11 +77,11 @@ contract FreeBooster {
             imageURI: "https://via.placeholder.com/300x400/9370DB/FFFFFF?text=Assassin"
         }));
 
-        // Rares (5-7)
+        // RARES (5-7) - 3 cartes
         cardTemplates.push(CardTemplate({
             name: "Archer Elfe",
             rarity: "rare",
-            imageURI: "https://via.placeholder.com/300x400/1E90FF/FFFFFF?text=Archer+Elfe"
+            imageURI: "https://via.placeholder.com/300x400/1E90FF/FFFFFF?text=Archer"
         }));
 
         cardTemplates.push(CardTemplate({
@@ -99,7 +96,7 @@ contract FreeBooster {
             imageURI: "https://via.placeholder.com/300x400/32CD32/000000?text=Druide"
         }));
 
-        // Peu communes (8-10)
+        // PEU COMMUNES (8-10) - 3 cartes
         cardTemplates.push(CardTemplate({
             name: "Guerrier Brave",
             rarity: "peu commune",
@@ -118,7 +115,7 @@ contract FreeBooster {
             imageURI: "https://via.placeholder.com/300x400/AFEEEE/000000?text=Pretre"
         }));
 
-        // Communes (11-14)
+        // COMMUNES (11-15) - 5 cartes
         cardTemplates.push(CardTemplate({
             name: "Gobelin Ruse",
             rarity: "commune",
@@ -142,11 +139,14 @@ contract FreeBooster {
             rarity: "commune",
             imageURI: "https://via.placeholder.com/300x400/A9A9A9/FFFFFF?text=Squelette"
         }));
+
+        cardTemplates.push(CardTemplate({
+            name: "Slime Gluant",
+            rarity: "commune",
+            imageURI: "https://via.placeholder.com/300x400/98FB98/000000?text=Slime"
+        }));
     }
 
-    /**
-     * @dev Génère un nombre pseudo-aléatoire
-     */
     function _random(uint256 seed) private view returns (uint256) {
         return uint256(keccak256(abi.encodePacked(
             block.timestamp,
@@ -157,42 +157,38 @@ contract FreeBooster {
     }
 
     /**
-     * @dev Sélectionne une carte aléatoire
-     * Taux: 0.1% Légendaire, 10% Épique, 20% Rare, 25% Peu Commune, 44.9% Commune
+     * @dev Sélectionne une carte selon les taux de drop
      */
     function _selectRandomCard(uint256 seed) private view returns (CardTemplate memory) {
-        uint256 randomNum = _random(seed) % 1000; // Sur 1000 pour 0.1%
+        uint256 randomNum = _random(seed) % 1000;
 
         if (randomNum < 1) {
-            // Légendaire: 0.1%
+            // Légendaire: 0.1% (1/1000)
             uint256 index = _random(seed + 1) % 2;
             return cardTemplates[index];
         }
         else if (randomNum < 101) {
-            // Épique: 10%
+            // Épique: 10% (100/1000)
             uint256 index = 2 + (_random(seed + 2) % 3);
             return cardTemplates[index];
         }
         else if (randomNum < 301) {
-            // Rare: 20%
+            // Rare: 20% (200/1000)
             uint256 index = 5 + (_random(seed + 3) % 3);
             return cardTemplates[index];
         }
         else if (randomNum < 551) {
-            // Peu Commune: 25%
+            // Peu Commune: 25% (250/1000)
             uint256 index = 8 + (_random(seed + 4) % 3);
             return cardTemplates[index];
         }
         else {
-            // Commune: 44.9%
-            uint256 index = 11 + (_random(seed + 5) % 4);
+            // Commune: 44.9% (449/1000)
+            uint256 index = 11 + (_random(seed + 5) % 5);
             return cardTemplates[index];
         }
     }
 
-    /**
-     * @dev Mint les cartes du booster
-     */
     function _mintBoosterCards(address user) private {
         for (uint256 i = 0; i < CARDS_PER_BOOSTER; i++) {
             CardTemplate memory selectedCard = _selectRandomCard(i);
@@ -207,36 +203,25 @@ contract FreeBooster {
         }
     }
 
-    /**
-     * @dev Ouvre un booster gratuit
-     */
     function openBooster() external {
-        // Vérifier le cooldown
         require(
             lastBoosterOpen[msg.sender] == 0 ||
             block.timestamp >= lastBoosterOpen[msg.sender] + FREE_BOOSTER_COOLDOWN,
             "Booster cooldown active"
         );
 
-        // Vérifier la limite de cartes
         uint256 currentBalance = arenaCards.balanceOf(msg.sender);
         require(
             currentBalance + CARDS_PER_BOOSTER <= arenaCards.MAX_CARDS(),
             "Not enough space for booster cards"
         );
 
-        // Mettre à jour le cooldown
         lastBoosterOpen[msg.sender] = block.timestamp;
-
-        // Mint les cartes
         _mintBoosterCards(msg.sender);
 
         emit BoosterOpened(msg.sender, block.timestamp);
     }
 
-    /**
-     * @dev Retourne le temps restant avant le prochain booster
-     */
     function getTimeUntilNextBooster(address user) external view returns (uint256) {
         if (lastBoosterOpen[user] == 0) {
             return 0;
@@ -251,9 +236,6 @@ contract FreeBooster {
         return nextAvailable - block.timestamp;
     }
 
-    /**
-     * @dev Vérifie si un booster est disponible
-     */
     function canOpenBooster(address user) external view returns (bool) {
         if (lastBoosterOpen[user] == 0) {
             return true;
@@ -262,9 +244,6 @@ contract FreeBooster {
         return block.timestamp >= lastBoosterOpen[user] + FREE_BOOSTER_COOLDOWN;
     }
 
-    /**
-     * @dev Transfer ownership
-     */
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != address(0), "Invalid address");
         owner = newOwner;

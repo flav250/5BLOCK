@@ -1,4 +1,4 @@
-/* components/InventoryCard.css */
+/* components/InventoryCard.css - VERSION AVEC ATTACK STAT */
 
 .inventory-card {
   background: white;
@@ -146,7 +146,7 @@
 
 .stat-label {
   font-size: 0.7rem;
-  color: #9ca3af;
+  color: #0f0c29;
   text-transform: uppercase;
   font-weight: 600;
 }
@@ -155,6 +155,11 @@
   font-size: 1.1rem;
   font-weight: bold;
   color: #333;
+}
+
+.stat-value.attack {
+  color: #dc2626;
+  text-shadow: 0 0 5px rgba(220, 38, 38, 0.3);
 }
 
 .stat-value.power {
