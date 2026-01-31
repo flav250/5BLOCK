@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { ArenaCard, TeamSlot } from '../types/ArenaCard';
 import { useWeb3 } from '../hooks/useWeb3';
-import { loadUserCards, saveTeam as saveTeamOnChain, loadTeam as loadTeamFromChain } from '../utils/contractHelpers';
+import { loadUserCards, saveTeam as saveTeamOnChain, loadTeam as loadTeamFromChain, clearTeam as clearTeamOnChain } from '../utils/contractHelpers';
 import CardSlot from './CardSlot';
 import InventoryCard from './InventoryCard';
 import './TeamBuilder.css';
 
 const MAX_TEAM_SIZE = 5;
+const LOCAL_STORAGE_KEY = 'arenaCards_team_';
 
 const TeamBuilder: React.FC = () => {
   const { account, signer } = useWeb3();
@@ -29,7 +30,94 @@ const TeamBuilder: React.FC = () => {
 
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  
+  // État de synchronisation
+  const [isSyncedWithBlockchain, setIsSyncedWithBlockchain] = useState(false);
+
+  // --- LOCAL STORAGE FUNCTIONS ---
+
+  /**
+   * Sauvegarde l'équipe dans localStorage (auto-sauvegarde locale)
+   */
+  const saveTeamToLocalStorage = useCallback((slots: TeamSlot[]) => {
+    if (!account) return;
+
+    const teamData = {
+      cardIds: slots
+        .filter(slot => slot.card !== null)
+        .map(slot => slot.card!.tokenId),
+      timestamp: Date.now(),
+    };
+
+    localStorage.setItem(LOCAL_STORAGE_KEY + account, JSON.stringify(teamData));
+    console.log('💾 Auto-sauvegarde locale effectuée');
+  }, [account]);
+
+  /**
+   * Charge l'équipe depuis localStorage
+   */
+  const loadTeamFromLocalStorage = useCallback(async () => {
+    if (!account || !signer) return null;
+
+    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY + account);
+    if (!savedData) return null;
+
+    try {
+      const teamData = JSON.parse(savedData);
+      console.log('📂 Équipe trouvée dans localStorage:', teamData);
+      return teamData.cardIds as string[];
+    } catch (error) {
+      console.error('Erreur lors du chargement depuis localStorage:', error);
+      return null;
+    }
+  }, [account, signer]);
+
+  /**
+   * Compare et synchronise localStorage avec blockchain
+   */
+  const checkSyncStatus = useCallback(async () => {
+    if (!signer || !account) return;
+
+    try {
+      // Récupérer l'équipe de la blockchain
+      const blockchainTeam = await loadTeamFromChain(signer);
+      
+      // Récupérer l'équipe locale
+      const localTeam = await loadTeamFromLocalStorage();
+
+      if (!localTeam || localTeam.length === 0) {
+        setIsSyncedWithBlockchain(blockchainTeam.length === 0);
+        return;
+      }
+
+      // Comparer les équipes
+      const areSynced = 
+        blockchainTeam.length === localTeam.length &&
+        blockchainTeam.every((id, index) => id === localTeam[index]);
+
+      setIsSyncedWithBlockchain(areSynced);
+      
+      if (!areSynced) {
+        console.log('⚠️ Équipe locale non synchronisée avec la blockchain');
+      } else {
+        console.log('✅ Équipe synchronisée avec la blockchain');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification de la synchronisation:', error);
+    }
+  }, [signer, account, loadTeamFromLocalStorage]);
+
+  /**
+   * Efface l'équipe du localStorage
+   */
+  const clearTeamFromLocalStorage = useCallback(() => {
+    if (!account) return;
+    localStorage.removeItem(LOCAL_STORAGE_KEY + account);
+    console.log('🗑️ Équipe locale effacée');
+  }, [account]);
 
   // Fonction de chargement des cartes (useCallback pour éviter recréation)
   const loadCards = useCallback(async () => {
@@ -97,11 +185,79 @@ const TeamBuilder: React.FC = () => {
   // Charger les cartes et l'équipe sauvegardée au montage
   useEffect(() => {
     const init = async () => {
-      await loadCards();
-      await loadSavedTeam();
+      if (!signer || !account) {
+        setIsInitialLoading(false);
+        return;
+      }
+      
+      try {
+        setIsInitialLoading(true);
+        
+        // 1. Charger les cartes
+        const allCards = await loadUserCards(signer, account);
+        setInventory(allCards);
+        
+        // 2. Essayer de charger depuis localStorage d'abord (rapide)
+        const localTeam = await loadTeamFromLocalStorage();
+        
+        // 3. Charger depuis la blockchain (plus lent, source de vérité)
+        const blockchainTeam = await loadTeamFromChain(signer);
+        
+        // 4. Déterminer quelle version utiliser
+        let teamToLoad: string[] = [];
+        
+        if (blockchainTeam.length > 0) {
+          // La blockchain a une équipe, utiliser celle-ci
+          teamToLoad = blockchainTeam;
+          console.log('📦 Chargement de l\'équipe depuis la blockchain');
+        } else if (localTeam && localTeam.length > 0) {
+          // Seulement localStorage a une équipe
+          teamToLoad = localTeam;
+          console.log('💾 Chargement de l\'équipe depuis localStorage');
+        }
+        
+        // 5. Appliquer l'équipe
+        if (teamToLoad.length > 0) {
+          const newTeamSlots: TeamSlot[] = Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
+            position: i,
+            card: null,
+          }));
+
+          const cardsInTeam: ArenaCard[] = [];
+          
+          teamToLoad.forEach((tokenId, index) => {
+            const card = allCards.find(c => c.tokenId === tokenId);
+            if (card && index < MAX_TEAM_SIZE) {
+              newTeamSlots[index] = {
+                position: index,
+                card: card
+              };
+              cardsInTeam.push(card);
+            }
+          });
+
+          setTeamSlots(newTeamSlots);
+          setInventory(allCards.filter(card => 
+            !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
+          ));
+          
+          // Si on a chargé depuis localStorage, le sauvegarder aussi
+          if (localTeam && localTeam.length > 0) {
+            saveTeamToLocalStorage(newTeamSlots);
+          }
+        }
+        
+        // 6. Vérifier le statut de synchronisation
+        await checkSyncStatus();
+      } catch (error) {
+        console.error('Erreur lors du chargement initial:', error);
+      } finally {
+        setIsInitialLoading(false);
+      }
     };
+    
     init();
-  }, [loadCards, loadSavedTeam]);
+  }, [signer, account, loadTeamFromLocalStorage, checkSyncStatus, saveTeamToLocalStorage]);
 
   // Calculer la puissance totale de l'équipe
   const getTotalPower = (): number => {
@@ -185,6 +341,11 @@ const TeamBuilder: React.FC = () => {
     }
 
     setTeamSlots(newTeamSlots);
+    
+    // Auto-sauvegarde locale
+    saveTeamToLocalStorage(newTeamSlots);
+    setIsSyncedWithBlockchain(false);
+    
     handleDragEnd();
   };
 
@@ -200,6 +361,11 @@ const TeamBuilder: React.FC = () => {
     setTeamSlots(newTeamSlots);
 
     setInventory(prev => [...prev, draggedCard]);
+    
+    // Auto-sauvegarde locale
+    saveTeamToLocalStorage(newTeamSlots);
+    setIsSyncedWithBlockchain(false);
+    
     handleDragEnd();
   };
 
@@ -211,6 +377,10 @@ const TeamBuilder: React.FC = () => {
       newTeamSlots[slotIndex].card = null;
       setTeamSlots(newTeamSlots);
       setInventory(prev => [...prev, card]);
+      
+      // Auto-sauvegarde locale
+      saveTeamToLocalStorage(newTeamSlots);
+      setIsSyncedWithBlockchain(false);
     }
   };
 
@@ -230,6 +400,10 @@ const TeamBuilder: React.FC = () => {
       const success = await saveTeamOnChain(signer, teamCardIds);
 
       if (success) {
+        // Synchroniser le localStorage avec la blockchain
+        saveTeamToLocalStorage(teamSlots);
+        setIsSyncedWithBlockchain(true);
+        
         alert('✅ Équipe sauvegardée sur la blockchain !');
       }
     } catch (error) {
@@ -240,21 +414,43 @@ const TeamBuilder: React.FC = () => {
     }
   };
 
-  const resetTeam = () => {
-    // Remettre toutes les cartes dans l'inventaire
-    const cardsToReturn = teamSlots
-        .filter(slot => slot.card !== null)
-        .map(slot => slot.card!);
+  const resetTeam = async () => {
+    if (!signer) return;
 
-    setInventory(prev => [...prev, ...cardsToReturn]);
+    setIsResetting(true);
+    try {
+      console.log('Réinitialisation de l\'équipe sur la blockchain...');
 
-    // Réinitialiser les slots
-    setTeamSlots(
-        Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
+      // Appeler le contrat Team.sol pour effacer l'équipe
+      const success = await clearTeamOnChain(signer);
+
+      if (success) {
+        // Remettre toutes les cartes dans l'inventaire
+        const cardsToReturn = teamSlots
+            .filter(slot => slot.card !== null)
+            .map(slot => slot.card!);
+
+        setInventory(prev => [...prev, ...cardsToReturn]);
+
+        // Réinitialiser les slots
+        const emptySlots = Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
           position: i,
           card: null,
-        }))
-    );
+        }));
+        setTeamSlots(emptySlots);
+
+        // Effacer le localStorage et synchroniser
+        clearTeamFromLocalStorage();
+        setIsSyncedWithBlockchain(true);
+
+        alert('✅ Équipe réinitialisée sur la blockchain !');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation:', error);
+      alert('❌ Erreur lors de la réinitialisation de l\'équipe');
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   if (!account) {
@@ -263,6 +459,24 @@ const TeamBuilder: React.FC = () => {
           <div className="connect-prompt">
             <h2>🦊 Connecte ton wallet</h2>
             <p>Pour voir tes cartes et composer ton équipe</p>
+          </div>
+        </div>
+    );
+  }
+
+  if (isInitialLoading) {
+    return (
+        <div className="team-builder-container">
+          <div className="team-header">
+            <h1>⚔️ Composition d'Équipe</h1>
+          </div>
+          <div className="initial-loading-container">
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <h2>⏳ Chargement en cours...</h2>
+              <p>📦 Récupération de tes cartes depuis la blockchain</p>
+              <p>🎯 Restauration de ton équipe sauvegardée</p>
+            </div>
           </div>
         </div>
     );
@@ -287,7 +501,40 @@ const TeamBuilder: React.FC = () => {
 
         {/* Zone des 5 slots d'équipe */}
         <div className="team-slots-section">
-          <h2>🎯 Mon Équipe</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h2 style={{ margin: 0 }}>🎯 Mon Équipe</h2>
+            {/* Indicateur de synchronisation compact */}
+            {getTeamCount() > 0 && (
+              <div className={`sync-badge ${isSyncedWithBlockchain ? 'synced' : 'not-synced'}`}>
+                <span className="sync-badge-icon">
+                  {isSyncedWithBlockchain ? '✅' : '⚠️'}
+                </span>
+                <div className="sync-badge-tooltip">
+                  {isSyncedWithBlockchain ? (
+                    <>
+                      <div className="tooltip-title">✅ Équipe synchronisée</div>
+                      <div className="tooltip-text">
+                        Ton équipe est enregistrée sur la blockchain et liée à ton compte. 
+                        Tu peux la retrouver depuis n'importe quel appareil.
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="tooltip-title">⚠️ Sauvegarde locale uniquement</div>
+                      <div className="tooltip-text">
+                        <strong>💾 Auto-sauvegarde locale :</strong> Tes modifications sont automatiquement 
+                        sauvegardées sur cet appareil.
+                      </div>
+                      <div className="tooltip-text">
+                        <strong>🔗 Sauvegarde blockchain :</strong> Pour enregistrer ton équipe sur la blockchain 
+                        et la lier à ton compte, clique sur "Sauvegarder l'équipe" ci-dessous.
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
           <div className="team-slots-grid">
             {teamSlots.map((slot, index) => (
                 <CardSlot
@@ -308,9 +555,9 @@ const TeamBuilder: React.FC = () => {
             <button
                 onClick={resetTeam}
                 className="btn-secondary"
-                disabled={getTeamCount() === 0}
+                disabled={isResetting || getTeamCount() === 0}
             >
-              🔄 Réinitialiser
+              {isResetting ? '🔄 Réinitialisation...' : '🔄 Réinitialiser'}
             </button>
             <button
                 onClick={saveTeam}
