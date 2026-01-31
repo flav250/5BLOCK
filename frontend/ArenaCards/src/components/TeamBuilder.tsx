@@ -263,13 +263,13 @@ const TeamBuilder: React.FC = () => {
       return;
     }
 
+    let newTeamSlots = [...teamSlots];
+
     if (dragSource === 'inventory') {
       // Déposer depuis inventaire
-      const newTeamSlots = [...teamSlots];
       const targetCard = newTeamSlots[slotIndex].card;
 
       newTeamSlots[slotIndex].card = draggedCard;
-      setTeamSlots(newTeamSlots);
 
       // Retirer de l'inventaire
       setInventory(prev => prev.filter(c => c.tokenId !== draggedCard.tokenId));
@@ -286,11 +286,9 @@ const TeamBuilder: React.FC = () => {
         return;
       }
 
-      const newTeamSlots = [...teamSlots];
       const temp = newTeamSlots[slotIndex].card;
       newTeamSlots[slotIndex].card = newTeamSlots[draggedFromSlot].card;
       newTeamSlots[draggedFromSlot].card = temp;
-      setTeamSlots(newTeamSlots);
     }
 
     setTeamSlots(newTeamSlots);
