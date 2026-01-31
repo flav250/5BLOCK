@@ -303,21 +303,17 @@ const TeamBuilder: React.FC = () => {
     newTeamSlots[slotIndex].card = null;
     setTeamSlots(newTeamSlots);
 
-    if (card) {
-      newTeamSlots[slotIndex].card = null;
-      setTeamSlots(newTeamSlots);
-      setInventory(prev => {
+    setInventory(prev => {
       if (prev.some(c => c.tokenId === card.tokenId)) {
         console.warn('⚠️ Duplication évitée');
         return prev;
       }
       return [...prev, card];
     });
-      
-      // Auto-sauvegarde locale
-      saveTeamToLocalStorage(newTeamSlots);
-      setIsSyncedWithBlockchain(false);
-    }
+    
+    // Auto-sauvegarde locale
+    saveTeamToLocalStorage(newTeamSlots);
+    setIsSyncedWithBlockchain(false);
   };
 
   const saveTeam = async () => {
