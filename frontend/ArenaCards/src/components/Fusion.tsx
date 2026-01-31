@@ -177,33 +177,6 @@ const Fusion: React.FC = () => {
         }
     };
 
-    /*const handleDragStart = (card: ArenaCard) => {
-        setDraggedCard(card);
-    };
-
-    const handleDragEnd = () => {
-        setDraggedCard(null);
-    };
-
-    const handleDropOnSlot = (slotIndex: number) => {
-        if (!draggedCard) return;
-
-        const newSlots = [...fusionSlots];
-
-        if (newSlots[slotIndex].card) {
-            const oldCard = newSlots[slotIndex].card;
-            if (oldCard) {
-                setInventory(prev => [...prev, oldCard]);
-            }
-        }
-
-        newSlots[slotIndex].card = draggedCard;
-        setFusionSlots(newSlots);
-
-        setInventory(prev => prev.filter(c => c.tokenId !== draggedCard.tokenId));
-        setDraggedCard(null);
-    };*/
-
     const placeCardInSlot = (slotIndex: number) => {
         if (!selectedCard) return;
 
@@ -325,7 +298,7 @@ const Fusion: React.FC = () => {
                             </div>
                         ) : (
                             <div className="empty-slot">
-                                <span className="slot-number">1</span>
+                                <span className="slot-number2">1</span>
                                 <p>Glisse une carte ici</p>
                             </div>
                         )}
@@ -372,7 +345,7 @@ const Fusion: React.FC = () => {
                             </div>
                         ) : (
                             <div className="empty-slot">
-                                <span className="slot-number">2</span>
+                                <span className="slot-number2">2</span>
                                 <p>Glisse une carte ici</p>
                             </div>
                         )}
