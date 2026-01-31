@@ -80,33 +80,32 @@ contract ArenaCards is ERC721, Ownable {
      * @dev Initialise les URLs des images
      */
     function _initializeImageURIs() private {
-        string memory defaultURI = "https://plum-wrong-dog-715.mypinata.cloud/ipfs/bafkreidmuc2dqodhwfozbl6thnbr4bhvpmqf6xhvwmnn45m7qfycphtxvy";
 
         // Légendaires
-        imageURIs["legendaire"]["Dragon Dore"] = defaultURI;
-        imageURIs["legendaire"]["Phoenix Immortel"] = defaultURI;
+        imageURIs["legendaire"]["Dragon Dore"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeia43c7zri7lz66ta4bpqbjpzr23rsmh6etvejlg3lurwdfhb44shm";
+        imageURIs["legendaire"]["Phoenix Immortel"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigsbr2x5mcfgi2cstnrd7x3gyottx5222pj4rk7qv3gv5pohp5h6q";
 
         // Épiques
-        imageURIs["epique"]["Chevalier Noir"] = defaultURI;
-        imageURIs["epique"]["Mage des Glaces"] = defaultURI;
-        imageURIs["epique"]["Assassin Fantome"] = defaultURI;
+        imageURIs["epique"]["Chevalier Noir"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeidum46xrosdt4dkefhlaketrqg45s6tluh7evrzihwzlvolp3nstq";
+        imageURIs["epique"]["Mage des Glaces"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeicud2dj6mo5dmpbto7jeoalhpdkjawxkva5omvyvrelrnsowcmuae";
+        imageURIs["epique"]["Assassin Fantome"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeihhh4pnl6pt2udkzaqmhrplzwuwfox3ew34ezpy7s4nd32mo6s7zi";
 
         // Rares
-        imageURIs["rare"]["Archer Elfe"] = defaultURI;
-        imageURIs["rare"]["Paladin Sacre"] = defaultURI;
-        imageURIs["rare"]["Druide Ancien"] = defaultURI;
+        imageURIs["rare"]["Archer Elfe"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeic522zqehxs73b7abqqsuq533xcjh4vgthqhkfotomnf6oega5ic4";
+        imageURIs["rare"]["Paladin Sacre"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeidsl2aey225cdyn6l7fhg4ndkqn24rtckxmy5tloheq5k4bpo5oxy";
+        imageURIs["rare"]["Druide Ancien"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeidzn5kxyxjlf5glprjyp2trm5zpl46kl3wjx4x4sxkduandrfkh5q";
 
         // Peu communes
-        imageURIs["peu commune"]["Guerrier Brave"] = defaultURI;
-        imageURIs["peu commune"]["Voleur Agile"] = defaultURI;
-        imageURIs["peu commune"]["Pretre Sage"] = defaultURI;
+        imageURIs["peu commune"]["Guerrier Brave"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigovwwksezfwbbbrd63qhfeezqgxwnxn7acv2r5qbrsxnc3fr4n5i";
+        imageURIs["peu commune"]["Voleur Agile"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeih5kflnip2ck7qirtlsda55l3aejqph4sq63v6zlg2zdqmdwyilcm";
+        imageURIs["peu commune"]["Pretre Sage"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeih5smlhdwqf44lby2mzevq6jhov5cu3exxo2ddkzujpnstn6q7p34";
 
         // Communes
-        imageURIs["commune"]["Gobelin Ruse"] = defaultURI;
-        imageURIs["commune"]["Sorciere Noire"] = defaultURI;
-        imageURIs["commune"]["Barbare Sauvage"] = defaultURI;
-        imageURIs["commune"]["Squelette Soldat"] = defaultURI;
-        imageURIs["commune"]["Slime Gluant"] = defaultURI;
+        imageURIs["commune"]["Gobelin Ruse"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeievkzzzu73l5xdonrv62nd2jwhuugcxi3ljvecbdnyuwn7rognzfy";
+        imageURIs["commune"]["Sorciere Noire"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeidv6iqhv2mq7km6t5m4wyjkayptnh76uw333fkalrz3kyb6lz2qma";
+        imageURIs["commune"]["Barbare Sauvage"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeibzxkvxmmxxd366bmenxs6iqpqjnbmdfqvxufte5i64232hafxuny";
+        imageURIs["commune"]["Squelette Soldat"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeid37l65fyisxqbaz53an3zaqpozcfrlkhcahjdktbetdgvsnuh3dy";
+        imageURIs["commune"]["Slime Gluant"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigv2gtaeq2htdrpadaewbjhdth2j6kcgolgmbhq57knvssdmospe4";
     }
 
     /**

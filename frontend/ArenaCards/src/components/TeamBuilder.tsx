@@ -126,36 +126,6 @@ const TeamBuilder: React.FC = () => {
     }
   }, [signer, account]);
 
-  const loadSavedTeam = useCallback(async () => {
-    if (!signer || !account) return;
-    try {
-      const savedCardIds = await loadTeamFromChain(signer);
-      if (savedCardIds.length === 0) return;
-
-      const allCards = await loadUserCards(signer, account);
-      const newTeamSlots: TeamSlot[] = Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
-        position: i,
-        card: null,
-      }));
-
-      const cardsInTeam: ArenaCard[] = [];
-      savedCardIds.forEach((tokenId, index) => {
-        const card = allCards.find(c => c.tokenId === tokenId);
-        if (card && index < MAX_TEAM_SIZE) {
-          newTeamSlots[index] = { position: index, card: card };
-          cardsInTeam.push(card);
-        }
-      });
-
-      setTeamSlots(newTeamSlots);
-      setInventory(allCards.filter(card =>
-          !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
-      ));
-    } catch (error) {
-      console.error('Erreur chargement équipe:', error);
-    }
-  }, [signer, account]);
-
   useEffect(() => {
     const init = async () => {
       if (!signer || !account) {
