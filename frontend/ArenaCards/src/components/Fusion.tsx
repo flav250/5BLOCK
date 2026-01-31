@@ -39,7 +39,57 @@ const Fusion: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(false);
 
-    const [selectedCard, setSelectedCard] = useState<ArenaCard | null>(null);
+    const [draggedCard, setDraggedCard] = useState<ArenaCard | null>(null);
+    const [dragY, setDragY] = useState<number>(0);
+
+    // Auto-scroll pendant le drag
+    useEffect(() => {
+        if (!draggedCard) return;
+
+        let animationFrameId: number;
+        const scrollSpeed = 10;
+        const edgeSize = 100;
+
+        const autoScroll = () => {
+            const windowHeight = window.innerHeight;
+            
+            if (dragY < edgeSize && dragY > 0) {
+                const intensity = 1 - (dragY / edgeSize);
+                window.scrollBy(0, -scrollSpeed * intensity);
+            }
+            else if (dragY > windowHeight - edgeSize && dragY < windowHeight) {
+                const intensity = 1 - ((windowHeight - dragY) / edgeSize);
+                window.scrollBy(0, scrollSpeed * intensity);
+            }
+
+            animationFrameId = requestAnimationFrame(autoScroll);
+        };
+
+        animationFrameId = requestAnimationFrame(autoScroll);
+
+        return () => {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        };
+    }, [draggedCard, dragY]);
+
+    // Tracker la position Y du curseur pendant le drag
+    useEffect(() => {
+        if (!draggedCard) return;
+
+        const handleDragMove = (e: DragEvent) => {
+            setDragY(e.clientY);
+        };
+
+        document.addEventListener('drag', handleDragMove);
+        document.addEventListener('dragover', handleDragMove);
+
+        return () => {
+            document.removeEventListener('drag', handleDragMove);
+            document.removeEventListener('dragover', handleDragMove);
+        };
+    }, [draggedCard]);
 
     const loadCards = useCallback(async () => {
         if (!signer || !account) return;
@@ -177,7 +227,8 @@ const Fusion: React.FC = () => {
         }
     };
 
-    /*const handleDragStart = (card: ArenaCard) => {
+    const handleDragStart = (card: ArenaCard) => {
+        if (card.isLocked) return;
         setDraggedCard(card);
     };
 
@@ -202,28 +253,7 @@ const Fusion: React.FC = () => {
 
         setInventory(prev => prev.filter(c => c.tokenId !== draggedCard.tokenId));
         setDraggedCard(null);
-    };*/
-
-    const placeCardInSlot = (slotIndex: number) => {
-        if (!selectedCard) return;
-
-        const newSlots = [...fusionSlots];
-
-        // remettre l’ancienne carte dans l’inventaire
-        if (newSlots[slotIndex].card) {
-            setInventory(prev => [...prev, newSlots[slotIndex].card!]);
-        }
-
-        newSlots[slotIndex].card = selectedCard;
-        setFusionSlots(newSlots);
-
-        setInventory(prev =>
-            prev.filter(c => c.tokenId !== selectedCard.tokenId)
-        );
-
-        setSelectedCard(null);
     };
-
 
     const handleRemoveFromSlot = (slotIndex: number) => {
         const newSlots = [...fusionSlots];
@@ -298,7 +328,8 @@ const Fusion: React.FC = () => {
                     {/* Slot 1 */}
                     <div
                         className="fusion-slot"
-                        onClick={() => placeCardInSlot(0)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDropOnSlot(0)}
                     >
                         {fusionSlots[0].card ? (
                             <div className="fusion-card">
@@ -345,7 +376,8 @@ const Fusion: React.FC = () => {
                     {/* Slot 2 */}
                     <div
                         className="fusion-slot"
-                        onClick={() => placeCardInSlot(1)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDropOnSlot(1)}
                     >
                         {fusionSlots[1].card ? (
                             <div className="fusion-card">
@@ -463,15 +495,10 @@ const Fusion: React.FC = () => {
                         {filteredInventory.map((card) => (
                             <div
                                 key={card.tokenId}
-                                className={`inventory-card 
-                                    ${card.isLocked ? 'locked' : ''}
-                                    ${selectedCard?.tokenId === card.tokenId ? 'selected' : ''}
-                                `}
-                                onClick={() => {
-                                    if (!card.isLocked) {
-                                        setSelectedCard(card);
-                                    }
-                                }}
+                                className={`inventory-card ${card.isLocked ? 'locked' : ''}`}
+                                draggable={!card.isLocked}
+                                onDragStart={() => handleDragStart(card)}
+                                onDragEnd={handleDragEnd}
                             >
                                 <img src={card.imageURI} alt={card.name} />
                                 <div className="card-info">
