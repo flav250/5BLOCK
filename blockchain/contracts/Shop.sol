@@ -34,7 +34,7 @@ contract Shop {
     // Dernier achat par utilisateur (pour le cooldown)
     mapping(address => uint256) public lastPurchase;
 
-    uint256 public constant COOLDOWN = 0 hours;
+    uint256 public constant COOLDOWN = 24 hours;
 
     event CardPurchased(address indexed buyer, uint256 cardId, string name, uint256 price);
     event CardAdded(uint256 cardId, string name, uint256 price, bool isSecret);
