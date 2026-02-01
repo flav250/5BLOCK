@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '../hooks/useWeb3';
 import { loadUserCards } from '../utils/contractHelpers';
-import type { ArenaCard } from '../types/ArenaCard';
+import type { ArenaCard, TeamSlot } from '../types/ArenaCard';
 import type { Monster, GameProgress, BattleResult } from '../types/AFKArena';
 import { generateMonster, simulateBattle, getTotalAttack, formatNumber } from '../utils/afkArenaLogic';
 import './AFKArena.css';
@@ -16,8 +16,19 @@ const AFKArena: React.FC = () => {
 
   // Cartes
   const [cards, setCards] = useState<ArenaCard[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<ArenaCard[]>([]);
+  const [teamSlots, setTeamSlots] = useState<TeamSlot[]>(
+    Array.from({ length: 5 }, (_, i) => ({
+      position: i,
+      card: null,
+    }))
+  );
+  const [inventory, setInventory] = useState<ArenaCard[]>([]);
   const [isLoadingCards, setIsLoadingCards] = useState(true);
+
+  // Drag and Drop states
+  const [draggedCard, setDraggedCard] = useState<ArenaCard | null>(null);
+  const [dragSource, setDragSource] = useState<'inventory' | 'team' | null>(null);
+  const [draggedFromSlot, setDraggedFromSlot] = useState<number | null>(null);
 
   // Jeu
   const [progress, setProgress] = useState<GameProgress>(() => {
@@ -50,12 +61,32 @@ const AFKArena: React.FC = () => {
           const parsed = JSON.parse(teamData);
           const teamCardIds = parsed.cardIds || [];
 
-          const team = userCards
-              .filter(card => teamCardIds.includes(card.tokenId))
-              .slice(0, 5);
+          const newTeamSlots: TeamSlot[] = Array.from({ length: 5 }, (_, i) => ({
+            position: i,
+            card: null,
+          }));
 
-          setSelectedTeam(team);
-          console.log('✅ Équipe synchronisée:', team.length, 'cartes');
+          const cardsInTeam: ArenaCard[] = [];
+          
+          teamCardIds.forEach((tokenId: string, index: number) => {
+            const card = userCards.find(c => c.tokenId === tokenId);
+            if (card && index < 5) {
+              newTeamSlots[index] = {
+                position: index,
+                card: card
+              };
+              cardsInTeam.push(card);
+            }
+          });
+
+          setTeamSlots(newTeamSlots);
+          setInventory(userCards.filter(card =>
+            !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
+          ));
+          
+          console.log('✅ Équipe synchronisée:', cardsInTeam.length, 'cartes');
+        } else {
+          setInventory(userCards);
         }
       } catch (error) {
         console.error('Erreur:', error);
@@ -87,11 +118,28 @@ const AFKArena: React.FC = () => {
 
           const userCards = await loadUserCards(signer, account);
 
-          const newTeam = userCards
-              .filter(card => teamCardIds.includes(card.tokenId))
-              .slice(0, 5);
+          const newTeamSlots: TeamSlot[] = Array.from({ length: 5 }, (_, i) => ({
+            position: i,
+            card: null,
+          }));
 
-          setSelectedTeam(newTeam);
+          const cardsInTeam: ArenaCard[] = [];
+          
+          teamCardIds.forEach((tokenId: string, index: number) => {
+            const card = userCards.find(c => c.tokenId === tokenId);
+            if (card && index < 5) {
+              newTeamSlots[index] = {
+                position: index,
+                card: card
+              };
+              cardsInTeam.push(card);
+            }
+          });
+
+          setTeamSlots(newTeamSlots);
+          setInventory(userCards.filter(card =>
+            !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
+          ));
           setCards(userCards);
         } catch (error) {
           console.error('Erreur sync:', error);
@@ -108,6 +156,7 @@ const AFKArena: React.FC = () => {
 
   // Timer et combat automatique
   useEffect(() => {
+    const selectedTeam = teamSlots.filter(slot => slot.card !== null).map(slot => slot.card!);
     if (!progress.isRunning || selectedTeam.length !== 5) return;
 
     const interval = setInterval(() => {
@@ -121,10 +170,11 @@ const AFKArena: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [progress.isRunning, selectedTeam, currentMonster]);
+  }, [progress.isRunning, teamSlots, currentMonster]);
 
   // Combat
   const performBattle = () => {
+    const selectedTeam = teamSlots.filter(slot => slot.card !== null).map(slot => slot.card!);
     const result = simulateBattle(selectedTeam, currentMonster);
 
     setLastResult(result);
@@ -144,29 +194,123 @@ const AFKArena: React.FC = () => {
     setTimeout(() => setLastResult(null), 2000);
   };
 
-  // Sélection/Désélection de carte
-  const toggleCard = (card: ArenaCard) => {
+  // Drag and Drop handlers
+  const handleDragStart = (card: ArenaCard, source: 'inventory' | 'team', slotIndex?: number) => {
+    if (progress.isRunning) {
+      alert('Arrête le jeu pour changer ton équipe !');
+      return;
+    }
+    setDraggedCard(card);
+    setDragSource(source);
+    if (source === 'team' && slotIndex !== undefined) {
+      setDraggedFromSlot(slotIndex);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedCard(null);
+    setDragSource(null);
+    setDraggedFromSlot(null);
+  };
+
+  const handleDropOnSlot = (slotIndex: number) => {
+    if (!draggedCard || progress.isRunning) return;
+
+    if (draggedCard.isLocked) {
+      alert('Cette carte est encore verrouillée !');
+      handleDragEnd();
+      return;
+    }
+
+    let newTeamSlots = [...teamSlots];
+
+    if (dragSource === 'inventory') {
+      // Déposer depuis inventaire
+      const targetCard = newTeamSlots[slotIndex].card;
+
+      newTeamSlots[slotIndex].card = draggedCard;
+
+      // Retirer de l'inventaire
+      setInventory(prev => prev.filter(c => c.tokenId !== draggedCard.tokenId));
+
+      // Si slot occupé, remettre ancienne carte
+      if (targetCard) {
+        setInventory(prev => [...prev, targetCard]);
+      }
+
+    } else if (dragSource === 'team' && draggedFromSlot !== null) {
+      // Déplacer entre slots
+      if (draggedFromSlot === slotIndex) {
+        handleDragEnd();
+        return;
+      }
+
+      const temp = newTeamSlots[slotIndex].card;
+      newTeamSlots[slotIndex].card = newTeamSlots[draggedFromSlot].card;
+      newTeamSlots[draggedFromSlot].card = temp;
+    }
+
+    setTeamSlots(newTeamSlots);
+
+    // Auto-sauvegarde locale
+    const selectedTeam = newTeamSlots.filter(slot => slot.card !== null).map(slot => slot.card!);
+    saveTeamToLocalStorage(selectedTeam);
+    
+    handleDragEnd();
+  };
+
+  const handleDropOnInventory = () => {
+    if (!draggedCard || dragSource !== 'team' || draggedFromSlot === null || progress.isRunning) {
+      handleDragEnd();
+      return;
+    }
+
+    const newTeamSlots = [...teamSlots];
+    newTeamSlots[draggedFromSlot].card = null;
+    setTeamSlots(newTeamSlots);
+
+    setInventory(prev => {
+      if (prev.some(c => c.tokenId === draggedCard.tokenId)) {
+        console.warn('⚠️ Duplication évitée');
+        return prev;
+      }
+      return [...prev, draggedCard];
+    });
+
+    // Auto-sauvegarde locale
+    const selectedTeam = newTeamSlots.filter(slot => slot.card !== null).map(slot => slot.card!);
+    saveTeamToLocalStorage(selectedTeam);
+    
+    handleDragEnd();
+  };
+
+  const removeCardFromSlot = (slotIndex: number) => {
     if (progress.isRunning) {
       alert('Arrête le jeu pour changer ton équipe !');
       return;
     }
 
-    const isSelected = selectedTeam.find(c => c.tokenId === card.tokenId);
+    const card = teamSlots[slotIndex].card;
+    if (!card) return;
 
-    if (isSelected) {
-      const newTeam = selectedTeam.filter(c => c.tokenId !== card.tokenId);
-      setSelectedTeam(newTeam);
-      saveTeamToLocalStorage(newTeam);
-    } else if (selectedTeam.length < 5) {
-      const newTeam = [...selectedTeam, card];
-      setSelectedTeam(newTeam);
-      saveTeamToLocalStorage(newTeam);
-    } else {
-      alert('Tu as déjà 5 cartes !');
-    }
+    const newTeamSlots = [...teamSlots];
+    newTeamSlots[slotIndex].card = null;
+    setTeamSlots(newTeamSlots);
+
+    setInventory(prev => {
+      if (prev.some(c => c.tokenId === card.tokenId)) {
+        console.warn('⚠️ Duplication évitée');
+        return prev;
+      }
+      return [...prev, card];
+    });
+
+    // Auto-sauvegarde locale
+    const selectedTeam = newTeamSlots.filter(slot => slot.card !== null).map(slot => slot.card!);
+    saveTeamToLocalStorage(selectedTeam);
   };
 
-  // Sauvegarder l'équipe
+  // Sauvegarder l'équipe (reçoit un array d'ArenaCard)
   const saveTeamToLocalStorage = (team: ArenaCard[]) => {
     if (!account) return;
 
@@ -187,6 +331,7 @@ const AFKArena: React.FC = () => {
 
   // Start/Stop
   const toggleGame = () => {
+    const selectedTeam = teamSlots.filter(slot => slot.card !== null).map(slot => slot.card!);
     if (selectedTeam.length < 5) {
       alert(`Sélectionne 5 cartes ! (${selectedTeam.length}/5)`);
       return;
@@ -237,7 +382,9 @@ const AFKArena: React.FC = () => {
     );
   }
 
+  const selectedTeam = teamSlots.filter(slot => slot.card !== null).map(slot => slot.card!);
   const teamAttack = getTotalAttack(selectedTeam);
+  const teamCount = selectedTeam.length;
 
   return (
       <div className="afk-arena">
@@ -402,54 +549,67 @@ const AFKArena: React.FC = () => {
         {/* Team */}
         <div className="team-section">
           <div className="team-header">
-            <h2>👥 Ton Équipe</h2>
+            <h2>👥 Ton Équipe ({teamCount}/5)</h2>
             <div className="team-power">💪 {teamAttack} ATK Total</div>
           </div>
 
           <div className="team-grid">
-            {[0, 1, 2, 3, 4].map(index => {
-              const card = selectedTeam[index];
-              return (
-                  <div key={index} className="team-slot">
-                    {card ? (
-                        <div className="team-card">
-                          <button
-                              className="remove-btn"
-                              onClick={() => toggleCard(card)}
-                              disabled={progress.isRunning}
-                          >
-                            ✕
-                          </button>
-                          <div className="card-img">
-                            {card.imageURI ? (
-                                <img src={card.imageURI} alt={card.name} />
-                            ) : (
-                                <div className="placeholder">🃏</div>
-                            )}
-                          </div>
-                          <div className="card-name">{card.name}</div>
-                          <div className="card-attack">⚔️ {card.attack}</div>
-                        </div>
-                    ) : (
-                        <div className="empty-slot">Slot {index + 1}</div>
-                    )}
+            {teamSlots.map((slot, index) => (
+              <div 
+                key={slot.position} 
+                className="team-slot"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDropOnSlot(index)}
+              >
+                {slot.card ? (
+                  <div 
+                    className="team-card"
+                    draggable={!progress.isRunning}
+                    onDragStart={(e) => {
+                      if (!progress.isRunning && slot.card) {
+                        handleDragStart(slot.card, 'team', index);
+                      } else {
+                        e.preventDefault();
+                      }
+                    }}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <button
+                      className="remove-btn"
+                      onClick={() => removeCardFromSlot(index)}
+                      disabled={progress.isRunning}
+                    >
+                      ✕
+                    </button>
+                    <div className="card-img">
+                      {slot.card.imageURI ? (
+                        <img src={slot.card.imageURI} alt={slot.card.name} />
+                      ) : (
+                        <div className="placeholder">🃏</div>
+                      )}
+                    </div>
+                    <div className="card-name">{slot.card.name}</div>
+                    <div className="card-attack">⚔️ {slot.card.attack}</div>
                   </div>
-              );
-            })}
+                ) : (
+                  <div className="empty-slot">Slot {index + 1}</div>
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="controls">
             <button
                 className={`btn-start ${progress.isRunning ? 'active' : ''}`}
                 onClick={toggleGame}
-                disabled={selectedTeam.length < 5}
+                disabled={teamCount < 5}
             >
               {progress.isRunning ? (
                   <>⏸️ ARRÊTER</>
-              ) : selectedTeam.length === 0 ? (
-                  <>📋 Sélectionne 5 cartes</>
-              ) : selectedTeam.length < 5 ? (
-                  <>📋 {selectedTeam.length}/5 cartes</>
+              ) : teamCount === 0 ? (
+                  <>📋 Glisse 5 cartes</>
+              ) : teamCount < 5 ? (
+                  <>📋 {teamCount}/5 cartes</>
               ) : (
                   <>▶️ DÉMARRER</>
               )}
@@ -472,37 +632,44 @@ const AFKArena: React.FC = () => {
         </div>
 
         {/* Inventaire */}
-        <div className="inventory-section">
-          <h2>🎴 Inventaire ({cards.length} cartes)</h2>
-          {cards.length === 0 ? (
+        <div className="inventory-section" onDragOver={(e) => e.preventDefault()} onDrop={handleDropOnInventory}>
+          <h2>🎴 Inventaire ({inventory.length} cartes)</h2>
+          <p style={{ fontSize: '0.9rem', color: '#95a5a6', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+            ✨ Glisse-dépose les cartes pour composer ton équipe
+          </p>
+          {inventory.length === 0 ? (
               <div className="empty-message">
-                <p>Aucune carte !</p>
-                <p>Ouvre des boosters pour en obtenir.</p>
+                <p>Aucune carte disponible !</p>
+                <p>Toutes tes cartes sont dans l'équipe ou ouvre des boosters.</p>
               </div>
           ) : (
               <div className="inventory-grid">
-                {cards.map(card => {
-                  const isSelected = selectedTeam.find(c => c.tokenId === card.tokenId);
-                  return (
-                      <div
-                          key={card.tokenId}
-                          className={`inv-card ${isSelected ? 'selected' : ''} ${progress.isRunning ? 'disabled' : ''}`}
-                          onClick={() => !progress.isRunning && toggleCard(card)}
-                          style={{ cursor: progress.isRunning ? 'not-allowed' : 'pointer' }}
-                      >
-                        <div className="inv-img">
-                          {card.imageURI ? (
-                              <img src={card.imageURI} alt={card.name} />
-                          ) : (
-                              <div className="placeholder">🃏</div>
-                          )}
-                        </div>
-                        <div className="inv-name">{card.name}</div>
-                        <div className="inv-attack">⚔️ {card.attack}</div>
-                        {isSelected && <div className="selected-badge">✓</div>}
-                      </div>
-                  );
-                })}
+                {inventory.map(card => (
+                  <div
+                    key={card.tokenId}
+                    className="inv-card"
+                    draggable={!progress.isRunning}
+                    onDragStart={(e) => {
+                      if (!progress.isRunning) {
+                        handleDragStart(card, 'inventory');
+                      } else {
+                        e.preventDefault();
+                      }
+                    }}
+                    onDragEnd={handleDragEnd}
+                    style={{ cursor: progress.isRunning ? 'not-allowed' : 'grab' }}
+                  >
+                    <div className="inv-img">
+                      {card.imageURI ? (
+                        <img src={card.imageURI} alt={card.name} />
+                      ) : (
+                        <div className="placeholder">🃏</div>
+                      )}
+                    </div>
+                    <div className="inv-name">{card.name}</div>
+                    <div className="inv-attack">⚔️ {card.attack}</div>
+                  </div>
+                ))}
               </div>
           )}
         </div>
