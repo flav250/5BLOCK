@@ -47,7 +47,18 @@ Un jeu de cartes à collectionner basé sur la blockchain avec des mécaniques d
 - **Premium Booster** : 4 cartes de toutes raretés sauf commune (0.0001 ETH)
 - **Distribution aléatoire** : Système de probabilités on-chain
 
-### 🎮 AFK Arena (Jeu de Combat)
+### 🛒 Boutique Exclusive (Shop)
+- **Cartes Légendaires** : Stock illimité
+  - Dragon Doré (ATK 150) - 1,000,000 wei
+  - Phoenix Immortel (ATK 140) - 1,000,000 wei
+- **Cartes Secrètes** : Édition limitée (50 exemplaires chacune)
+  - Brice : Le divin suprême (ATK 500) - 5,000,000 wei
+  - Paul : Le malicieux (ATK 500) - 5,000,000 wei
+  - Flavien : Le bienfaiteur (ATK 500) - 5,000,000 wei
+- **Cooldown 24h** : Une carte achetable par jour
+- **Achat unique** : Chaque carte ne peut être achetée qu'une seule fois par joueur
+
+###  AFK Arena (Jeu de Combat)
 - **Combat automatique** : Toutes les 5 secondes
 - **Vagues infinies** : Difficulté croissante
 - **Système de points** : Accumulation progressive
@@ -187,7 +198,8 @@ arena-cards/
 │   │   ├── CardFusion.sol        # Fusion de cartes
 │   │   ├── FreeBooster.sol       # Booster gratuit
 │   │   ├── Marketplace.sol       # Marketplace P2P
-│   │   └── PremiumBooster.sol    # Booster premium
+│   │   ├── PremiumBooster.sol    # Booster premium
+│   │   └── Shop.sol              # Boutique exclusive
 │   ├── scripts/
 │   │   └── deploy.js             # Script de déploiement
 │   ├── test/
@@ -195,7 +207,8 @@ arena-cards/
 │   │   ├── CardFusion.test.js
 │   │   ├── FreeBooster.test.js
 │   │   ├── Marketplace.test.js
-│   │   └── PremiumBooster.test.js
+│   │   ├── PremiumBooster.test.js
+│   │   └── Shop.test.js
 │   ├── .env                      # Config (PRIVATE_KEY, RPC)
 │   ├── hardhat.config.js
 │   ├── package.json
@@ -208,7 +221,8 @@ arena-cards/
         │   ├── CardFusion.json
         │   ├── FreeBooster.json
         │   ├── Marketplace.json
-        │   └── PremiumBooster.json
+        │   ├── PremiumBooster.json
+        │   └── Shop.json
         ├── assets/
         │   └── react.svg
         ├── components/
@@ -226,7 +240,8 @@ arena-cards/
         │   ├── InventoryCard.tsx  # Carte inventaire
         │   ├── Marketplace.css
         │   ├── Marketplace.tsx    # Marketplace
-        │   ├── Shop.tsx           # Shop (premium boosters)
+        │   ├── Shop.css
+        │   ├── Shop.tsx           # Boutique exclusive
         │   ├── TeamBuilder.css
         │   └── TeamBuilder.tsx    # Composition d'équipe
         ├── hooks/
@@ -285,6 +300,15 @@ arena-cards/
 - Vérifie ownership + level
 - Brûle les 2 cartes sources
 - Crée 1 carte level supérieur
+```
+
+### Shop.sol
+```solidity
+- buyLegendaryCard() : Acheter une carte légendaire (stock illimité)
+- buySecretCard() : Acheter une carte secrète (édition limitée)
+- getShopCards() : Récupérer la liste des cartes disponibles
+- Cooldown de 24h par joueur
+- Système d'achat unique (une seule fois par carte)
 ```
 
 ---
@@ -393,7 +417,29 @@ simulateBattle()     // Simuler un combat
 4. Reçois 1 carte level supérieur
 ```
 
-### 6. Marketplace
+### 6. Boutique Exclusive
+**Acheter une carte légendaire :**
+```
+1. Va dans "🛒 Boutique"
+2. Section "Cartes Légendaires"
+3. Choisis Dragon Doré ou Phoenix Immortel
+4. Clique "Acheter" (1,000,000 wei)
+5. Confirme la transaction
+6. Stock illimité, achetable 1x par jour
+```
+
+**Acheter une carte secrète :**
+```
+1. Va dans "🛒 Boutique"
+2. Section "Cartes Secrètes"
+3. Choisis Brice, Paul ou Flavien
+4. Clique "Acheter" (5,000,000 wei)
+5. Confirme la transaction
+6. Édition limitée (50 exemplaires max par carte)
+7. Une seule fois par joueur par carte
+```
+
+### 7. Marketplace
 **Vendre :**
 ```
 1. Va dans "🏪 Marketplace"
