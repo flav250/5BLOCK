@@ -316,6 +316,88 @@ arena-cards/
 
 ---
 
+## 🧪 Tests
+
+### Exécuter les tests
+
+Les smart contracts sont testés avec Hardhat. Tous les contrats disposent de tests complets.
+
+```bash
+cd blockchain
+
+# Exécuter tous les tests
+npm run test
+
+# Exécuter un test spécifique
+npx hardhat test test/ArenaCards.test.js
+npx hardhat test test/FreeBooster.test.js
+npx hardhat test test/PremiumBooster.test.js
+npx hardhat test test/Marketplace.test.js
+npx hardhat test test/CardFusion.test.js
+npx hardhat test test/Shop.test.js
+
+# Exécuter les tests avec rapport de couverture
+npx hardhat coverage
+```
+
+### Tests disponibles
+
+#### ArenaCards.test.js
+```
+✓ Mint de cartes NFT
+✓ Récupération des informations de carte
+✓ Verrouillage temporaire des cartes
+✓ Upgrade de cartes (level up)
+✓ Gestion des permissions
+```
+
+#### FreeBooster.test.js
+```
+✓ Ouverture de booster gratuit
+✓ Cooldown de 10 minutes
+✓ Génération aléatoire de 2 cartes
+✓ Distribution par rareté (Commune/Rare)
+```
+
+#### PremiumBooster.test.js
+```
+✓ Achat de booster premium (0.0001 ETH)
+✓ Génération aléatoire de 4 cartes
+✓ Distribution par rareté (Rare/Épique/Légendaire)
+✓ Retrait des fonds par l'owner
+```
+
+#### Marketplace.test.js
+```
+✓ Mise en vente d'une carte
+✓ Achat d'une carte listée
+✓ Annulation d'une vente
+✓ Frais de plateforme (2.5%)
+✓ Transfert de propriété
+```
+
+#### CardFusion.test.js
+```
+✓ Fusion de 2 cartes identiques
+✓ Vérification du ownership
+✓ Amélioration du level et de l'attaque
+✓ Brûlage des cartes sources
+✓ Gestion des erreurs (cartes différentes)
+```
+
+#### Shop.test.js
+```
+✓ Achat de carte légendaire
+✓ Achat de carte secrète
+✓ Vérification du cooldown 24h
+✓ Achat unique par carte
+✓ Gestion du stock limité (cartes secrètes)
+✓ Ajout de nouvelles cartes (owner only)
+✓ Vérification d'éligibilité d'achat
+```
+
+---
+
 ## 💻 Frontend
 
 ### Composants Principaux

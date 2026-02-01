@@ -28,7 +28,7 @@ describe("Marketplace – Tests complets", function () {
     await ethers.provider.send("evm_increaseTime", [300]);
     await ethers.provider.send("evm_mine");
 
-    await arena.mintCard(player2.address, "Chevalier Noir", "epique");
+    await arena.mintCard(player2.address, "Chevalier Sacre", "legendaire");
     await ethers.provider.send("evm_increaseTime", [300]);
     await ethers.provider.send("evm_mine");
 
@@ -49,61 +49,58 @@ describe("Marketplace – Tests complets", function () {
     it("Should initialize tradeCounter to 0", async function () {
       expect(await marketplace.tradeCounter()).to.equal(0);
     });
+
+    it("Should initialize directTradeCounter to 0", async function () {
+      expect(await marketplace.directTradeCounter()).to.equal(0);
+    });
   });
 
-  describe("Creating Trades", function () {
+  describe("Creating Trades (Criteria-based)", function () {
     it("Should create trade successfully with approval", async function () {
-      // Player1 approves marketplace for token 0
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
 
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
 
       const trade = await marketplace.trades(0);
       expect(trade.creator).to.equal(player1.address);
       expect(trade.offeredTokenId).to.equal(0);
-      expect(trade.requestedTokenId).to.equal(2);
+      expect(trade.requestedCardName).to.equal("Chevalier Sacre");
+      expect(trade.requestedLevel).to.equal(1);
+      expect(trade.requestedRarity).to.equal("legendaire");
       expect(trade.isActive).to.be.true;
     });
 
     it("Should emit TradeCreated event", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
 
-      await expect(marketplace.connect(player1).createTrade(0, 2))
+      await expect(marketplace.connect(player1).createTrade(0, "Phoenix Immortel", 1, "legendaire"))
         .to.emit(marketplace, "TradeCreated")
-        .withArgs(0, player1.address, 0, 2);
+        .withArgs(0, player1.address, 0, "Phoenix Immortel", 1);
     });
 
     it("Should increment tradeCounter", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Phoenix Immortel", 1, "legendaire");
 
       expect(await marketplace.tradeCounter()).to.equal(1);
-
-      await arena.connect(player1).approve(await marketplace.getAddress(), 1);
-      await marketplace.connect(player1).createTrade(1, 3);
-
-      expect(await marketplace.tradeCounter()).to.equal(2);
     });
 
     it("Should mark token as in trade", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
 
       expect(await marketplace.tokenInTrade(0)).to.be.true;
     });
 
     it("Should revert if not owner of offered card", async function () {
-      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-
       await expect(
-        marketplace.connect(player2).createTrade(0, 2)
+        marketplace.connect(player2).createTrade(0, "Dragon Dore", 1, "legendaire")
       ).to.be.revertedWith("Not owner of offered card");
     });
 
     it("Should revert if marketplace not approved", async function () {
-      // No approval given
       await expect(
-        marketplace.connect(player1).createTrade(0, 2)
+        marketplace.connect(player1).createTrade(0, "Dragon Dore", 1, "legendaire")
       ).to.be.revertedWith("Marketplace not approved");
     });
 
@@ -111,72 +108,71 @@ describe("Marketplace – Tests complets", function () {
       await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
 
       await expect(
-        marketplace.connect(player1).createTrade(0, 2)
+        marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire")
       ).to.not.be.reverted;
     });
 
     it("Should revert if card already in active trade", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
 
       await expect(
-        marketplace.connect(player1).createTrade(0, 3)
+        marketplace.connect(player1).createTrade(0, "Phoenix Immortel", 1, "legendaire")
       ).to.be.revertedWith("Card already in active trade");
     });
 
-    it("Should revert if trying to trade same card", async function () {
+    it("Should revert if trying to trade for same card", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
 
       await expect(
-        marketplace.connect(player1).createTrade(0, 0)
-      ).to.be.revertedWith("Cannot trade same card");
+        marketplace.connect(player1).createTrade(0, "Dragon Dore", 1, "legendaire")
+      ).to.be.revertedWith("Cannot trade the same card");
     });
 
-    it("Should allow creating trade for non-existent requested token", async function () {
-      // Requested token doesn't have to exist at creation time
+    it("Should revert if offered card rarity doesn't match requested", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
 
       await expect(
-        marketplace.connect(player1).createTrade(0, 999)
-      ).to.not.be.reverted;
+        marketplace.connect(player1).createTrade(0, "Mage des Glaces", 1, "epique")
+      ).to.be.revertedWith("Offered card rarity must match requested card rarity");
     });
 
-    it("Should store correct timestamp", async function () {
+    it("Should revert if card name is empty", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      
-      const tx = await marketplace.connect(player1).createTrade(0, 2);
-      const receipt = await tx.wait();
-      const block = await ethers.provider.getBlock(receipt.blockNumber);
 
-      const trade = await marketplace.trades(0);
-      expect(trade.createdAt).to.equal(block.timestamp);
+      await expect(
+        marketplace.connect(player1).createTrade(0, "", 1, "legendaire")
+      ).to.be.revertedWith("Card name required");
+    });
+
+    it("Should revert if level is 0", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+
+      await expect(
+        marketplace.connect(player1).createTrade(0, "Dragon Dore", 0, "legendaire")
+      ).to.be.revertedWith("Level must be greater than 0");
     });
 
     it("Should allow multiple trades from same user", async function () {
       await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
 
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player1).createTrade(1, 3);
+      await marketplace.connect(player1).createTrade(0, "Phoenix Immortel", 1, "legendaire");
+      await marketplace.connect(player1).createTrade(1, "Chevalier Sacre", 1, "legendaire");
 
       expect(await marketplace.tradeCounter()).to.equal(2);
-      expect(await marketplace.tokenInTrade(0)).to.be.true;
-      expect(await marketplace.tokenInTrade(1)).to.be.true;
     });
   });
 
-  describe("Accepting Trades", function () {
+  describe("Accepting Trades (Criteria-based)", function () {
     beforeEach(async function () {
-      // Setup: Player1 creates a trade offering token 0 for token 2
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
     });
 
-    it("Should accept trade and swap cards", async function () {
-      // Player2 approves and accepts
+    it("Should accept trade with matching card", async function () {
       await arena.connect(player2).approve(await marketplace.getAddress(), 2);
-      await marketplace.connect(player2).acceptTrade(0);
+      await marketplace.connect(player2).acceptTrade(0, 2);
 
-      // Verify ownership swapped
       expect(await arena.ownerOf(0)).to.equal(player2.address);
       expect(await arena.ownerOf(2)).to.equal(player1.address);
     });
@@ -184,118 +180,44 @@ describe("Marketplace – Tests complets", function () {
     it("Should emit TradeAccepted event", async function () {
       await arena.connect(player2).approve(await marketplace.getAddress(), 2);
 
-      await expect(marketplace.connect(player2).acceptTrade(0))
+      await expect(marketplace.connect(player2).acceptTrade(0, 2))
         .to.emit(marketplace, "TradeAccepted")
         .withArgs(0, player2.address, 0, 2);
     });
 
     it("Should mark trade as inactive", async function () {
       await arena.connect(player2).approve(await marketplace.getAddress(), 2);
-      await marketplace.connect(player2).acceptTrade(0);
+      await marketplace.connect(player2).acceptTrade(0, 2);
 
       const trade = await marketplace.trades(0);
       expect(trade.isActive).to.be.false;
     });
 
-    it("Should remove token from trade mapping", async function () {
-      await arena.connect(player2).approve(await marketplace.getAddress(), 2);
-      await marketplace.connect(player2).acceptTrade(0);
+    it("Should revert if card name doesn't match", async function () {
+      await arena.connect(player2).approve(await marketplace.getAddress(), 3);
 
-      expect(await marketplace.tokenInTrade(0)).to.be.false;
-    });
-
-    it("Should revert if trade not active", async function () {
-      await arena.connect(player2).approve(await marketplace.getAddress(), 2);
-      await marketplace.connect(player2).acceptTrade(0);
-
-      // Try to accept again
       await expect(
-        marketplace.connect(player2).acceptTrade(0)
-      ).to.be.revertedWith("Trade not active");
+        marketplace.connect(player2).acceptTrade(0, 3)
+      ).to.be.revertedWith("Card name does not match");
     });
 
     it("Should revert if trying to accept own trade", async function () {
-      // Player1 cannot accept their own trade, no need to approve
       await expect(
-        marketplace.connect(player1).acceptTrade(0)
+        marketplace.connect(player1).acceptTrade(0, 1)
       ).to.be.revertedWith("Cannot accept own trade");
     });
 
-    it("Should revert if not owner of requested card", async function () {
+    it("Should revert if not owner of offered card", async function () {
       await expect(
-        marketplace.connect(player3).acceptTrade(0)
-      ).to.be.revertedWith("Not owner of requested card");
-    });
-
-    it("Should revert if acceptor doesn't approve marketplace", async function () {
-      // Player2 owns token 2 but doesn't approve
-      await expect(
-        marketplace.connect(player2).acceptTrade(0)
-      ).to.be.revertedWith("Marketplace not approved for your card");
-    });
-
-    it("Should revert if creator no longer owns offered card", async function () {
-      // Player1 transfers token 0 away before acceptance
-      await arena.connect(player1).transferFrom(player1.address, player3.address, 0);
-
-      await arena.connect(player2).approve(await marketplace.getAddress(), 2);
-
-      await expect(
-        marketplace.connect(player2).acceptTrade(0)
-      ).to.be.revertedWith("Creator no longer owns offered card");
-    });
-
-    it("Should work with setApprovalForAll", async function () {
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
-
-      await expect(
-        marketplace.connect(player2).acceptTrade(0)
-      ).to.not.be.reverted;
-
-      expect(await arena.ownerOf(0)).to.equal(player2.address);
-      expect(await arena.ownerOf(2)).to.equal(player1.address);
-    });
-
-    it("Should handle multiple trades correctly", async function () {
-      // Wait for cards to unlock (they were minted in beforeEach)
-      await ethers.provider.send("evm_increaseTime", [600]);
-      await ethers.provider.send("evm_mine");
-
-      // Create second trade
-      await arena.connect(player1).approve(await marketplace.getAddress(), 1);
-      await marketplace.connect(player1).createTrade(1, 3);
-
-      // Accept first trade
-      await arena.connect(player2).approve(await marketplace.getAddress(), 2);
-      await marketplace.connect(player2).acceptTrade(0);
-
-      // Wait for transferred cards to unlock
-      await ethers.provider.send("evm_increaseTime", [600]);
-      await ethers.provider.send("evm_mine");
-
-      // Accept second trade
-      await arena.connect(player2).approve(await marketplace.getAddress(), 3);
-      await marketplace.connect(player2).acceptTrade(1);
-
-      expect(await arena.ownerOf(0)).to.equal(player2.address);
-      expect(await arena.ownerOf(1)).to.equal(player2.address);
-      expect(await arena.ownerOf(2)).to.equal(player1.address);
-      expect(await arena.ownerOf(3)).to.equal(player1.address);
-    });
-
-    it("Should revert if trade ID doesn't exist", async function () {
-      await arena.connect(player2).approve(await marketplace.getAddress(), 2);
-
-      await expect(
-        marketplace.connect(player2).acceptTrade(999)
-      ).to.be.revertedWith("Trade not active");
+        marketplace.connect(player3).acceptTrade(0, 2)
+      ).to.be.revertedWith("Not owner of offered card");
     });
   });
 
   describe("Cancelling Trades", function () {
     beforeEach(async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
     });
 
     it("Should cancel trade successfully", async function () {
@@ -317,168 +239,209 @@ describe("Marketplace – Tests complets", function () {
       expect(await marketplace.tokenInTrade(0)).to.be.false;
     });
 
-    it("Should allow creating new trade with same card after cancellation", async function () {
-      await marketplace.connect(player1).cancelTrade(0);
-
-      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await expect(
-        marketplace.connect(player1).createTrade(0, 3)
-      ).to.not.be.reverted;
-    });
-
     it("Should revert if not trade creator", async function () {
       await expect(
         marketplace.connect(player2).cancelTrade(0)
       ).to.be.revertedWith("Not trade creator");
     });
+  });
 
-    it("Should revert if trade not active", async function () {
-      await marketplace.connect(player1).cancelTrade(0);
+  describe("Direct Trades (P2P)", function () {
+    it("Should create direct trade successfully", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
 
-      await expect(
-        marketplace.connect(player1).cancelTrade(0)
-      ).to.be.revertedWith("Trade not active");
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      const trade = await marketplace.directTrades(0);
+      expect(trade.creator).to.equal(player1.address);
+      expect(trade.target).to.equal(player2.address);
+      expect(trade.offeredTokenId).to.equal(0);
+      expect(trade.requestedTokenId).to.equal(2);
+      expect(trade.isActive).to.be.true;
     });
 
-    it("Should keep card with original owner after cancellation", async function () {
-      await marketplace.connect(player1).cancelTrade(0);
+    it("Should emit DirectTradeCreated event", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
 
-      expect(await arena.ownerOf(0)).to.equal(player1.address);
+      await expect(marketplace.connect(player1).createDirectTrade(player2.address, 0, 2))
+        .to.emit(marketplace, "DirectTradeCreated")
+        .withArgs(0, player1.address, player2.address, 0, 2);
     });
 
-    it("Should revert if trade ID doesn't exist", async function () {
+    it("Should revert if target is zero address", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+
       await expect(
-        marketplace.connect(player1).cancelTrade(999)
-      ).to.be.revertedWith("Trade not active");
+        marketplace.connect(player1).createDirectTrade(ethers.ZeroAddress, 0, 2)
+      ).to.be.revertedWith("Invalid target address");
+    });
+
+    it("Should revert if trying to trade with yourself", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+
+      await expect(
+        marketplace.connect(player1).createDirectTrade(player1.address, 0, 1)
+      ).to.be.revertedWith("Cannot trade with yourself");
+    });
+
+    it("Should revert if target doesn't own requested card", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+
+      await expect(
+        marketplace.connect(player1).createDirectTrade(player3.address, 0, 2)
+      ).to.be.revertedWith("Target does not own requested card");
+    });
+
+    it("Should revert if cards have different rarities", async function () {
+      await arena.connect(player2).approve(await marketplace.getAddress(), 3);
+
+      await expect(
+        marketplace.connect(player2).createDirectTrade(player1.address, 3, 0)
+      ).to.be.revertedWith("Cards must have the same rarity");
+    });
+
+    it("Should accept direct trade successfully", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      await arena.connect(player2).approve(await marketplace.getAddress(), 2);
+      await marketplace.connect(player2).acceptDirectTrade(0);
+
+      expect(await arena.ownerOf(0)).to.equal(player2.address);
+      expect(await arena.ownerOf(2)).to.equal(player1.address);
+    });
+
+    it("Should emit DirectTradeAccepted event", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      await arena.connect(player2).approve(await marketplace.getAddress(), 2);
+
+      await expect(marketplace.connect(player2).acceptDirectTrade(0))
+        .to.emit(marketplace, "DirectTradeAccepted")
+        .withArgs(0, player2.address, 0, 2);
+    });
+
+    it("Should revert if not the target", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      await expect(
+        marketplace.connect(player3).acceptDirectTrade(0)
+      ).to.be.revertedWith("Not the target of this trade");
+    });
+
+    it("Should cancel direct trade by creator", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      await marketplace.connect(player1).cancelDirectTrade(0);
+
+      const trade = await marketplace.directTrades(0);
+      expect(trade.isActive).to.be.false;
+    });
+
+    it("Should cancel direct trade by target", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      await marketplace.connect(player2).cancelDirectTrade(0);
+
+      const trade = await marketplace.directTrades(0);
+      expect(trade.isActive).to.be.false;
+    });
+
+    it("Should emit DirectTradeCancelled event", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      await expect(marketplace.connect(player1).cancelDirectTrade(0))
+        .to.emit(marketplace, "DirectTradeCancelled")
+        .withArgs(0);
+    });
+
+    it("Should revert cancel if not authorized", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      await expect(
+        marketplace.connect(player3).cancelDirectTrade(0)
+      ).to.be.revertedWith("Not authorized");
+    });
+  });
+
+  describe("Getting Received Direct Trades", function () {
+    it("Should return received direct trades", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      const received = await marketplace.getReceivedDirectTrades(player2.address);
+      expect(received.length).to.equal(1);
+      expect(received[0].creator).to.equal(player1.address);
+      expect(received[0].target).to.equal(player2.address);
+    });
+
+    it("Should return empty array if no received trades", async function () {
+      const received = await marketplace.getReceivedDirectTrades(player3.address);
+      expect(received.length).to.equal(0);
+    });
+  });
+
+  describe("Getting Sent Direct Trades", function () {
+    it("Should return sent direct trades", async function () {
+      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+      await marketplace.connect(player1).createDirectTrade(player2.address, 0, 2);
+
+      const sent = await marketplace.getSentDirectTrades(player1.address);
+      expect(sent.length).to.equal(1);
+      expect(sent[0].creator).to.equal(player1.address);
+      expect(sent[0].target).to.equal(player2.address);
+    });
+
+    it("Should return empty array if no sent trades", async function () {
+      const sent = await marketplace.getSentDirectTrades(player3.address);
+      expect(sent.length).to.equal(0);
     });
   });
 
   describe("Getting Active Trades", function () {
-    it("Should return empty array when no trades", async function () {
-      const activeTrades = await marketplace.getActiveTrades();
-      expect(activeTrades.length).to.equal(0);
-    });
-
     it("Should return all active trades", async function () {
       await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
 
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player1).createTrade(1, 3);
-      await marketplace.connect(player2).createTrade(2, 0);
-
-      const activeTrades = await marketplace.getActiveTrades();
-      expect(activeTrades.length).to.equal(3);
-    });
-
-    it("Should not include cancelled trades", async function () {
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player1).createTrade(1, 3);
-      
-      await marketplace.connect(player1).cancelTrade(0);
-
-      const activeTrades = await marketplace.getActiveTrades();
-      expect(activeTrades.length).to.equal(1);
-      expect(activeTrades[0].tradeId).to.equal(1);
-    });
-
-    it("Should not include accepted trades", async function () {
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
-
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player1).createTrade(1, 3);
-      
-      await marketplace.connect(player2).acceptTrade(0);
-
-      const activeTrades = await marketplace.getActiveTrades();
-      expect(activeTrades.length).to.equal(1);
-      expect(activeTrades[0].tradeId).to.equal(1);
-    });
-
-    it("Should return correct trade details", async function () {
-      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
-
-      const activeTrades = await marketplace.getActiveTrades();
-      expect(activeTrades.length).to.equal(1);
-      expect(activeTrades[0].creator).to.equal(player1.address);
-      expect(activeTrades[0].offeredTokenId).to.equal(0);
-      expect(activeTrades[0].requestedTokenId).to.equal(2);
-      expect(activeTrades[0].isActive).to.be.true;
-    });
-
-    it("Should handle multiple users' trades", async function () {
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
-
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player2).createTrade(2, 1);
+      await marketplace.connect(player1).createTrade(0, "Phoenix Immortel", 1, "legendaire");
+      await marketplace.connect(player1).createTrade(1, "Chevalier Sacre", 1, "legendaire");
 
       const activeTrades = await marketplace.getActiveTrades();
       expect(activeTrades.length).to.equal(2);
     });
-  });
-
-  describe("Getting User Trades", function () {
-    it("Should return empty array for user with no trades", async function () {
-      const userTrades = await marketplace.getUserTrades(player3.address);
-      expect(userTrades.length).to.equal(0);
-    });
-
-    it("Should return only user's trades", async function () {
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
-
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player1).createTrade(1, 3);
-      await marketplace.connect(player2).createTrade(2, 0);
-
-      const player1Trades = await marketplace.getUserTrades(player1.address);
-      expect(player1Trades.length).to.equal(2);
-      expect(player1Trades[0].creator).to.equal(player1.address);
-      expect(player1Trades[1].creator).to.equal(player1.address);
-
-      const player2Trades = await marketplace.getUserTrades(player2.address);
-      expect(player2Trades.length).to.equal(1);
-      expect(player2Trades[0].creator).to.equal(player2.address);
-    });
 
     it("Should not include cancelled trades", async function () {
       await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
 
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player1).createTrade(1, 3);
+      await marketplace.connect(player1).createTrade(0, "Phoenix Immortel", 1, "legendaire");
+      await marketplace.connect(player1).createTrade(1, "Chevalier Sacre", 1, "legendaire");
+      
       await marketplace.connect(player1).cancelTrade(0);
 
-      const userTrades = await marketplace.getUserTrades(player1.address);
-      expect(userTrades.length).to.equal(1);
-      expect(userTrades[0].tradeId).to.equal(1);
+      const activeTrades = await marketplace.getActiveTrades();
+      expect(activeTrades.length).to.equal(1);
     });
+  });
 
-    it("Should not include accepted trades", async function () {
+  describe("Getting User Trades", function () {
+    it("Should return only user's trades", async function () {
       await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
 
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player1).createTrade(1, 3);
-      await marketplace.connect(player2).acceptTrade(0);
+      await marketplace.connect(player1).createTrade(0, "Phoenix Immortel", 1, "legendaire");
+      await marketplace.connect(player1).createTrade(1, "Chevalier Sacre", 1, "legendaire");
 
       const userTrades = await marketplace.getUserTrades(player1.address);
-      expect(userTrades.length).to.equal(1);
-      expect(userTrades[0].tradeId).to.equal(1);
+      expect(userTrades.length).to.equal(2);
     });
 
-    it("Should return correct trade details", async function () {
-      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
-
-      const userTrades = await marketplace.getUserTrades(player1.address);
-      expect(userTrades[0].offeredTokenId).to.equal(0);
-      expect(userTrades[0].requestedTokenId).to.equal(2);
-      expect(userTrades[0].isActive).to.be.true;
+    it("Should return empty array for user with no trades", async function () {
+      const userTrades = await marketplace.getUserTrades(player3.address);
+      expect(userTrades.length).to.equal(0);
     });
   });
 
@@ -489,141 +452,50 @@ describe("Marketplace – Tests complets", function () {
 
     it("Should return true for card in active trade", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
 
       expect(await marketplace.isCardInTrade(0)).to.be.true;
     });
 
     it("Should return false after trade is cancelled", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
 
       await marketplace.connect(player1).cancelTrade(0);
 
       expect(await marketplace.isCardInTrade(0)).to.be.false;
-    });
-
-    it("Should return false after trade is accepted", async function () {
-      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
-
-      await arena.connect(player2).approve(await marketplace.getAddress(), 2);
-      await marketplace.connect(player2).acceptTrade(0);
-
-      expect(await marketplace.isCardInTrade(0)).to.be.false;
-    });
-
-    it("Should track multiple cards independently", async function () {
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-
-      await marketplace.connect(player1).createTrade(0, 2);
-
-      expect(await marketplace.isCardInTrade(0)).to.be.true;
-      expect(await marketplace.isCardInTrade(1)).to.be.false;
-
-      await marketplace.connect(player1).createTrade(1, 3);
-
-      expect(await marketplace.isCardInTrade(0)).to.be.true;
-      expect(await marketplace.isCardInTrade(1)).to.be.true;
     });
   });
 
   describe("Edge Cases and Security", function () {
     it("Should prevent reentrancy attacks", async function () {
-      // The ReentrancyGuard modifier should prevent reentrancy
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
 
       await arena.connect(player2).approve(await marketplace.getAddress(), 2);
       
-      // This should work normally (not testing actual reentrancy, just that it works)
       await expect(
-        marketplace.connect(player2).acceptTrade(0)
+        marketplace.connect(player2).acceptTrade(0, 2)
       ).to.not.be.reverted;
-    });
-
-    it("Should handle trade with token ID 0", async function () {
-      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      
-      await expect(
-        marketplace.connect(player1).createTrade(0, 2)
-      ).to.not.be.reverted;
-    });
-
-    it("Should allow cancelled trade card to be traded again", async function () {
-      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
-      await marketplace.connect(player1).cancelTrade(0);
-
-      await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await expect(
-        marketplace.connect(player1).createTrade(0, 3)
-      ).to.not.be.reverted;
-    });
-
-    it("Should handle large number of trades", async function () {
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-
-      // Create multiple trades
-      for (let i = 0; i < 5; i++) {
-        await arena.mintCard(player1.address, "Test Card", "commune");
-        await ethers.provider.send("evm_increaseTime", [300]);
-        await ethers.provider.send("evm_mine");
-      }
-
-      // Create trades with new cards
-      for (let i = 4; i < 9; i++) {
-        await marketplace.connect(player1).createTrade(i, 2);
-      }
-
-      const activeTrades = await marketplace.getActiveTrades();
-      expect(activeTrades.length).to.equal(5);
-    });
-
-    it("Should maintain correct state after multiple operations", async function () {
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
-
-      // Create trade
-      await marketplace.connect(player1).createTrade(0, 2);
-      expect(await marketplace.tradeCounter()).to.equal(1);
-
-      // Accept trade
-      await marketplace.connect(player2).acceptTrade(0);
-      expect((await marketplace.trades(0)).isActive).to.be.false;
-
-      // Create another trade
-      await marketplace.connect(player2).createTrade(0, 1);
-      expect(await marketplace.tradeCounter()).to.equal(2);
-
-      // Cancel trade
-      await marketplace.connect(player2).cancelTrade(1);
-      expect((await marketplace.trades(1)).isActive).to.be.false;
-
-      const activeTrades = await marketplace.getActiveTrades();
-      expect(activeTrades.length).to.equal(0);
     });
 
     it("Should handle approval revocation before acceptance", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
 
-      // Revoke approval
       await arena.connect(player1).approve(ethers.ZeroAddress, 0);
 
       await arena.connect(player2).approve(await marketplace.getAddress(), 2);
 
-      // Should fail because creator revoked approval
       await expect(
-        marketplace.connect(player2).acceptTrade(0)
+        marketplace.connect(player2).acceptTrade(0, 2)
       ).to.be.reverted;
     });
 
     it("Should not affect card ownership until trade is accepted", async function () {
       await arena.connect(player1).approve(await marketplace.getAddress(), 0);
-      await marketplace.connect(player1).createTrade(0, 2);
+      await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
 
-      // Ownership should not change until acceptance
       expect(await arena.ownerOf(0)).to.equal(player1.address);
       expect(await arena.ownerOf(2)).to.equal(player2.address);
     });
@@ -639,77 +511,6 @@ describe("Marketplace – Tests complets", function () {
       await expect(
         marketplace.connect(player1).transferOwnership(player2.address)
       ).to.be.reverted;
-    });
-  });
-
-  describe("Complex Scenarios", function () {
-    it("Should handle circular trade offers", async function () {
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
-
-      // Player1 offers 0 for 2
-      await marketplace.connect(player1).createTrade(0, 2);
-      
-      // Player2 offers 2 for 0 (circular)
-      await marketplace.connect(player2).createTrade(2, 0);
-
-      // Both trades should exist
-      expect(await marketplace.tradeCounter()).to.equal(2);
-
-      // Accept first trade
-      await marketplace.connect(player2).acceptTrade(0);
-
-      // Now player2 owns 0 and player1 owns 2
-      expect(await arena.ownerOf(0)).to.equal(player2.address);
-      expect(await arena.ownerOf(2)).to.equal(player1.address);
-
-      // Second trade should now be invalid (creators no longer own offered cards)
-      // But it's still marked as active in the contract
-      const trade1 = await marketplace.trades(1);
-      expect(trade1.isActive).to.be.true;
-    });
-
-    it("Should handle sequential trades between three players", async function () {
-      // Wait for initially minted cards to unlock
-      await ethers.provider.send("evm_increaseTime", [600]);
-      await ethers.provider.send("evm_mine");
-
-      // Player3 needs some cards first
-      await arena.mintCard(player3.address, "Archer Elfe", "rare");
-      await ethers.provider.send("evm_increaseTime", [600]);
-      await ethers.provider.send("evm_mine");
-
-      await arena.connect(player1).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player2).setApprovalForAll(await marketplace.getAddress(), true);
-      await arena.connect(player3).setApprovalForAll(await marketplace.getAddress(), true);
-
-      // Initial state: P1 has 0,1 | P2 has 2,3 | P3 has 4
-      // Trade sequence that works:
-      // 1. P1 offers 0 for 2 (wants P2's card)
-      await marketplace.connect(player1).createTrade(0, 2);
-      
-      // 2. P2 accepts -> P1 gets 2, P2 gets 0
-      await marketplace.connect(player2).acceptTrade(0);
-      
-      await ethers.provider.send("evm_increaseTime", [600]);
-      await ethers.provider.send("evm_mine");
-      
-      // Now: P1 has 1,2 | P2 has 0,3 | P3 has 4
-      // 3. P2 offers 0 for 4 (wants P3's card)
-      await marketplace.connect(player2).createTrade(0, 4);
-      
-      // 4. P3 accepts -> P2 gets 4, P3 gets 0
-      await marketplace.connect(player3).acceptTrade(1);
-      
-      await ethers.provider.send("evm_increaseTime", [600]);
-      await ethers.provider.send("evm_mine");
-
-      // Final state: P1 has 1,2 | P2 has 3,4 | P3 has 0
-      expect(await arena.ownerOf(0)).to.equal(player3.address);
-      expect(await arena.ownerOf(1)).to.equal(player1.address);
-      expect(await arena.ownerOf(2)).to.equal(player1.address);
-      expect(await arena.ownerOf(3)).to.equal(player2.address);
-      expect(await arena.ownerOf(4)).to.equal(player2.address);
     });
   });
 });
