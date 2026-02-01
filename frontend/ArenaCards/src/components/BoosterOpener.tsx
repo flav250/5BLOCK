@@ -18,13 +18,6 @@ type OpeningAnimPhase = 'idle' | 'free' | 'premium';
 const PREMIUM_ANIM_MS = 2800;
 const FREE_ANIM_MS = 1700;
 
-/**
- * Audio:
- * - Place a file at: public/assets/sounds/booster-open.mp3
- * - You can replace it later with your own sound (same path).
- */
-const OPEN_SOUND_SRC = '/assets/sounds/booster-open.mp3';
-
 const BoosterOpener: React.FC = () => {
   const { account, signer } = useWeb3();
   const [isOpening, setIsOpening] = useState(false);
@@ -35,7 +28,6 @@ const BoosterOpener: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<BoosterType>('free');
 
-  // animation state
   const [showAnimation, setShowAnimation] = useState(false);
   const [openingPhase, setOpeningPhase] = useState<OpeningAnimPhase>('idle');
   const [animKey, setAnimKey] = useState(0);
@@ -47,30 +39,6 @@ const BoosterOpener: React.FC = () => {
   const clearAllTimeouts = () => {
     timeoutsRef.current.forEach((t) => window.clearTimeout(t));
     timeoutsRef.current = [];
-  };
-
-  // sound
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  useEffect(() => {
-    audioRef.current = new Audio(OPEN_SOUND_SRC);
-    audioRef.current.preload = 'auto';
-    audioRef.current.volume = 0.6;
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  const playOpenSound = () => {
-    try {
-      if (!audioRef.current) return;
-      audioRef.current.currentTime = 0;
-      void audioRef.current.play();
-    } catch {
-      // autoplay can be blocked; not critical
-    }
   };
 
   const loadData = useCallback(async () => {
@@ -121,7 +89,6 @@ const BoosterOpener: React.FC = () => {
   }, [loadData]);
 
   useEffect(() => {
-    // cleanup timers if user navigates away / component unmounts
     return () => clearAllTimeouts();
   }, []);
 
@@ -147,7 +114,6 @@ const BoosterOpener: React.FC = () => {
     setAnimKey((k) => k + 1); // force key-based re-mount of anim nodes
     setOpeningPhase(type);
     setShowAnimation(true);
-    playOpenSound();
   };
 
   const stopOpeningAnimation = () => {
@@ -172,14 +138,12 @@ const BoosterOpener: React.FC = () => {
       if (result.success) {
         const animMs = selectedType === 'premium' ? PREMIUM_ANIM_MS : FREE_ANIM_MS;
 
-        // reveal cards when animation finishes
         const t1 = window.setTimeout(() => {
           setNewCards(result.cards);
           stopOpeningAnimation();
         }, animMs);
         timeoutsRef.current.push(t1);
 
-        // refresh availability shortly after
         const t2 = window.setTimeout(() => {
           loadData();
         }, animMs + 250);
@@ -220,7 +184,6 @@ const BoosterOpener: React.FC = () => {
         </div>
 
         <div className="booster-container">
-          {/* Type Selector */}
           <div className="booster-type-selector">
             <button
                 className={`type-btn ${selectedType === 'free' ? 'active' : ''}`}
@@ -243,7 +206,6 @@ const BoosterOpener: React.FC = () => {
             </button>
           </div>
 
-          {/* Booster Pack */}
           <div
               className={`booster-pack ${showAnimation ? 'opening' : ''}`}
               onClick={() => {
@@ -265,7 +227,6 @@ const BoosterOpener: React.FC = () => {
             </div>
           </div>
 
-          {/* Status */}
           <div className="booster-status">
             {isLoading ? (
                 <div className="status-loading">
@@ -304,7 +265,6 @@ const BoosterOpener: React.FC = () => {
             )}
           </div>
 
-          {/* Button */}
           <button
               onClick={handleOpenBooster}
               className={`btn-open-booster ${selectedType}`}
@@ -327,7 +287,6 @@ const BoosterOpener: React.FC = () => {
             )}
           </button>
 
-          {/* Info */}
           <div className="booster-info">
             <h3>📋 {selectedType === 'free' ? 'Booster Gratuit' : 'Booster Premium'}</h3>
             {selectedType === 'free' ? (
@@ -364,7 +323,6 @@ const BoosterOpener: React.FC = () => {
           </div>
         </div>
 
-        {/* Modal cartes */}
         {newCards.length > 0 && (
             <div className="cards-modal-overlay" onClick={closeCardsModal}>
               <div className="cards-modal" onClick={(e) => e.stopPropagation()}>
@@ -399,7 +357,6 @@ const BoosterOpener: React.FC = () => {
             </div>
         )}
 
-        {/* Opening Animation Overlay (rebuilt) */}
         {showAnimation && (
             <div
                 key={animKey}
@@ -430,7 +387,7 @@ const BoosterOpener: React.FC = () => {
                               <span
                                   key={i}
                                   className="premium-star"
-                                  style={{ ['--i' as any]: i }}
+                                  style={{ ['--i' as never]: i }}
                               />
                           ))}
                         </div>

@@ -5,7 +5,7 @@ import type { Signer } from "ethers";
 import FreeBoosterABI from "../abis/FreeBooster.json";
 import PremiumBoosterABI from "../abis/PremiumBooster.json";
 import ArenaCardsABI from "../abis/ArenaCards.json";
-import { notifyError, notifySuccess } from "./notificationService";
+import { notifyError } from "./notificationService";
 
 const FREE_BOOSTER_ADDRESS = import.meta.env.VITE_FREE_BOOSTER_ADDRESS as string;
 const PREMIUM_BOOSTER_ADDRESS = import.meta.env.VITE_PREMIUM_BOOSTER_ADDRESS as string;

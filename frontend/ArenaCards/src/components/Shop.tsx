@@ -27,7 +27,6 @@ const Shop: React.FC = () => {
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [purchaseEligibility, setPurchaseEligibility] = useState<Record<number, boolean>>({});
 
-  // Initialiser le contrat Shop
   useEffect(() => {
     if (signer) {
       const contract = getShopContract(signer);
@@ -35,12 +34,10 @@ const Shop: React.FC = () => {
     }
   }, [signer]);
 
-  // Charger les cartes et infos utilisateur
   useEffect(() => {
     if (shopContract && account) {
       loadData();
       
-      // Écouter les événements storage pour update les points
       const handleStorageChange = () => {
         const points = loadArenaPoints(account);
         setArenaPoints(points);
@@ -54,13 +51,12 @@ const Shop: React.FC = () => {
     }
   }, [shopContract, account]);
 
-  // Timer pour le cooldown
   useEffect(() => {
     if (cooldownRemaining > 0) {
       const timer = setInterval(() => {
         setCooldownRemaining(prev => {
           if (prev <= 1) {
-            loadData(); // Recharger quand le cooldown se termine
+            loadData();
             return 0;
           }
           return prev - 1;
@@ -77,19 +73,15 @@ const Shop: React.FC = () => {
     try {
       setLoading(true);
       
-      // Charger les cartes
       const shopCards = await loadShopCards(shopContract);
       setCards(shopCards);
       
-      // Charger les points
       const points = loadArenaPoints(account);
       setArenaPoints(points);
       
-      // Charger le cooldown
       const cooldown = await getCooldownRemaining(shopContract, account);
       setCooldownRemaining(cooldown);
       
-      // Vérifier l'éligibilité pour chaque carte
       const eligibility: Record<number, boolean> = {};
       for (const card of shopCards) {
         const canPurchase = await canPurchaseCard(shopContract, account, card.id);
@@ -107,19 +99,16 @@ const Shop: React.FC = () => {
   const handleBuyCard = async (card: ShopCard) => {
     if (!shopContract || !account || !signer) return;
     
-    // Vérifier les points (frontend)
     if (!hasEnoughPoints(account, card.price)) {
       alert(`Vous n'avez pas assez de points ! Nécessaire: ${formatPoints(card.price)}`);
       return;
     }
     
-    const success = await buyCard(shopContract, card.id, card.name, card.price);
+    const success = await buyCard(shopContract, card.id, card.name);
     
     if (success) {
-      // Déduire les points
       deductArenaPoints(account, card.price);
       
-      // Recharger les données
       await loadData();
     }
   };
@@ -151,7 +140,6 @@ const Shop: React.FC = () => {
 
   return (
     <div className="shop-container">
-      {/* Header */}
       <div className="shop-header">
         <h1>🏪 Boutique Exclusive</h1>
         <p>Échangez vos points d'arène contre des cartes légendaires et secrètes</p>
@@ -177,7 +165,6 @@ const Shop: React.FC = () => {
         )}
       </div>
 
-      {/* Cartes Légendaires */}
       {legendaryCards.length > 0 && (
         <div className="shop-section">
           <div className="shop-section-header legendary">
@@ -196,15 +183,12 @@ const Shop: React.FC = () => {
               
               return (
                 <div key={card.id} className={`shop-card legendary ${!canBuy ? 'disabled' : ''}`}>
-                  {/* Rarity Badge */}
                   <div className="rarity-badge">Légendaire</div>
                   
-                  {/* Owned Badge */}
                   {alreadyPurchased && (
                     <div className="shop-card-badge owned">✓ Possédée</div>
                   )}
                   
-                  {/* Card Image */}
                   <div className="card-image-wrapper">
                     <div className="card-image">
                       {card.imageURI ? (
@@ -217,17 +201,14 @@ const Shop: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* Card Details */}
                   <div className="card-details">
                     <h3 className="card-name">{card.name}</h3>
                     
-                    {/* Price Display */}
                     <div className="shop-card-price">
                       <span className="shop-card-price-icon">⚡</span>
                       <span className="shop-card-price-amount">{formatPoints(card.price)}</span>
                     </div>
                     
-                    {/* Buy Button */}
                     <button
                       className={`shop-buy-button legendary`}
                       onClick={() => handleBuyCard(card)}
@@ -246,7 +227,6 @@ const Shop: React.FC = () => {
         </div>
       )}
 
-      {/* Cartes Secrètes */}
       {secretCards.length > 0 && (
         <div className="shop-section">
           <div className="shop-section-header secret">
@@ -268,10 +248,8 @@ const Shop: React.FC = () => {
               
               return (
                 <div key={card.id} className={`shop-card secret ${!canBuy || soldOut ? 'disabled' : ''}`}>
-                  {/* Rarity Badge */}
                   <div className="rarity-badge">Secrète</div>
                   
-                  {/* Status Badges */}
                   {soldOut && (
                     <div className="shop-card-badge sold-out">ÉPUISÉ</div>
                   )}
@@ -279,7 +257,6 @@ const Shop: React.FC = () => {
                     <div className="shop-card-badge owned">✓ Possédée</div>
                   )}
                   
-                  {/* Card Image */}
                   <div className="card-image-wrapper">
                     <div className="card-image">
                       {card.imageURI ? (
@@ -292,11 +269,9 @@ const Shop: React.FC = () => {
                     </div>
                   </div>
                   
-                  {/* Card Details */}
                   <div className="card-details">
                     <h3 className="card-name">{card.name}</h3>
                     
-                    {/* Stock Info */}
                     {!soldOut && remainingStock !== null && (
                       <div className={`shop-card-stock ${lowStock ? 'low' : 'limited'}`}>
                         <span className="shop-card-stock-icon">📦</span>
@@ -304,13 +279,11 @@ const Shop: React.FC = () => {
                       </div>
                     )}
                     
-                    {/* Price Display */}
                     <div className="shop-card-price">
                       <span className="shop-card-price-icon">⚡</span>
                       <span className="shop-card-price-amount">{formatPoints(card.price)}</span>
                     </div>
                     
-                    {/* Buy Button */}
                     <button
                       className={`shop-buy-button secret`}
                       onClick={() => handleBuyCard(card)}
@@ -330,7 +303,6 @@ const Shop: React.FC = () => {
         </div>
       )}
 
-      {/* Empty State */}
       {cards.length === 0 && (
         <div className="shop-empty">
           <div className="shop-empty-icon">🏪</div>
@@ -338,7 +310,6 @@ const Shop: React.FC = () => {
         </div>
       )}
 
-      {/* Shop Rules */}
       <div className="shop-info">
         <h3>📋 Règles de la Boutique</h3>
         <ul>

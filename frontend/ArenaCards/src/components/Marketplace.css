@@ -1,8 +1,3 @@
-/* ============================================================
-   MARKETPLACE — STYLESHEET
-   ============================================================ */
-
-/* ── CSS Variables ─────────────────────────────────────────── */
 :root {
   --clr-bg:              #0d1117;
   --clr-surface:         #131825;
@@ -36,9 +31,6 @@
   --transition:       0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ============================================================
-   LAYOUT
-   ============================================================ */
 .marketplace-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -62,9 +54,6 @@
   letter-spacing: 0.5px;
 }
 
-/* ============================================================
-   HEADER
-   ============================================================ */
 .marketplace-header {
   text-align: center;
   padding: 2.5rem 2rem;
@@ -89,9 +78,6 @@
   margin: 0.5rem 0 0;
 }
 
-/* ============================================================
-   MODE TOGGLE
-   ============================================================ */
 .marketplace-mode-toggle {
   display: flex;
   justify-content: center;
@@ -134,9 +120,6 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* ============================================================
-   ACTIONS BAR
-   ============================================================ */
 .marketplace-actions {
   display: flex;
   justify-content: center;
@@ -145,9 +128,6 @@
   margin-bottom: 2.5rem;
 }
 
-/* ============================================================
-   BUTTONS (shared)
-   ============================================================ */
 .btn {
   border: none;
   border-radius: 40px;
@@ -165,7 +145,6 @@
   box-shadow: none !important;
 }
 
-/* primary gradient buttons */
 .btn--approve,
 .btn--create,
 .btn--accept,
@@ -189,7 +168,6 @@
   opacity: 1;
 }
 
-/* ghost button */
 .btn--ghost {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--clr-border-hover);
@@ -201,7 +179,6 @@
   color: var(--clr-text-primary);
 }
 
-/* refresh circle */
 .btn--refresh {
   width: 52px;
   height: 52px;
@@ -227,7 +204,6 @@
   animation: spin 0.7s ease-in-out;
 }
 
-/* cancel-small (inside trade card) */
 .btn--cancel-small {
   background: none;
   border: none;
@@ -241,7 +217,6 @@
   background: rgba(255, 107, 107, 0.15);
 }
 
-/* accept (inside trade card) */
 .btn--accept {
   width: 100%;
   margin-top: 1rem;
@@ -249,9 +224,6 @@
   padding: 0.7rem 1rem;
 }
 
-/* ============================================================
-   TRADE SECTIONS
-   ============================================================ */
 .trades-section {
   margin-bottom: 2.5rem;
 }
@@ -268,9 +240,6 @@
   font-weight: 400;
 }
 
-/* ============================================================
-   TRADE GRID + TRADE CARD
-   ============================================================ */
 .trades-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -291,18 +260,15 @@
   box-shadow: 0 0 35px rgba(255, 200, 120, 0.3);
 }
 
-/* own trade highlight */
 .trade-card--mine {
   border-color: var(--clr-accent-gold);
 }
 
-/* acceptible trade highlight */
 .trade-card--acceptible {
   border-color: var(--clr-accent-green);
   box-shadow: 0 0 28px rgba(0, 255, 174, 0.3);
 }
 
-/* header row */
 .trade-card__header {
   display: flex;
   justify-content: space-between;
@@ -320,7 +286,6 @@
   font-size: 0.82rem;
 }
 
-/* body (two sides + arrow) */
 .trade-card__body {
   display: flex;
   align-items: center;
@@ -350,7 +315,6 @@
   flex-shrink: 0;
 }
 
-/* footer row */
 .trade-card__footer {
   margin-top: 1rem;
   padding-top: 0.8rem;
@@ -369,9 +333,6 @@
   gap: 0.5rem;
 }
 
-/* ============================================================
-   MINI CARD (inside trade cards)
-   ============================================================ */
 .mini-card {
   width: 100%;
   background: rgba(0, 0, 0, 0.4);
@@ -383,7 +344,6 @@
   position: relative;
 }
 
-/* rarity border tints */
 .mini-card.rarity--rare        { border-color: rgba(62, 168, 255, 0.3); }
 .mini-card.rarity--legendary   { border-color: rgba(255, 184, 64, 0.4); }
 
@@ -422,7 +382,6 @@
   margin-top: 2px;
 }
 
-/* drop-zone dashed border */
 .mini-card--drop-zone {
   border: 2px dashed var(--clr-accent-gold);
   background: radial-gradient(circle, rgba(254, 202, 87, 0.18), transparent 70%);
@@ -442,9 +401,6 @@
   white-space: nowrap;
 }
 
-/* ============================================================
-   MODAL — OVERLAY
-   ============================================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -459,9 +415,6 @@
   overflow-y: auto;
 }
 
-/* ============================================================
-   MODAL — SHELL
-   ============================================================ */
 .modal {
   position: relative;
   width: 90%;
@@ -482,7 +435,6 @@
   to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
-/* top accent line */
 .modal__accent {
   height: 3px;
   background: linear-gradient(
@@ -494,7 +446,6 @@
   );
 }
 
-/* header row */
 .modal__header {
   display: flex;
   align-items: center;
@@ -545,12 +496,10 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-/* body */
 .modal__body {
   padding: 16px 28px 28px;
 }
 
-/* actions row */
 .modal__actions {
   display: flex;
   justify-content: flex-end;
@@ -558,14 +507,10 @@
   margin-top: 28px;
 }
 
-/* ============================================================
-   MODAL — STEP
-   ============================================================ */
 .modal-step {
   margin-bottom: 20px;
 }
 
-/* label row (dot + text) */
 .modal-step__label {
   display: flex;
   align-items: center;
@@ -598,7 +543,6 @@
   letter-spacing: 0.3px;
 }
 
-/* panel (card grid / input wrapper) */
 .modal-step__panel {
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -606,9 +550,6 @@
   padding: 16px;
 }
 
-/* ============================================================
-   MODAL — DIVIDER
-   ============================================================ */
 .modal-divider {
   display: flex;
   align-items: center;
@@ -629,9 +570,6 @@
   text-shadow: 0 0 12px rgba(254, 202, 87, 0.5);
 }
 
-/* ============================================================
-   MODAL — INPUT
-   ============================================================ */
 .modal-input {
   width: 100%;
   padding: 12px 16px;
@@ -649,7 +587,6 @@
   box-shadow: 0 0 14px rgba(254, 202, 87, 0.25);
 }
 
-/* hide native number spinners */
 .modal-input::-webkit-outer-spin-button,
 .modal-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .modal-input { -moz-appearance: textfield; }
@@ -661,9 +598,6 @@
   letter-spacing: 0.2px;
 }
 
-/* ============================================================
-   MODAL — SELECTABLE CARDS GRID
-   ============================================================ */
 .cards-select {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -690,11 +624,9 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* rarity-tinted border on idle */
 .selectable-card.rarity--rare      { border-color: rgba(62, 168, 255, 0.2); }
 .selectable-card.rarity--legendary { border-color: rgba(255, 184, 64, 0.25); }
 
-/* ── selected state ── */
 .selectable-card--selected {
   transform: translateY(-4px) scale(1.04) !important;
 }
@@ -711,7 +643,6 @@
   box-shadow: 0 0 22px var(--rarity-legendary-glow), 0 0 6px var(--rarity-legendary-glow);
 }
 
-/* rarity badge */
 .selectable-card__badge {
   position: absolute;
   top: 10px;
@@ -731,7 +662,6 @@
 .selectable-card__badge.rarity--rare      { color: var(--rarity-rare-text);      border: 1px solid rgba(62,168,255,0.35);  }
 .selectable-card__badge.rarity--legendary { color: var(--rarity-legendary-text); border: 1px solid rgba(255,184,64,0.4);   }
 
-/* art container */
 .selectable-card__art {
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -748,7 +678,6 @@
   display: block;
 }
 
-/* shimmer overlay on selected */
 .selectable-card__shimmer {
   position: absolute;
   inset: 0;
@@ -762,7 +691,6 @@
   pointer-events: none;
 }
 
-/* name */
 .selectable-card__name {
   color: var(--clr-text-primary);
   font-size: 0.82rem;
@@ -770,16 +698,12 @@
   line-height: 1.3;
 }
 
-/* level */
 .selectable-card__level {
   color: var(--clr-text-secondary);
   font-size: 0.72rem;
   font-weight: 500;
 }
 
-/* ============================================================
-   MINI CARD TEXT (for requested cards shown as text)
-   ============================================================ */
 .mini-card-text {
   width: 100%;
   background: rgba(0, 0, 0, 0.4);
@@ -807,9 +731,6 @@
   font-weight: 500;
 }
 
-/* ============================================================
-   MODAL INFO TEXT
-   ============================================================ */
 .modal__info {
   color: var(--clr-text-secondary);
   font-size: 0.9rem;
@@ -821,9 +742,6 @@
   border-radius: 8px;
 }
 
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
@@ -834,9 +752,6 @@
   to   { transform: translateX(100%);  }
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
 @media (max-width: 768px) {
   .marketplace-container { padding: 1rem; }
 

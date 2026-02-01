@@ -163,27 +163,22 @@ contract FreeBooster {
         uint256 randomNum = _random(seed) % 1000;
 
         if (randomNum < 1) {
-            // Légendaire: 0.1% (1/1000)
             uint256 index = _random(seed + 1) % 2;
             return cardTemplates[index];
         }
         else if (randomNum < 101) {
-            // Épique: 10% (100/1000)
             uint256 index = 2 + (_random(seed + 2) % 3);
             return cardTemplates[index];
         }
         else if (randomNum < 301) {
-            // Rare: 20% (200/1000)
             uint256 index = 5 + (_random(seed + 3) % 3);
             return cardTemplates[index];
         }
         else if (randomNum < 551) {
-            // Peu Commune: 25% (250/1000)
             uint256 index = 8 + (_random(seed + 4) % 3);
             return cardTemplates[index];
         }
         else {
-            // Commune: 44.9% (449/1000)
             uint256 index = 11 + (_random(seed + 5) % 5);
             return cardTemplates[index];
         }

@@ -28,10 +28,8 @@ contract Shop {
 
     ShopCard[] public shopCards;
 
-    // Tracking des achats par carte
     mapping(address => mapping(uint256 => bool)) public hasPurchased;
     
-    // Dernier achat par utilisateur (pour le cooldown)
     mapping(address => uint256) public lastPurchase;
 
     uint256 public constant COOLDOWN = 24 hours;
@@ -55,14 +53,13 @@ contract Shop {
      * @dev Initialise le catalogue avec les cartes légendaires et secrètes
      */
     function _initializeCards() private {
-        // CARTES LÉGENDAIRES (Stock illimité)
         _addCard(
             "Dragon Dore",
             "legendaire",
             "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeia43c7zri7lz66ta4bpqbjpzr23rsmh6etvejlg3lurwdfhb44shm",
             1000000,
             false,
-            0  // maxSupply = 0 = illimité
+            0
         );
 
         _addCard(
@@ -71,10 +68,9 @@ contract Shop {
             "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigsbr2x5mcfgi2cstnrd7x3gyottx5222pj4rk7qv3gv5pohp5h6q",
             1000000,
             false,
-            0  // maxSupply = 0 = illimité
+            0
         );
 
-        // CARTES SECRÈTES (Stock limité à 50)
         _addCard(
             "Brice : Le divin supreme",
             "secrete",
@@ -141,15 +137,12 @@ contract Shop {
             "Cooldown active - wait 24h between purchases"
         );
 
-        // Vérifier le stock (seulement si maxSupply > 0)
         if (card.maxSupply > 0) {
             require(card.minted < card.maxSupply, "Card sold out");
         }
 
-        // Mint la carte
         arenaCards.mintCard(msg.sender, card.name, card.rarity);
 
-        // Marquer comme acheté
         hasPurchased[msg.sender][cardId] = true;
         lastPurchase[msg.sender] = block.timestamp;
         card.minted++;
@@ -196,16 +189,12 @@ contract Shop {
 
         ShopCard memory card = shopCards[cardId];
 
-        // Vérifier la disponibilité
         if (!card.available) return false;
 
-        // Vérifier si déjà acheté
         if (hasPurchased[user][cardId]) return false;
 
-        // Vérifier le cooldown
         if (block.timestamp < lastPurchase[user] + COOLDOWN) return false;
 
-        // Vérifier le stock (si applicable)
         if (card.maxSupply > 0 && card.minted >= card.maxSupply) return false;
 
         return true;

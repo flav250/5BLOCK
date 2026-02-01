@@ -110,7 +110,6 @@ export async function buyCard(
   shopContract: ethers.Contract,
   cardId: number,
   cardName: string,
-  price: number
 ): Promise<boolean> {
   try {
     notifyInfo('Transaction en cours...');
@@ -157,7 +156,6 @@ export function deductArenaPoints(userAddress: string, amount: number): void {
       data.totalPoints = Math.max(0, (data.totalPoints || 0) - amount);
       localStorage.setItem(`afkArena_progress_${userAddress}`, JSON.stringify(data));
       
-      // Déclencher un événement storage pour mettre à jour l'UI
       window.dispatchEvent(new Event('storage'));
     }
   } catch (error) {
@@ -179,28 +177,11 @@ export function hasEnoughPoints(userAddress: string, price: number): boolean {
 export function formatPoints(points: number): string {
   return points.toLocaleString('fr-FR');
 }
-
-/**
- * Vérifier si une carte a été achetée par l'utilisateur
- */
-export async function hasUserPurchasedCard(
-  shopContract: ethers.Contract,
-  userAddress: string,
-  cardId: number
-): Promise<boolean> {
-  try {
-    return await shopContract.hasPurchased(userAddress, cardId);
-  } catch (error) {
-    console.error('Error checking if card purchased:', error);
-    return false;
-  }
-}
-
 /**
  * Obtenir le stock restant d'une carte
  */
 export function getRemainingStock(card: ShopCard): number | null {
-  if (card.maxSupply === 0) return null; // Illimité
+  if (card.maxSupply === 0) return null;
   return card.maxSupply - card.minted;
 }
 
@@ -208,6 +189,6 @@ export function getRemainingStock(card: ShopCard): number | null {
  * Vérifier si une carte est épuisée
  */
 export function isSoldOut(card: ShopCard): boolean {
-  if (card.maxSupply === 0) return false; // Illimité
+  if (card.maxSupply === 0) return false;
   return card.minted >= card.maxSupply;
 }

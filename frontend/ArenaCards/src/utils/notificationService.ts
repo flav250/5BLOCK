@@ -159,24 +159,8 @@ export const dismissAll = (): void => {
  * Notifications spécifiques au contexte blockchain
  */
 export const blockchainNotifications = {
-  transactionPending: () => notifyLoading('Transaction en cours...'),
-  transactionSuccess: (message: string) => notifySuccess(message),
-  transactionError: (error: unknown) => notifyError(error),
-  
-  walletConnecting: () => notifyLoading('Connexion au wallet...'),
   walletConnected: (address: string) => {
     const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
     notifySuccess(`Wallet connecté: ${shortAddress}`);
   },
-  walletDisconnected: () => notifyInfo('Wallet déconnecté'),
-  
-  approvalNeeded: () => notifyWarning('Approbation nécessaire pour continuer'),
-  approvalSuccess: () => notifySuccess('Contrat approuvé avec succès'),
-  
-  cardMinted: (cardName: string) => notifySuccess(`Carte "${cardName}" obtenue !`),
-  cardsFused: (newLevel: number) => notifySuccess(`Fusion réussie ! Nouvelle carte niveau ${newLevel}`),
-  
-  tradeCreated: () => notifySuccess('Offre d\'échange créée avec succès'),
-  tradeAccepted: () => notifySuccess('Échange effectué avec succès !'),
-  tradeCancelled: () => notifyInfo('Échange annulé'),
 };

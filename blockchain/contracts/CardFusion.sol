@@ -43,7 +43,6 @@ contract CardFusion {
         require(arena.ownerOf(id1) == msg.sender, "Not owner of card 1");
         require(arena.ownerOf(id2) == msg.sender, "Not owner of card 2");
 
-        // Récupérer les stats des deux cartes
         (
             string memory name1,
             string memory rarity1,
@@ -58,7 +57,6 @@ contract CardFusion {
             // uint256 attack2 - pas besoin
         ) = arena.getCardStats(id2);
 
-        // Vérifications
         require(
             keccak256(bytes(name1)) == keccak256(bytes(name2)),
             "Cards must have same name"

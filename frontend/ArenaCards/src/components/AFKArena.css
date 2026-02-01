@@ -1,8 +1,3 @@
-/* ============================================================
-   AFK ARENA - DARK FANTASY ENHANCED
-   Version harmonisée avec Marketplace.css
-   ============================================================ */
-
 :root {
   --afk-bg: #0d1117;
   --afk-surface: #131825;
@@ -31,9 +26,6 @@
   color: var(--afk-text-primary);
 }
 
-/* ============================================================
-   GAME OVERLAY — POPUP AMÉLIORÉ
-   ============================================================ */
 .game-overlay {
   position: fixed;
   top: 0;
@@ -87,7 +79,6 @@
   }
 }
 
-/* ── Header avec accent line ── */
 .overlay-header {
   display: flex;
   justify-content: space-between;
@@ -147,7 +138,6 @@
   max-height: calc(92vh - 80px);
 }
 
-/* Custom scrollbar */
 .overlay-body::-webkit-scrollbar { width: 6px; }
 .overlay-body::-webkit-scrollbar-track { background: transparent; }
 .overlay-body::-webkit-scrollbar-thumb {
@@ -158,7 +148,6 @@
   background: rgba(254, 202, 87, 0.4);
 }
 
-/* ── Stats grid compact ── */
 .overlay-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -205,7 +194,6 @@
   font-weight: 600;
 }
 
-/* ── Result banner amélioré ── */
 .overlay-result {
   margin-bottom: 1.4rem;
   padding: 1.2rem 1.5rem;
@@ -245,7 +233,6 @@
   color: rgba(255, 255, 255, 0.95);
 }
 
-/* ── Section containers ── */
 .overlay-section {
   margin-bottom: 1.4rem;
   padding: 1.2rem;
@@ -268,7 +255,6 @@
   letter-spacing: 0.3px;
 }
 
-/* ── Monster display amélioré ── */
 .monster-display {
   display: flex;
   gap: 1.2rem;
@@ -321,7 +307,6 @@
   border-radius: 8px;
 }
 
-/* ── Team display grid amélioré ── */
 .team-display {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -389,7 +374,6 @@
   text-shadow: 0 0 6px rgba(255, 107, 107, 0.35);
 }
 
-/* ── Timer zone amélioré ── */
 .overlay-timer {
   margin-bottom: 1.4rem;
   padding: 1.2rem 1.5rem;
@@ -422,7 +406,6 @@
   50% { transform: scale(1.08); }
 }
 
-/* ── Stop button amélioré ── */
 .overlay-stop-btn {
   width: 100%;
   padding: 1.1rem 1.5rem;
@@ -448,9 +431,6 @@
   transform: translateY(-1px);
 }
 
-/* ============================================================
-   PAGE PRINCIPALE (quand jeu arrêté)
-   ============================================================ */
 .afk-arena .afk-header {
   text-align: center;
   padding: 2.5rem 2rem;
@@ -562,7 +542,6 @@
   color: rgba(255, 255, 255, 0.95);
 }
 
-/* ── Monster section ── */
 .afk-arena .monster-section {
   background: linear-gradient(145deg, #0f1325, #1a1f3d);
   border: 1px solid var(--afk-border);
@@ -652,7 +631,6 @@
   font-size: 1.5rem;
 }
 
-/* ── Team section ── */
 .afk-arena .team-section {
   background: linear-gradient(145deg, #0f1325, #1a1f3d);
   border: 1px solid var(--afk-border);
@@ -909,7 +887,6 @@
   cursor: not-allowed;
 }
 
-/* ── Inventory section ── */
 .afk-arena .inventory-section {
   background: linear-gradient(145deg, #0f1325, #1a1f3d);
   border: 1px solid var(--afk-border);
@@ -1054,9 +1031,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
 @media (max-width: 968px) {
   .afk-arena .stats-grid {
     grid-template-columns: repeat(2, 1fr);

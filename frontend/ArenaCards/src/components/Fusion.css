@@ -6,7 +6,6 @@
     color: #fff;
 }
 
-/* Header */
 .fusion-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -27,7 +26,6 @@
     margin: 0;
 }
 
-/* Règles de fusion */
 .fusion-rules-box {
     background: linear-gradient(145deg, #12162a, #1c2040);
     border-radius: 18px;
@@ -74,7 +72,7 @@
     margin-bottom: 8px;
 }
 
-/* effet spécial */
+
 .rule-card.highlight {
     background: linear-gradient(145deg, #ff8c42, #ffb347);
     color: #1a1a1a;
@@ -86,7 +84,6 @@
     color: #ffd966;
 }
 
-/* Zone de fusion */
 .fusion-zone {
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 107, 107, 0.3);
@@ -112,7 +109,6 @@
     flex-wrap: wrap;
 }
 
-/* Slots de fusion */
 .fusion-slot {
     width: 280px;
     height: 500px;
@@ -161,7 +157,6 @@
     font-size: 1rem;
 }
 
-/* Carte dans le slot */
 .fusion-card {
     width: 100%;
     height: 100%;
@@ -225,7 +220,6 @@
     transform: scale(1.1);
 }
 
-/* Icône de fusion */
 .fusion-icon {
     display: flex;
     flex-direction: column;
@@ -264,7 +258,6 @@
     pointer-events: none;
 }
 
-/* MAIS on réactive le bouton X */
 .remove-btn {
     pointer-events: auto;
 }
@@ -287,7 +280,6 @@
     }
 }
 
-/* Action de fusion */
 .fusion-action {
     text-align: center;
 }
@@ -323,7 +315,6 @@
     font-size: 0.95rem;
 }
 
-/* Inventaire */
 .fusion-inventory {
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 255, 255, 0.1);
@@ -372,7 +363,6 @@
     border-color: #feca57;
 }
 
-/* Grille d'inventaire */
 .inventory-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -449,7 +439,6 @@
     font-size: 0.8rem;
 }
 
-/* États vides et loading */
 .loading-state,
 .empty-inventory {
     text-align: center;
@@ -472,7 +461,6 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Modal de résultat */
 .fusion-result-modal {
     position: fixed;
     top: 0;
@@ -574,7 +562,6 @@
     transform: scale(1.05);
 }
 
-/* Connect prompt */
 .connect-prompt {
     text-align: center;
     padding: 4rem 2rem;
@@ -585,7 +572,6 @@
     margin-bottom: 1rem;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .fusion-container {
         padding: 1rem;

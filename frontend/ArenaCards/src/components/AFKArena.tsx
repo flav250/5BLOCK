@@ -83,8 +83,7 @@ const AFKArena: React.FC = () => {
           setInventory(userCards.filter(card =>
             !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
           ));
-          
-          console.log('✅ Équipe synchronisée:', cardsInTeam.length, 'cartes');
+
         } else {
           setInventory(userCards);
         }
@@ -110,7 +109,6 @@ const AFKArena: React.FC = () => {
 
     const handleStorageChange = async (e: StorageEvent) => {
       if (e.key === TEAM_STORAGE_KEY + account && e.newValue) {
-        console.log('🔄 Changement détecté depuis TeamBuilder !');
 
         try {
           const teamData = JSON.parse(e.newValue);
@@ -222,7 +220,7 @@ const AFKArena: React.FC = () => {
       return;
     }
 
-    let newTeamSlots = [...teamSlots];
+    const newTeamSlots = [...teamSlots];
 
     if (dragSource === 'inventory') {
       // Déposer depuis inventaire
@@ -320,7 +318,6 @@ const AFKArena: React.FC = () => {
     };
 
     localStorage.setItem(TEAM_STORAGE_KEY + account, JSON.stringify(teamData));
-    console.log('💾 Équipe sauvegardée:', teamData.cardIds);
 
     window.dispatchEvent(new StorageEvent('storage', {
       key: TEAM_STORAGE_KEY + account,

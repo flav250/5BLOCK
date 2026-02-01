@@ -73,7 +73,6 @@ const InventoryCard: React.FC<InventoryCardProps> = ({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            {/* Badge de rareté */}
             <div
                 className={`rarity-badge bg-gradient-to-r ${
                     RARITY_GRADIENT[card.rarity.toLowerCase()] ||
@@ -83,7 +82,6 @@ const InventoryCard: React.FC<InventoryCardProps> = ({
                 {card.rarity}
             </div>
 
-            {/* Image */}
             <div className="card-image-wrapper">
                 <div className="card-image">
                     {card.imageURI ? (
@@ -103,7 +101,6 @@ const InventoryCard: React.FC<InventoryCardProps> = ({
                 )}
             </div>
 
-            {/* Infos */}
             <div className="card-details">
                 <h4 className="card-name" title={card.name}>
                     {card.name}

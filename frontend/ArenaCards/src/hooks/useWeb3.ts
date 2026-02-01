@@ -29,7 +29,6 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
   const [isConnecting, setIsConnecting] = useState(false);
   const [chainId, setChainId] = useState<number | null>(null);
 
-  // Détecter les changements de compte et de réseau
   useEffect(() => {
     if (!window.ethereum) return;
 
@@ -49,7 +48,6 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
     window.ethereum.on('accountsChanged', handleAccountsChanged);
     window.ethereum.on('chainChanged', handleChainChanged);
 
-    // Vérifier si déjà connecté au chargement
     checkIfConnected();
 
     return () => {
@@ -58,7 +56,6 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
         window.ethereum.removeListener('chainChanged', handleChainChanged);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkIfConnected = async (): Promise<void> => {
@@ -89,7 +86,6 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
     setProvider(null);
     setSigner(null);
     setChainId(null);
-    console.log('👋 Wallet déconnecté');
   };
 
   const connectWallet = async (): Promise<void> => {
@@ -113,9 +109,6 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
       setSigner(web3Signer);
       setAccount(accounts[0]);
       setChainId(Number(network.chainId));
-
-      console.log('✅ Wallet connecté:', accounts[0]);
-      console.log('🌐 Réseau:', network.name, '(Chain ID:', network.chainId, ')');
 
       blockchainNotifications.walletConnected(accounts[0]);
 
@@ -157,7 +150,6 @@ export function useWeb3(): Web3ContextType {
   return context;
 }
 
-// Type global pour window.ethereum
 declare global {
   interface Window {
     ethereum?: {

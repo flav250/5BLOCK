@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useWeb3 } from '../hooks/useWeb3';
-import { loadUserCards, getCardDetails, ALL_GAME_CARDS, type GameCard } from '../utils/contractHelpers';
+import { loadUserCards, getCardDetails, ALL_GAME_CARDS } from '../utils/contractHelpers';
 import {
   getActiveTrades,
   createTrade,
@@ -24,7 +24,6 @@ import './Marketplace.css';
 const Marketplace: React.FC = () => {
   const { account, signer } = useWeb3();
 
-  // ── States ────────────────────────────────────────────────────
   const [tradeMode, setTradeMode] = useState<'public' | 'p2p'>('public');
   const [myCards, setMyCards] = useState<ArenaCard[]>([]);
   const [allTrades, setAllTrades] = useState<Trade[]>([]);
@@ -32,36 +31,29 @@ const Marketplace: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(false);
 
-  // P2P Direct Trades
   const [receivedDirectTrades, setReceivedDirectTrades] = useState<DirectTrade[]>([]);
   const [sentDirectTrades, setSentDirectTrades] = useState<DirectTrade[]>([]);
   const [directTradeCards, setDirectTradeCards] = useState<Map<string, { offered: ArenaCard | null; requested: ArenaCard | null }>>(new Map());
 
-  // Create-trade modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedOffered, setSelectedOffered] = useState<ArenaCard | null>(null);
   const [selectedRequestedCardName, setSelectedRequestedCardName] = useState<string | null>(null);
   const [selectedRequestedLevel, setSelectedRequestedLevel] = useState<number | null>(null);
 
-  // P2P Create modal
   const [targetAddress, setTargetAddress] = useState<string>('');
   const [selectedRequestedCard, setSelectedRequestedCard] = useState<ArenaCard | null>(null);
   const [allUserCards, setAllUserCards] = useState<ArenaCard[]>([]);
   const [isLoadingTargetCards, setIsLoadingTargetCards] = useState(false);
 
-  // Accept-trade modal
   const [showAcceptModal, setShowAcceptModal] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [selectedCardToOffer, setSelectedCardToOffer] = useState<ArenaCard | null>(null);
 
-  // P2P Accept modal
   const [showAcceptDirectModal, setShowAcceptDirectModal] = useState(false);
   const [selectedDirectTrade, setSelectedDirectTrade] = useState<DirectTrade | null>(null);
 
-  // Trade card-details cache
   const [tradeCards, setTradeCards] = useState<Map<string, { offered: ArenaCard | null }>>(new Map());
 
-  // ── Load data ─────────────────────────────────────────────────
   const loadData = useCallback(async () => {
     if (!signer || !account) return;
 
@@ -95,7 +87,6 @@ const Marketplace: React.FC = () => {
     if (account && signer) loadData();
   }, [account, signer, loadData]);
 
-  // ── Load P2P data ─────────────────────────────────────────────
   const loadP2PData = useCallback(async () => {
     if (!signer || !account) return;
 
@@ -136,7 +127,6 @@ const Marketplace: React.FC = () => {
     }
   }, [account, signer, tradeMode, loadData, loadP2PData]);
 
-  // ── Handlers ──────────────────────────────────────────────────
   const handleApprove = async () => {
     if (!signer) return;
     const success = await approveMarketplace(signer);
@@ -146,7 +136,6 @@ const Marketplace: React.FC = () => {
   const handleCreateTrade = async () => {
     if (!signer || !selectedOffered || !selectedRequestedCardName || selectedRequestedLevel === null) return;
 
-    // Trouver la rareté de la carte demandée
     const requestedCard = ALL_GAME_CARDS.find(c => c.name === selectedRequestedCardName);
     if (!requestedCard) return;
 
@@ -189,7 +178,6 @@ const Marketplace: React.FC = () => {
     if (success) loadData();
   };
 
-  // ── P2P Handlers ──────────────────────────────────────────────
   const handleCreateDirectTrade = async () => {
     if (!signer || !selectedOffered || !targetAddress || !selectedRequestedCard) return;
 
@@ -246,7 +234,6 @@ const Marketplace: React.FC = () => {
     }
   };
 
-  // ── Helper: rarity class ──────────────────────────────────────
   const rarityClass = (rarity?: string) => {
     if (!rarity) return '';
     const r = rarity.toLowerCase();
@@ -256,7 +243,6 @@ const Marketplace: React.FC = () => {
     return 'rarity--common';
   };
 
-  // ── No wallet ─────────────────────────────────────────────────
   if (!account) {
     return (
         <div className="marketplace-container">
@@ -268,10 +254,8 @@ const Marketplace: React.FC = () => {
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────
   return (
       <div className="marketplace-container">
-        {/* ── Header ──────────────────────────────────────────── */}
         <header className="marketplace-header">
           <h2 className="marketplace-header__title">MarketPlace</h2>
           <p className="marketplace-header__sub">
@@ -285,7 +269,6 @@ const Marketplace: React.FC = () => {
           )}
         </header>
 
-        {/* ── Mode Toggle ──────────────────────────────────────── */}
         <div className="marketplace-mode-toggle">
           <button
               onClick={() => setTradeMode('public')}
@@ -301,7 +284,6 @@ const Marketplace: React.FC = () => {
           </button>
         </div>
 
-        {/* ── Actions bar ─────────────────────────────────────── */}
         <div className="marketplace-actions">
           <button
               onClick={() => setShowCreateModal(true)}
@@ -325,10 +307,8 @@ const Marketplace: React.FC = () => {
           </button>
         </div>
 
-        {/* ── PUBLIC MODE ──────────────────────────────────────── */}
         {tradeMode === 'public' && (
             <>
-              {/* ── My trades ───────────────────────────────────────── */}
               {myTrades.length > 0 && (
                   <section className="trades-section">
                     <h3 className="trades-section__title">
@@ -384,7 +364,6 @@ const Marketplace: React.FC = () => {
                   </section>
               )}
 
-              {/* ── All trades ──────────────────────────────────────── */}
               <section className="trades-section">
                 <h3 className="trades-section__title">
                   🌍 Tous les Échanges{' '}
@@ -461,10 +440,8 @@ const Marketplace: React.FC = () => {
             </>
         )}
 
-        {/* ── P2P MODE ──────────────────────────────────────────── */}
         {tradeMode === 'p2p' && (
             <>
-              {/* ── Received direct trades ─────────────────────────── */}
               {receivedDirectTrades.length > 0 && (
                   <section className="trades-section">
                     <h3 className="trades-section__title">
@@ -528,7 +505,6 @@ const Marketplace: React.FC = () => {
                   </section>
               )}
 
-              {/* ── Sent direct trades ──────────────────────────────── */}
               {sentDirectTrades.length > 0 && (
                   <section className="trades-section">
                     <h3 className="trades-section__title">
@@ -595,7 +571,6 @@ const Marketplace: React.FC = () => {
                   </section>
               )}
 
-              {/* ── Empty state ─────────────────────────────────────── */}
               {!isLoading && receivedDirectTrades.length === 0 && sentDirectTrades.length === 0 && (
                   <div className="marketplace-empty">
                     <p>Aucun échange direct pour le moment</p>
@@ -604,7 +579,6 @@ const Marketplace: React.FC = () => {
             </>
         )}
 
-        {/* ── Create-trade modal ──────────────────────────────── */}
         {showCreateModal && (
             <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
               <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -625,7 +599,6 @@ const Marketplace: React.FC = () => {
                 </div>
 
                 <div className="modal__body">
-                  {/* ── Step 1 : carte offerte ── */}
                   <div className="modal-step">
                     <div className="modal-step__label">
                   <span className={`modal-step__dot ${selectedOffered ? 'modal-step__dot--done' : ''}`}>
@@ -669,7 +642,6 @@ const Marketplace: React.FC = () => {
                     <span className="modal-divider__line modal-divider__line--right" />
                   </div>
 
-                  {/* ── MODE PUBLIC : Carte demandée (même rareté et niveau) ── */}
                   {tradeMode === 'public' && (
                       <div className="modal-step">
                         <div className="modal-step__label">
@@ -730,10 +702,8 @@ const Marketplace: React.FC = () => {
                       </div>
                   )}
 
-                  {/* ── MODE P2P : Adresse et carte du destinataire ── */}
                   {tradeMode === 'p2p' && (
                       <>
-                        {/* ── Step 2 : Adresse du destinataire ── */}
                         <div className="modal-step">
                           <div className="modal-step__label">
                         <span className={`modal-step__dot ${targetAddress && allUserCards.length > 0 ? 'modal-step__dot--done' : ''}`}>
@@ -796,7 +766,6 @@ const Marketplace: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* ── Step 3 : Carte demandée (même rareté et niveau) ── */}
                         {allUserCards.length > 0 && selectedOffered && (
                             <div className="modal-step">
                               <div className="modal-step__label">
@@ -880,7 +849,6 @@ const Marketplace: React.FC = () => {
             </div>
         )}
 
-        {/* ── Accept-trade modal ──────────────────────────────── */}
         {showAcceptModal && selectedTrade && (
             <div className="modal-overlay" onClick={() => setShowAcceptModal(false)}>
               <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -955,7 +923,6 @@ const Marketplace: React.FC = () => {
             </div>
         )}
 
-        {/* ── Accept Direct Trade modal (P2P) ─────────────────── */}
         {showAcceptDirectModal && selectedDirectTrade && (
             <div className="modal-overlay" onClick={() => setShowAcceptDirectModal(false)}>
               <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -987,7 +954,6 @@ const Marketplace: React.FC = () => {
 
                       return (
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '20px' }}>
-                            {/* Carte que tu reçois */}
                             <div style={{ textAlign: 'center' }}>
                               <p style={{ marginBottom: '10px', color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
                                 Tu reçois
@@ -1004,12 +970,10 @@ const Marketplace: React.FC = () => {
                               )}
                             </div>
 
-                            {/* Flèche */}
                             <div style={{ fontSize: '32px', color: 'rgba(255,255,255,0.5)' }}>
                               ⇄
                             </div>
 
-                            {/* Carte que tu donnes */}
                             <div style={{ textAlign: 'center' }}>
                               <p style={{ marginBottom: '10px', color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
                                 Tu donnes

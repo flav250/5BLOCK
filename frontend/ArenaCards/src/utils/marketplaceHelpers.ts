@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import type { Signer } from 'ethers';
 import MarketplaceABI from '../abis/Marketplace.json';
 import { getArenaCardsContract } from './contractHelpers';
-import { notifyError, notifySuccess, notifyInfo } from './notificationService';
+import { notifyError} from './notificationService';
 
 const MARKETPLACE_ADDRESS = import.meta.env.VITE_MARKETPLACE_ADDRESS as string;
 
@@ -33,7 +33,6 @@ export interface DirectTrade {
   createdAt: number;
 }
 
-// Type pour les trades retournés par le contrat
 interface ContractTrade {
   tradeId: bigint;
   creator: string;
@@ -70,15 +69,12 @@ export const approveMarketplace = async (signer: Signer): Promise<boolean> => {
     const isApproved = await arenaCards.isApprovedForAll(address, MARKETPLACE_ADDRESS);
 
     if (isApproved) {
-      console.log('✅ Marketplace déjà approuvé');
       return true;
     }
 
-    console.log('🔐 Approbation du marketplace...');
     const tx = await arenaCards.setApprovalForAll(MARKETPLACE_ADDRESS, true);
     await tx.wait();
 
-    console.log('✅ Marketplace approuvé !');
     return true;
   } catch (error) {
     console.error('❌ Erreur approbation:', error);
@@ -99,11 +95,9 @@ export const createTrade = async (
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('📝 Création du trade...');
     const tx = await marketplace.createTrade(offeredTokenId, requestedCardName, requestedLevel, requestedRarity);
     await tx.wait();
 
-    console.log('✅ Trade créé avec succès !');
     return true;
   } catch (error) {
     console.error('❌ Erreur création trade:', error);
@@ -123,11 +117,9 @@ export const acceptTrade = async (
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('🤝 Acceptation du trade #' + tradeId + ' avec la carte #' + offeredCardTokenId);
     const tx = await marketplace.acceptTrade(tradeId, offeredCardTokenId);
     await tx.wait();
 
-    console.log('✅ Trade accepté ! Échange effectué !');
     return true;
   } catch (error) {
     console.error('❌ Erreur acceptation:', error);
@@ -146,11 +138,9 @@ export const cancelTrade = async (
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('❌ Annulation du trade #' + tradeId);
     const tx = await marketplace.cancelTrade(tradeId);
     await tx.wait();
 
-    console.log('✅ Trade annulé !');
     return true;
   } catch (error) {
     console.error('❌ Erreur annulation:', error);
@@ -180,12 +170,10 @@ export const getActiveTrades = async (signer: Signer): Promise<Trade[]> => {
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('🔍 Chargement des trades actifs...');
     const trades = await marketplace.getActiveTrades() as ContractTrade[];
 
     const formattedTrades: Trade[] = trades.map(formatTrade);
 
-    console.log('✅ Trades chargés:', formattedTrades.length);
     return formattedTrades;
   } catch (error) {
     console.error('❌ Erreur chargement trades:', error);
@@ -228,8 +216,6 @@ export const isCardInTrade = async (
   }
 };
 
-// ========== DIRECT P2P TRADES ==========
-
 /**
  * Convertir un DirectTrade du contrat en DirectTrade formaté
  */
@@ -255,11 +241,9 @@ export const createDirectTrade = async (
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('📝 Création du trade direct P2P...');
     const tx = await marketplace.createDirectTrade(targetAddress, offeredTokenId, requestedTokenId);
     await tx.wait();
 
-    console.log('✅ Trade direct créé avec succès !');
     return true;
   } catch (error) {
     console.error('❌ Erreur création trade direct:', error);
@@ -278,11 +262,9 @@ export const acceptDirectTrade = async (
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('🤝 Acceptation du trade direct #' + tradeId);
     const tx = await marketplace.acceptDirectTrade(tradeId);
     await tx.wait();
 
-    console.log('✅ Trade direct accepté ! Échange effectué !');
     return true;
   } catch (error) {
     console.error('❌ Erreur acceptation trade direct:', error);
@@ -301,11 +283,9 @@ export const cancelDirectTrade = async (
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('❌ Annulation du trade direct #' + tradeId);
     const tx = await marketplace.cancelDirectTrade(tradeId);
     await tx.wait();
 
-    console.log('✅ Trade direct annulé !');
     return true;
   } catch (error) {
     console.error('❌ Erreur annulation trade direct:', error);
@@ -324,12 +304,10 @@ export const getReceivedDirectTrades = async (
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('🔍 Chargement des trades directs reçus...');
     const trades = await marketplace.getReceivedDirectTrades(userAddress) as ContractDirectTrade[];
 
     const formattedTrades: DirectTrade[] = trades.map(formatDirectTrade);
 
-    console.log('✅ Trades directs reçus chargés:', formattedTrades.length);
     return formattedTrades;
   } catch (error) {
     console.error('❌ Erreur chargement trades directs reçus:', error);
@@ -347,12 +325,10 @@ export const getSentDirectTrades = async (
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('🔍 Chargement des trades directs envoyés...');
     const trades = await marketplace.getSentDirectTrades(userAddress) as ContractDirectTrade[];
 
     const formattedTrades: DirectTrade[] = trades.map(formatDirectTrade);
 
-    console.log('✅ Trades directs envoyés chargés:', formattedTrades.length);
     return formattedTrades;
   } catch (error) {
     console.error('❌ Erreur chargement trades directs envoyés:', error);

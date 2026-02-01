@@ -23,13 +23,11 @@ export interface GameProgress {
   isRunning: boolean;
 }
 
-// Noms de monstres par niveau
 export const MONSTER_NAMES = [
   'Slime', 'Goblin', 'Rat', 'Loup', 'Orc',
   'Troll', 'Ogre', 'Dragon', 'Démon', 'Titan'
 ];
 
-// Config
 export const GAME_CONFIG = {
   BATTLE_INTERVAL: 5000, // 5 secondes
   BASE_MONSTER_HP: 100,
