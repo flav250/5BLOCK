@@ -131,50 +131,51 @@
    ============================================================ */
 .position-badge {
   position: absolute;
-  top: -12px;
-  left: -12px;
+  top: -8px;
+  left: -8px;
   width: 32px;
   height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, #ff6b6b, #feca57);
   color: #1a1a1a;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 10px rgba(255, 160, 60, 0.45);
-  z-index: 3;
+  box-shadow: 0 2px 10px rgba(255, 160, 60, 0.5);
+  z-index: 10;
+  border: 2px solid rgba(0, 0, 0, 0.3);
 }
 
 /* ============================================================
    REMOVE BUTTON
    ============================================================ */
-.remove-btn {
+.remove-btn2 {
   position: absolute;
-  top: -12px;
-  right: -12px;
+  top: -8px;
+  right: -8px;
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #ff6b6b;
-  border: none;
+  background: #fb3232;
+  border: 2px solid rgba(0, 0, 0, 0.3);
   color: #fff;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 3;
+  z-index: 10;
   transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+  box-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
 }
 
 .remove-btn:hover {
   background: #e05555;
-  transform: scale(1.12);
-  box-shadow: 0 0 14px rgba(255, 107, 107, 0.55);
+  transform: rotate(90deg) scale(1.15);
+  box-shadow: 0 0 16px rgba(255, 107, 107, 0.7);
 }
 
 /* ============================================================
@@ -334,13 +335,13 @@
 
   .position-badge,
   .remove-btn {
-    width: 26px;
-    height: 26px;
-    font-size: 0.75rem;
-    top: -10px;
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+    top: -6px;
   }
-  .position-badge { left: -10px; }
-  .remove-btn     { right: -10px; }
+  .position-badge { left: -6px; }
+  .remove-btn     { right: -6px; }
 
   .card-slot .card-name { font-size: 0.8rem; }
   .slot-number          { width: 24px; height: 24px; font-size: 0.7rem; }

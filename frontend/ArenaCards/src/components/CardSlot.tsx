@@ -74,7 +74,7 @@ const CardSlot: React.FC<CardSlotProps> = ({
 
                     {/* Bouton de suppression */}
                     <button
-                        className="remove-btn"
+                        className="remove-btn2"
                         onClick={(e) => {
                             e.stopPropagation();
                             onRemove();

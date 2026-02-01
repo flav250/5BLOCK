@@ -201,7 +201,7 @@ const BoosterOpener: React.FC = () => {
     return (
         <div className="booster-opener">
           <div className="booster-message">
-            <h2>🎁 Boosters Arena Cards</h2>
+            <h2>Boosters Arena Cards</h2>
             <p>Connecte ton wallet pour ouvrir des boosters</p>
           </div>
         </div>
@@ -215,7 +215,7 @@ const BoosterOpener: React.FC = () => {
   return (
       <div className="booster-opener">
         <div className="booster-header">
-          <h2>🎁 Ouvrir un Booster</h2>
+          <h2>Ouvrir un Booster</h2>
           <p>Choisis entre booster gratuit ou premium</p>
         </div>
 
