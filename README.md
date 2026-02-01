@@ -11,14 +11,14 @@ Un jeu de cartes à collectionner basé sur la blockchain avec des mécaniques d
 
 ## 📋 Table des matières
 
-- [À propos](#à-propos)
-- [Fonctionnalités](#fonctionnalités)
-- [Technologies](#technologies)
-- [Installation](#installation)
-- [Structure du projet](#structure-du-projet)
-- [Smart Contracts](#smart-contracts)
-- [Frontend](#frontend)
-- [Guide d'utilisation](#guide-dutilisation)
+- [À propos](#-à-propos)
+- [Fonctionnalités](#-fonctionnalités)
+- [Technologies](#-technologies)
+- [Installation](#-installation)
+- [Structure du projet](#-structure-du-projet)
+- [Smart Contracts](#-smart-contracts)
+- [Frontend](#-frontend)
+- [Guide d'utilisation](#-guide-dutilisation)
 
 ---
 
@@ -43,8 +43,8 @@ Un jeu de cartes à collectionner basé sur la blockchain avec des mécaniques d
 - **Verrouillage temporaire** : Anti-spam lors de l'ouverture de boosters
 
 ### 🎁 Boosters
-- **Free Booster** : 1 carte commune/rare gratuite (cooldown 24h)
-- **Premium Booster** : 3 cartes de toutes raretés (prix en ETH)
+- **Free Booster** : 2 carte commune/rare gratuite (cooldown 10min)
+- **Premium Booster** : 4 cartes de toutes raretés sauf commune (0.0001 ETH)
 - **Distribution aléatoire** : Système de probabilités on-chain
 
 ### 🎮 AFK Arena (Jeu de Combat)
@@ -142,7 +142,6 @@ npx hardhat compile
 # Déployer sur Sepolia
 npx hardhat run scripts/deploy.js --network sepolia
 
-
 Les adresses des contrats vont être directement installées dans le .env pour votre frontend 
 
 # Copier les ABIs depuis blockchain/
@@ -151,7 +150,7 @@ cp ../blockchain/artifacts/contracts/FreeBooster.sol/FreeBooster.json src/abis/
 cp ../blockchain/artifacts/contracts/PremiumBooster.sol/PremiumBooster.json src/abis/
 cp ../blockchain/artifacts/contracts/Marketplace.sol/Marketplace.json src/abis/
 cp ../blockchain/artifacts/contracts/CardFusion.sol/CardFusion.json src/abis/
-
+```
 
 ### 3. Frontend (public/)
 ```bash
