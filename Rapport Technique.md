@@ -10,10 +10,7 @@
 4. [Choix de conception](#4-choix-de-conception)
 5. [Smart Contracts](#5-smart-contracts)
 6. [Tests unitaires](#6-tests-unitaires)
-7. [Frontend et intégration](#7-frontend-et-intégration)
-8. [Sécurité](#8-sécurité)
-9. [Améliorations futures](#9-améliorations-futures)
-
+7. [Conclusion](#7-Conclusion)
 ---
 
 ## 1. Cas d'usage et justification
@@ -1071,350 +1068,10 @@ describe("CardFusion - Attack scaling", function () {
 
 ---
 
-## 7. Frontend et intégration
 
-### 7.1 Architecture frontend
+## 7. Conclusion
 
-```
-public/src/
-├── components/
-│   ├── AFKArena.tsx        # Jeu de combat
-│   ├── TeamBuilder.tsx     # Composition équipe
-│   ├── BoosterOpener.tsx   # Ouverture boosters
-│   ├── Shop.tsx            # 🆕 Boutique exclusive
-│   ├── Marketplace.tsx     # Échanges P2P
-│   ├── Fusion.tsx          # Fusion de cartes
-│   ├── CardSlot.tsx        # Slot d'équipe
-│   ├── InventoryCard.tsx   # Carte inventaire
-│   └── Header.tsx          # Header
-├── hooks/
-│   └── useWeb3.tsx         # Connexion MetaMask
-├── types/
-│   ├── ArenaCard.ts        # Types cartes
-│   └── AFKArena.ts         # Types jeu
-├── utils/
-│   ├── contractHelpers.ts  # Interactions contrats
-│   ├── afkArenaLogic.ts    # Logique jeu
-│   └── teamHelpers.ts      # Helpers équipe
-└── abis/                   # ABIs des 6 contrats
-```
-
-### 7.2 Nouveau composant : Shop.tsx
-
-**Fonctionnalités** :
-- Affichage du catalogue (5 cartes)
-- Distinction visuelle légendaires / secrètes
-- Affichage du stock restant (pour secrètes)
-- Cooldown timer (24h)
-- Système de points (localStorage)
-- Achat avec vérifications
-
-**Exemple d'interaction** :
-
-```typescript
-// Shop.tsx
-const buyCard = async (cardId: number) => {
-  if (!signer || !account) return;
-
-  try {
-    // Vérifier points localement
-    const userPoints = getPoints(account);
-    const cardPrice = cards[cardId].price;
-    
-    if (userPoints < cardPrice) {
-      alert('Pas assez de points !');
-      return;
-    }
-
-    // Vérifier si peut acheter
-    const shopContract = new Contract(SHOP_ADDRESS, ShopABI, signer);
-    const canPurchase = await shopContract.canPurchase(account, cardId);
-    
-    if (!canPurchase) {
-      const cooldown = await shopContract.getCooldownRemaining(account);
-      if (cooldown > 0) {
-        alert(`Cooldown: ${formatTime(cooldown)} restantes`);
-        return;
-      }
-      alert('Carte déjà achetée ou stock épuisé');
-      return;
-    }
-
-    // Acheter
-    const tx = await shopContract.buyCard(cardId);
-    await tx.wait();
-
-    // Déduire les points
-    deductPoints(account, cardPrice);
-
-    alert('✅ Carte achetée !');
-    loadCards();
-  } catch (error) {
-    console.error(error);
-    alert('❌ Erreur lors de l\'achat');
-  }
-};
-```
-
-**Affichage du catalogue** :
-
-```tsx
-<div className="shop-grid">
-  {shopCards.map((card, index) => (
-    <div key={index} className={`shop-card ${card.isSecret ? 'secret' : 'legendary'}`}>
-      <img src={card.imageURI} alt={card.name} />
-      <h3>{card.name}</h3>
-      <div className="card-rarity">{card.rarity}</div>
-      <div className="card-attack">⚔️ {card.attack} ATK</div>
-      <div className="card-price">💰 {formatNumber(card.price)} points</div>
-      
-      {card.isSecret && (
-        <div className="card-stock">
-          📦 Stock: {card.minted}/{card.maxSupply}
-        </div>
-      )}
-      
-      {hasPurchased[index] ? (
-        <div className="purchased">✅ Déjà acheté</div>
-      ) : (
-        <button 
-          onClick={() => buyCard(index)}
-          disabled={!canBuy(index)}
-        >
-          Acheter
-        </button>
-      )}
-    </div>
-  ))}
-</div>
-```
-
-### 7.3 Système de points (localStorage)
-
-**Choix** : Points stockés localement, pas on-chain.
-
-**Justification** :
-- ✅ Pas de gas fees pour accumuler des points
-- ✅ Système de jeu fluide
-- ✅ Le Shop vérifie uniquement les règles anti-abus
-- ✅ Incentive pour jouer à AFK Arena
-
-**Implémentation** :
-
-```typescript
-// utils/pointsSystem.ts
-export const getPoints = (account: string): number => {
-  const stored = localStorage.getItem(`arenaPoints_${account}`);
-  return stored ? parseInt(stored) : 0;
-};
-
-export const addPoints = (account: string, amount: number) => {
-  const current = getPoints(account);
-  localStorage.setItem(`arenaPoints_${account}`, (current + amount).toString());
-};
-
-export const deductPoints = (account: string, amount: number) => {
-  const current = getPoints(account);
-  if (current < amount) throw new Error('Not enough points');
-  localStorage.setItem(`arenaPoints_${account}`, (current - amount).toString());
-};
-```
-
-**Gain de points** :
-- AFK Arena : Points par combat gagné
-- Formule : `points = monsterHP × waveNumber × 0.1`
-
-### 7.4 Interactions avec la blockchain
-
-**Librairie** : Ethers.js v6
-
-```typescript
-// contractHelpers.ts
-export const loadUserCards = async (
-  signer: Signer,
-  userAddress: string
-): Promise<ArenaCard[]> => {
-  const arenaCards = new Contract(
-    ARENA_CARDS_ADDRESS,
-    ArenaCardsABI,
-    signer
-  );
-
-  const balance = await arenaCards.balanceOf(userAddress);
-  const cards: ArenaCard[] = [];
-
-  for (let i = 0; i < balance; i++) {
-    const tokenId = await arenaCards.tokenOfOwnerByIndex(userAddress, i);
-    const [name, rarity, level, attack] = 
-      await arenaCards.getCardStats(tokenId);
-    
-    const isLocked = await arenaCards.isCardLocked(tokenId);
-
-    cards.push({
-      tokenId: tokenId.toString(),
-      name,
-      rarity,
-      level: Number(level),
-      attack: Number(attack),
-      isLocked,
-      imageURI: await arenaCards.tokenURI(tokenId)
-    });
-  }
-
-  return cards;
-};
-```
-
-### 7.5 Gestion d'état
-
-**Choix** : localStorage pour l'équipe et les points.
-
-**Justification** :
-- ✅ Pas de gas fees
-- ✅ Modification instantanée
-- ✅ Synchronisation entre pages
-- ✅ UX fluide
-
----
-
-## 8. Sécurité
-
-### 8.1 Vecteurs d'attaque et protections
-
-#### 8.1.1 Reentrancy
-
-**Protection** : ReentrancyGuard d'OpenZeppelin
-
-```solidity
-// Marketplace.sol
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-
-contract Marketplace is Ownable, ReentrancyGuard {
-    function acceptTrade(uint256 _tradeId, uint256 _yourTokenId) 
-        external nonReentrant {
-        // Safe
-    }
-}
-```
-
-#### 8.1.2 Integer Overflow/Underflow
-
-**Protection** : Solidity 0.8.20 (checked arithmetic)
-
-```solidity
-uint256 newLevel = oldLevel + 1;  // Revert auto si overflow
-uint256 newAttack = baseAttack * level;  // Safe
-```
-
-#### 8.1.3 Unauthorized minting
-
-**Protection** : Système d'autorisation strict
-
-```solidity
-mapping(address => bool) public authorizedMinters;
-
-function mintCard(...) external {
-    require(
-        msg.sender == owner() || authorizedMinters[msg.sender],
-        "Not authorized"
-    );
-}
-```
-
-#### 8.1.4 Stock manipulation (Shop)
-
-**Protection** : maxSupply immuable après initialisation
-
-```solidity
-struct ShopCard {
-    uint256 maxSupply;  // Set une seule fois
-    uint256 minted;     // Incrémenté uniquement
-}
-
-function buyCard(uint256 cardId) external {
-    if (card.maxSupply > 0) {
-        require(card.minted < card.maxSupply, "Card sold out");
-    }
-    card.minted++;  // Jamais décrémenté
-}
-```
-
-#### 8.1.5 Double purchase (Shop)
-
-**Protection** : Mapping hasPurchased
-
-```solidity
-mapping(address => mapping(uint256 => bool)) public hasPurchased;
-
-function buyCard(uint256 cardId) external {
-    require(!hasPurchased[msg.sender][cardId], "Already purchased");
-    hasPurchased[msg.sender][cardId] = true;  // Permanent
-}
-```
-
-### 8.2 Bonnes pratiques appliquées
-
-- ✅ OpenZeppelin libraries (audité)
-- ✅ Solidity 0.8.20 (dernière version stable)
-- ✅ Checks-Effects-Interactions pattern
-- ✅ Pas de delegatecall dangereux
-- ✅ Events pour toutes les actions critiques
-- ✅ Require avec messages d'erreur clairs
-- ✅ Aucun use de tx.origin (seulement msg.sender)
-- ✅ Modifiers pour réutilisabilité
-- ✅ Separation of concerns (6 contrats)
-
-### 8.3 Limitations connues
-
-1. **Randomisation** : Utilisation de `block.prevrandao`
-   - Minable par validateurs
-   - Impact limité car jeu non financier
-   - Alternative : Chainlink VRF (coût élevé)
-
-2. **Points système** : Géré côté frontend
-   - Pas de vérification on-chain
-   - Possible de modifier localStorage
-   - Mitigation : Shop vérifie uniquement les règles anti-abus
-
-3. **Centralisé** : Owner peut modifier authorized minters
-   - Mitigation : Timelock ou multisig recommandé pour production
-
-4. **Pas d'oracle** : Prix ETH hardcodé (0.001 ETH)
-   - Alternative : Chainlink Price Feed
-
----
-
-## 9. Améliorations futures
-
-### 9.1 Court terme
-
-- [ ] Chainlink VRF pour randomisation vérifiable
-- [ ] Système de points on-chain (token ERC-20)
-- [ ] Timelock sur les fonctions admin
-- [ ] Leaderboard on-chain
-- [ ] Achievements NFT
-
-### 9.2 Moyen terme
-
-- [ ] Layer 2 (Polygon/Arbitrum) pour réduire gas
-- [ ] Système de craft (3+ cartes → 1 rare spécifique)
-- [ ] Tournois compétitifs avec prizes
-- [ ] Governance token (DAO)
-- [ ] Rental de cartes (ERC-4907)
-
-### 9.3 Long terme
-
-- [ ] Cross-chain (bridge vers Solana)
-- [ ] Breeding de cartes (génération 2)
-- [ ] Intégration metaverse
-- [ ] Mobile app native
-- [ ] API publique
-
----
-
-## 10. Conclusion
-
-### 10.1 Respect des contraintes
+### 7.1 Respect des contraintes
 
 | Contrainte | Status | Implémentation |
 |------------|--------|----------------|
@@ -1427,7 +1084,7 @@ function buyCard(uint256 cardId) external {
 | IPFS | ✅ | 18 images Pinata |
 | Tests Hardhat | ✅ | 6 fichiers tests (~90% coverage) |
 
-### 10.2 Innovations du projet
+### 7.2 Innovations du projet
 
 1. **Boutique exclusive** : Shop avec cartes secrètes ultra-rares (500 ATK)
 2. **Stock limité** : Seulement 50 exemplaires de chaque carte secrète
@@ -1440,7 +1097,7 @@ function buyCard(uint256 cardId) external {
 9. **6 raretés distinctes** : Commune → Secrète
 10. **Modularité totale** : 6 contrats indépendants
 
-### 10.3 Métriques du projet
+### 7.3 Métriques du projet
 
 ```
 Smart Contracts : 6
@@ -1455,7 +1112,7 @@ Cartes totales : 18 designs uniques
 Stock limité : 50 × 3 cartes secrètes = 150 max worldwide
 ```
 
-### 10.4 Économie du jeu
+### 7.4 Économie du jeu
 
 ```
 Sources d'acquisition:
