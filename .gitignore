@@ -2,3 +2,5 @@ node_modules
 artifacts
 cache
 .env
+blockchain/coverage
+coverage.json

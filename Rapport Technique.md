@@ -90,7 +90,7 @@ Le projet utilise **6 smart contracts** interdépendants :
 ```solidity
 // ArenaCards.sol
 struct CardData {
-    uint256 level;           // Niveau de la carte (1-10)
+    uint256 level;           // Niveau de la carte (1-5)
     string rarity;          // Commune, Peu commune, Rare, Épique, Légendaire, Secrète
     string name;            // Nom unique de la carte
     uint256 createdAt;      // Timestamp de création
@@ -114,12 +114,12 @@ struct CardStats {
 | Légendaire | 140-150 | 2 cartes |
 | **Secrète** | **500** | **3 cartes (stock limité)** |
 
-**Niveaux de carte** : 1 à 10 (progression via fusion)
+**Niveaux de carte** : 1 à 5 (progression via fusion)
 
 **Calcul d'attaque après fusion** :
 ```solidity
 stats: CardStats({
-    attack: base.attack * level  // Level 2 = 2x attack, Level 10 = 10x attack
+    attack: base.attack * level  // Level 2 = 2x attack, Level 5 = 5x attack
 })
 ```
 
@@ -409,7 +409,7 @@ blockchain/test/
 ├── FreeBooster.test.js     # Tests booster gratuit
 ├── Marketplace.test.js     # Tests marketplace
 ├── PremiumBooster.test.js  # Tests booster premium
-└── Shop.test.js            # 🆕 Tests boutique exclusive
+└── Shop.test.js            # Tests boutique exclusive
 ```
 
 **Couverture des tests** :
@@ -468,7 +468,7 @@ blockchain/test/
 **Commande de test** :
 ```bash
 npx hardhat test
-npx hardhat coverage  # Pour voir la couverture
+npx hardhat coverage
 ```
 
 ---
@@ -487,51 +487,7 @@ npx hardhat coverage  # Pour voir la couverture
 5. **Testabilité** : Tests unitaires plus ciblés
 6. **Extensibilité** : Ajout facile de nouvelles fonctionnalités (comme Shop)
 
-### 4.2 Nouveau contrat : Shop.sol
-
-**Choix** : Création d'une boutique exclusive séparée des boosters.
-
-**Justification** :
-
-#### Pourquoi un contrat séparé ?
-1. **Mécaniques différentes** : 
-   - Boosters = aléatoire
-   - Shop = choix précis
-2. **Cooldown différent** :
-   - Boosters = 10 minutes
-   - Shop = 24 heures
-3. **Stock limité** :
-   - Boosters = illimité
-   - Shop secrètes = 50 max
-4. **Une carte par type** : Système unique au Shop
-
-#### Cartes secrètes : Rareté ultime
-
-```solidity
-// Shop.sol
-struct ShopCard {
-    string name;
-    string rarity;
-    string imageURI;
-    uint256 price;       // 1M pour légendaires, 5M pour secrètes
-    bool isSecret;
-    bool available;
-    uint256 maxSupply;   // 0 = illimité, 50 pour secrètes
-    uint256 minted;
-}
-```
-
-**Cartes secrètes** :
-- **"Brice : Le divin supreme"** - 500 ATK - Stock 50
-- **"Paul : Le malicieux"** - 500 ATK - Stock 50
-- **"Flavien : Le bienfaiteur"** - 500 ATK - Stock 50
-
-**Pourquoi 500 ATK ?**
-- 3.3x plus puissant que les légendaires (150 ATK)
-- Justifie la rareté et le prix (5M points)
-- Incentive pour jouer à AFK Arena
-
-### 4.3 Système d'autorisation
+### 4.2 Système d'autorisation
 
 **Choix** : Modifier `onlyAuthorized` pour le minting.
 
@@ -574,7 +530,7 @@ function mintCard(
 - Flexibilité pour ajouter d'autres sources de minting
 - Shop n'applique pas le cooldown de 5 min (il a son propre cooldown de 24h)
 
-### 4.4 Métadonnées on-chain vs IPFS
+### 4.3 Métadonnées on-chain vs IPFS
 
 **Choix** : Métadonnées générées on-chain, images sur IPFS.
 
@@ -590,7 +546,7 @@ function mintCard(
 3. **Permanence** : IPFS garantit la disponibilité
 4. **Standard** : Compatible avec OpenSea, Rarible, etc.
 
-### 4.5 Système de rareté et probabilités
+### 4.4 Système de rareté et probabilités
 
 **Choix** : Probabilités différentes selon le type de booster.
 
@@ -657,7 +613,7 @@ if (rand < 50) {
   - ✅ Cooldown 24h
   - ✅ Stock limité (secrètes)
 
-### 4.6 Système de fusion
+### 4.5 Système de fusion
 
 **Choix** : 2 cartes identiques → 1 carte level+1 avec attack × level.
 
@@ -696,11 +652,10 @@ function fuseCards(uint256 tokenId1, uint256 tokenId2) external {
 }
 ```
 
-**Calcul de puissance** :
-- Level 1 : 500 ATK (carte secrète de base)
-- Level 2 : 1000 ATK (500 × 2)
-- Level 5 : 2500 ATK (500 × 5)
-- Level 10 : 5000 ATK (500 × 10)
+**Calcul de puissance** (exemple avec Dragon Doré - 150 ATK de base) :
+- Level 1 : 150 ATK (base)
+- Level 2 : 300 ATK (150 × 2)
+- Level 5 : 750 ATK (150 × 5)
 
 **Justification** :
 1. **Simplicité** : Règle claire et compréhensible
@@ -964,71 +919,78 @@ function fuseCards(uint256 tokenId1, uint256 tokenId2) external;
 
 ### 6.3 Exemples de tests
 
-#### Test Shop : Cooldown 24h
+#### Test ArenaCards : Limite MAX_CARDS
 
 ```javascript
-// Shop.test.js
-describe("Shop - Cooldown 24h", function () {
-  it("Should enforce 24h cooldown between purchases", async function () {
-    const { shop, arenaCards, user1 } = await loadFixture(deployFixture);
-
-    // Premier achat
-    await shop.connect(user1).buyCard(0); // Dragon Doré
-
-    // Deuxième achat immédiat → devrait échouer
-    await expect(
-      shop.connect(user1).buyCard(1) // Phoenix Immortel
-    ).to.be.revertedWith("Cooldown active - wait 24h between purchases");
-
-    // Avancer le temps de 24 heures
-    await time.increase(24 * 60 * 60 + 1);
-
-    // Maintenant ça marche
-    await expect(
-      shop.connect(user1).buyCard(1)
-    ).to.not.be.reverted;
-  });
-});
-```
-
-#### Test Shop : Stock limité cartes secrètes
-
-```javascript
-describe("Shop - Stock limité", function () {
-  it("Should enforce maxSupply of 50 for secret cards", async function () {
-    const { shop, arenaCards, owner, users } = await loadFixture(deployFixture);
-
-    // Acheter les 50 cartes secrètes
-    for (let i = 0; i < 50; i++) {
-      await shop.connect(users[i]).buyCard(2); // Brice
-      await time.increase(24 * 60 * 60 + 1);
+// ArenaCards.test.js (extrait réel)
+describe("Minting", function () {
+  it("Should not allow more than MAX_CARDS (30)", async function () {
+    // Mint 30 cards
+    for (let i = 0; i < 30; i++) {
+      await arena.mintCard(owner.address, "Gobelin Ruse", "commune");
+      await ethers.provider.send("evm_increaseTime", [300]);
+      await ethers.provider.send("evm_mine");
     }
 
-    // 51ème achat → devrait échouer
+    expect(await arena.balanceOf(owner.address)).to.equal(30);
+
+    // Try to mint 31st card
     await expect(
-      shop.connect(users[50]).buyCard(2)
-    ).to.be.revertedWith("Card sold out");
+      arena.mintCard(owner.address, "Gobelin Ruse", "commune")
+    ).to.be.revertedWith("Max cards reached");
   });
 });
 ```
 
-#### Test Shop : Une carte par type
+#### Test Marketplace : Création et acceptation de trade
 
 ```javascript
-describe("Shop - Une carte par type", function () {
-  it("Should prevent buying same card twice", async function () {
-    const { shop, user1 } = await loadFixture(deployFixture);
+// Marketplace.test.js (extrait réel)
+describe("Accepting Trades (Criteria-based)", function () {
+  beforeEach(async function () {
+    await arena.connect(player1).approve(await marketplace.getAddress(), 0);
+    await marketplace.connect(player1).createTrade(0, "Chevalier Sacre", 1, "legendaire");
+  });
 
-    // Premier achat
-    await shop.connect(user1).buyCard(2); // Brice
+  it("Should accept trade with matching card", async function () {
+    await arena.connect(player2).approve(await marketplace.getAddress(), 2);
+    await marketplace.connect(player2).acceptTrade(0, 2);
 
-    // Attendre cooldown
-    await time.increase(24 * 60 * 60 + 1);
+    expect(await arena.ownerOf(0)).to.equal(player2.address);
+    expect(await arena.ownerOf(2)).to.equal(player1.address);
+  });
 
-    // Deuxième achat même carte → devrait échouer
+  it("Should emit TradeAccepted event", async function () {
+    await arena.connect(player2).approve(await marketplace.getAddress(), 2);
+
+    await expect(marketplace.connect(player2).acceptTrade(0, 2))
+      .to.emit(marketplace, "TradeAccepted")
+      .withArgs(0, player2.address, 0, 2);
+  });
+});
+```
+
+#### Test PremiumBooster : Vérification du prix
+
+```javascript
+// PremiumBooster.test.js (extrait réel)
+describe("Opening Boosters with Payment", function () {
+  it("Should revert if payment is insufficient", async function () {
+    const price = await booster.boosterPrice();
+    const insufficientPayment = price - 1n;
+
     await expect(
-      shop.connect(user1).buyCard(2)
-    ).to.be.revertedWith("Already purchased this card");
+      booster.connect(player1).openBooster({ value: insufficientPayment })
+    ).to.be.revertedWith("Insufficient payment");
+  });
+
+  it("Should open booster with exact payment and mint 4 cards", async function () {
+    const price = await booster.boosterPrice();
+    
+    await booster.connect(player1).openBooster({ value: price });
+
+    const balance = await arena.balanceOf(player1.address);
+    expect(balance).to.equal(4);
   });
 });
 ```
@@ -1036,32 +998,33 @@ describe("Shop - Une carte par type", function () {
 #### Test Fusion : Attack × level
 
 ```javascript
-describe("CardFusion - Attack scaling", function () {
-  it("Should multiply attack by level after fusion", async function () {
-    const { cardFusion, arenaCards, user1 } = await loadFixture(deployFixture);
+// CardFusion.test.js (extrait réel)
+describe("Successful Fusion", function () {
+  it("Should calculate attack correctly for fused card", async function () {
+    await fusion.fuseCards(0, 1);
 
-    // Créer 2 cartes secrètes level 1 (500 ATK)
-    await shop.connect(user1).buyCard(2);
-    await time.increase(24 * 60 * 60 + 1);
-    await shop.connect(user1).buyCard(2); // Impossible car déjà acheté
-
-    // Alternative : mint 2 cartes identiques pour le test
-    await arenaCards.mintCard(user1.address, "Brice : Le divin supreme", "secrete");
-    await time.increase(10 * 60 + 1); // Attendre unlock
-    await arenaCards.mintCard(user1.address, "Brice : Le divin supreme", "secrete");
-    await time.increase(10 * 60 + 1);
-
-    // Fusion
-    const tokenId1 = 0;
-    const tokenId2 = 1;
-    await cardFusion.connect(user1).fuseCards(tokenId1, tokenId2);
-
-    // Nouvelle carte = level 2, attack = 500 × 2 = 1000
     const newTokenId = 2;
-    const [name, rarity, level, attack] = await arenaCards.getCardStats(newTokenId);
+    const card = await arena.cardDetails(newTokenId);
     
-    expect(level).to.equal(2);
-    expect(attack).to.equal(1000);
+    // Dragon Dore base attack is 150, level 2 should be 150 * 2 = 300
+    expect(card.stats.attack).to.equal(300);
+  });
+});
+
+describe("Multi-level Fusion", function () {
+  it("Should correctly calculate attack for level 3 fusion", async function () {
+    // Create level 2 cards
+    await arena.setFusionContract(owner.address);
+    await arena.mintFusion(owner.address, "Archer Elfe", "rare", 2);
+    await arena.mintFusion(owner.address, "Archer Elfe", "rare", 2);
+    
+    await arena.setFusionContract(await fusion.getAddress());
+
+    await fusion.fuseCards(0, 1);
+
+    const newCard = await arena.cardDetails(2);
+    expect(newCard.level).to.equal(3);
+    expect(newCard.stats.attack).to.equal(75 * 3); // Archer Elfe base = 75
   });
 });
 ```
@@ -1075,7 +1038,7 @@ describe("CardFusion - Attack scaling", function () {
 
 | Contrainte | Status | Implémentation |
 |------------|--------|----------------|
-| Tokenisation niveaux | ✅ | 6 raretés + 10 levels |
+| Tokenisation niveaux | ✅ | 6 raretés + 5 levels |
 | Échanges de tokens | ✅ | Marketplace P2P (2 types) |
 | Limites possession | ✅ | MAX_CARDS = 30 |
 | Cooldown 5 min | ✅ | lastAction mapping |
@@ -1176,7 +1139,7 @@ npx hardhat verify --network sepolia DEPLOYED_ADDRESS
 API_KEY=votre_infura_api_key
 PASS_PHRASE=votre_metamask_passphrase
 
-# public/.env
+# frontend/ArenaCards/.env
 VITE_ARENA_CARDS_ADDRESS=0x...
 VITE_FREE_BOOSTER_ADDRESS=0x...
 VITE_PREMIUM_BOOSTER_ADDRESS=0x...
