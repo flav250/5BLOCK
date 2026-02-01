@@ -6,8 +6,11 @@ import BoosterOpener from "./components/BoosterOpener.tsx";
 import Marketplace from './components/Marketplace.tsx';
 import './App.css';
 import Fusion from "./components/Fusion.tsx";
+import AFKArena from './components/AFKArena.tsx';
+import Shop from "./components/Shop.tsx";
 
-type View = 'team' | 'booster' | 'marketplace' | 'fusion';
+type View = 'team' | 'booster' | 'marketplace' | 'fusion' | 'arena' | 'shop';
+
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('team');
@@ -42,6 +45,17 @@ function App() {
           >
             🏪 Fusion
           </button>
+            <button
+                className={`nav-btn ${currentView === 'arena' ? 'active' : ''}`}
+                onClick={() => setCurrentView('arena')}>
+              🎮 AFK Arena
+            </button>
+            <button
+                className={`nav-btn ${currentView === 'shop' ? 'active' : ''}`}
+                onClick={() => setCurrentView('shop')}
+            >
+              🛒 Boutique
+            </button>
           </nav>
 
           {/* Main Content */}
@@ -50,6 +64,9 @@ function App() {
             {currentView === 'booster' && <BoosterOpener />}
             {currentView === 'marketplace' && <Marketplace />}
             {currentView === 'fusion' && <Fusion />}
+            {currentView === 'arena' && <AFKArena />}
+            {currentView === 'shop' && <Shop />}
+
           </main>
 
           <footer className="app-footer">
