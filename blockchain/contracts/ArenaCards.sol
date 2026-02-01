@@ -106,6 +106,11 @@ contract ArenaCards is ERC721, Ownable {
         imageURIs["commune"]["Barbare Sauvage"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeibzxkvxmmxxd366bmenxs6iqpqjnbmdfqvxufte5i64232hafxuny";
         imageURIs["commune"]["Squelette Soldat"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeid37l65fyisxqbaz53an3zaqpozcfrlkhcahjdktbetdgvsnuh3dy";
         imageURIs["commune"]["Slime Gluant"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigv2gtaeq2htdrpadaewbjhdth2j6kcgolgmbhq57knvssdmospe4";
+
+        // Secrètes
+        imageURIs["secrete"]["Brice : Le divin supreme"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeiern4r6e2edw2zwosh63yyiujxvlr3j3o7cezqzwxtdubui4o2eca";
+        imageURIs["secrete"]["Paul : Le malicieux"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeicafvq4wmmyhdkvonkkwmpoyipsinefohrg7hnfwfcdqwgfyhrkni";
+        imageURIs["secrete"]["Flavien : Le bienfaiteur"] = "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeicrkbku7zorcowimemj3cqorcjpvvhyrh3dltmvl3llixzj732o6m";
     }
 
     /**
@@ -179,6 +184,19 @@ contract ArenaCards is ERC721, Ownable {
 
         baseStats["commune"]["Slime Gluant"] = BaseStats({
             attack: 30
+        });
+
+        // SECRÈTES - ATK 200+ (ultra puissantes)
+        baseStats["secrete"]["Brice : Le divin supreme"] = BaseStats({
+            attack: 500
+        });
+
+        baseStats["secrete"]["Paul : Le malicieux"] = BaseStats({
+            attack: 500
+        });
+
+        baseStats["secrete"]["Flavien : Le bienfaiteur"] = BaseStats({
+            attack: 500
         });
     }
 
