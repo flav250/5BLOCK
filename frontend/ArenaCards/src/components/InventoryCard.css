@@ -1,13 +1,3 @@
-/* ============================================================
-   INVENTORY CARD — DARK FANTASY RESTYLE
-   Targets every className in the original InventoryCard.tsx.
-   Zero changes to the .tsx required.
-   Visual tokens match Marketplace.css exactly.
-   ============================================================ */
-
-/* ============================================================
-   BASE CARD
-   ============================================================ */
 .inventory-card {
   position: relative;
   background: linear-gradient(170deg, rgba(30, 30, 50, 0.9), #0d1117);
@@ -29,7 +19,6 @@
   box-shadow: 0 0 22px rgba(255, 200, 120, 0.25);
 }
 
-/* ── dragging ── */
 .inventory-card.dragging {
   opacity: 0.4;
   transform: scale(0.93);
@@ -37,7 +26,6 @@
   box-shadow: none;
 }
 
-/* ── locked ── */
 .inventory-card.locked {
   cursor: not-allowed;
   opacity: 0.55;
@@ -48,10 +36,6 @@
   box-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
 }
 
-/* ============================================================
-   RARITY BADGE
-   Fully overrides Tailwind bg-gradient-to-r utilities.
-   ============================================================ */
 .inventory-card .rarity-badge {
   position: absolute;
   top: 9px;
@@ -67,19 +51,16 @@
   border-radius: 20px;
   box-shadow: none !important;
   z-index: 2;
-  /* default = common */
   color: #9eb5c9;
   border: 1px solid rgba(122, 138, 154, 0.35);
 }
 
-/* rare — hooks on Tailwind classes the TSX applies */
 .inventory-card .rarity-badge[class*="from-blue"],
 .inventory-card .rarity-badge[class*="from-cyan"] {
   color: #3ea8ff;
   border-color: rgba(62, 168, 255, 0.35);
 }
 
-/* legendary / epic */
 .inventory-card .rarity-badge[class*="from-yellow"],
 .inventory-card .rarity-badge[class*="from-amber"],
 .inventory-card .rarity-badge[class*="from-purple"],
@@ -89,9 +70,6 @@
   border-color: rgba(255, 184, 64, 0.4);
 }
 
-/* ============================================================
-   IMAGE AREA
-   ============================================================ */
 .card-image-wrapper {
   position: relative;
   width: 100%;
@@ -132,9 +110,6 @@
   opacity: 0.2;
 }
 
-/* ============================================================
-   LOCK OVERLAY
-   ============================================================ */
 .lock-overlay {
   position: absolute;
   top: 0;
@@ -165,9 +140,6 @@
   border-radius: 12px;
 }
 
-/* ============================================================
-   DETAILS
-   ============================================================ */
 .card-details {
   width: 100%;
   text-align: center;
@@ -231,9 +203,6 @@
   color: #556;
 }
 
-/* ============================================================
-   DRAG HINT
-   ============================================================ */
 .drag-hint {
   position: absolute;
   bottom: 7px;
@@ -264,17 +233,11 @@
   font-weight: 700;
 }
 
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-3px); }
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
 @media (max-width: 768px) {
   .inventory-card          { padding: 10px 8px 8px; }
   .inventory-card .card-name { font-size: 0.75rem; }

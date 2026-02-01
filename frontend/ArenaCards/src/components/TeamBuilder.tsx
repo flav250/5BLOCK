@@ -27,7 +27,6 @@ const TeamBuilder: React.FC = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [dragY, setDragY] = useState<number>(0);
 
-  // Auto-scroll pendant le drag
   useEffect(() => {
     if (!draggedCard) return;
 
@@ -59,7 +58,6 @@ const TeamBuilder: React.FC = () => {
     };
   }, [draggedCard, dragY]);
 
-  // Tracker la position Y du curseur pendant le drag
   useEffect(() => {
     if (!draggedCard) return;
 
@@ -76,8 +74,6 @@ const TeamBuilder: React.FC = () => {
     };
   }, [draggedCard]);
 
-  // --- LOCAL STORAGE FUNCTIONS ---
-
   /**
    * Sauvegarde l'équipe dans localStorage (auto-sauvegarde locale)
    */
@@ -92,7 +88,6 @@ const TeamBuilder: React.FC = () => {
     };
 
     localStorage.setItem(LOCAL_STORAGE_KEY + account, JSON.stringify(teamData));
-    console.log('💾 Auto-sauvegarde locale effectuée');
   }, [account]);
 
   /**
@@ -106,7 +101,6 @@ const TeamBuilder: React.FC = () => {
 
     try {
       const teamData = JSON.parse(savedData);
-      console.log('📂 Équipe trouvée dans localStorage:', teamData);
       return teamData.cardIds as string[];
     } catch (error) {
       console.error('Erreur lors du chargement depuis localStorage:', error);
@@ -120,7 +114,6 @@ const TeamBuilder: React.FC = () => {
   const clearTeamFromLocalStorage = useCallback(() => {
     if (!account) return;
     localStorage.removeItem(LOCAL_STORAGE_KEY + account);
-    console.log('🗑️ Équipe locale effacée');
   }, [account]);
 
   const loadCards = useCallback(async () => {
@@ -136,7 +129,6 @@ const TeamBuilder: React.FC = () => {
     }
   }, [signer, account]);
 
-  // Chargement initial
   useEffect(() => {
     const init = async () => {
       if (!signer || !account) {
@@ -147,14 +139,11 @@ const TeamBuilder: React.FC = () => {
       try {
         setIsInitialLoading(true);
         
-        // 1. Charger toutes les cartes de l'utilisateur
         const allCards = await loadUserCards(signer, account);
         
-        // 2. Charger l'équipe depuis localStorage
         const localTeam = await loadTeamFromLocalStorage();
         
         if (localTeam && localTeam.length > 0) {
-          // 3. Reconstituer l'équipe
           const newTeamSlots: TeamSlot[] = Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
             position: i,
             card: null,
@@ -177,10 +166,8 @@ const TeamBuilder: React.FC = () => {
           setInventory(allCards.filter(card =>
               !cardsInTeam.some(teamCard => teamCard.tokenId === card.tokenId)
           ));
-          
-          console.log('💾 Équipe chargée depuis localStorage');
+
         } else {
-          // Pas d'équipe sauvegardée, toutes les cartes vont dans l'inventaire
           setInventory(allCards);
         }
       } catch (error) {
@@ -224,24 +211,20 @@ const TeamBuilder: React.FC = () => {
       return;
     }
 
-    let newTeamSlots = [...teamSlots];
+    const newTeamSlots = [...teamSlots];
 
     if (dragSource === 'inventory') {
-      // Déposer depuis inventaire
       const targetCard = newTeamSlots[slotIndex].card;
 
       newTeamSlots[slotIndex].card = draggedCard;
 
-      // Retirer de l'inventaire
       setInventory(prev => prev.filter(c => c.tokenId !== draggedCard.tokenId));
 
-      // Si slot occupé, remettre ancienne carte
       if (targetCard) {
         setInventory(prev => [...prev, targetCard]);
       }
 
     } else if (dragSource === 'team' && draggedFromSlot !== null) {
-      // Déplacer entre slots
       if (draggedFromSlot === slotIndex) {
         handleDragEnd();
         return;
@@ -254,7 +237,6 @@ const TeamBuilder: React.FC = () => {
 
     setTeamSlots(newTeamSlots);
 
-    // Auto-sauvegarde locale
     saveTeamToLocalStorage(newTeamSlots);
     
     handleDragEnd();
@@ -278,7 +260,6 @@ const TeamBuilder: React.FC = () => {
       return [...prev, draggedCard];
     });
 
-    // Auto-sauvegarde locale
     saveTeamToLocalStorage(newTeamSlots);
     
     handleDragEnd();
@@ -300,12 +281,10 @@ const TeamBuilder: React.FC = () => {
       return [...prev, card];
     });
 
-    // Auto-sauvegarde locale
     saveTeamToLocalStorage(newTeamSlots);
   };
 
   const resetTeam = () => {
-    // Remettre toutes les cartes dans l'inventaire
     const cardsToReturn = teamSlots
         .filter(slot => slot.card !== null)
         .map(slot => slot.card!);
@@ -316,17 +295,14 @@ const TeamBuilder: React.FC = () => {
       return [...prev, ...newCards];
     });
 
-    // Réinitialiser les slots
     const emptySlots = Array.from({ length: MAX_TEAM_SIZE }, (_, i) => ({
       position: i,
       card: null,
     }));
     setTeamSlots(emptySlots);
 
-    // Effacer le localStorage
     clearTeamFromLocalStorage();
 
-    console.log('✅ Équipe réinitialisée');
   };
 
   if (!account) {

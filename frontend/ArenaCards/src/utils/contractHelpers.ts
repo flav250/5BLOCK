@@ -4,7 +4,6 @@ import { ethers } from 'ethers';
 import type { Signer, Contract } from 'ethers';
 import type { ArenaCard } from '../types/ArenaCard';
 import ArenaCardsABI from '../abis/ArenaCards.json';
-import { notifyError } from './notificationService';
 
 
 const ARENA_CARDS_ADDRESS = import.meta.env.VITE_ARENA_CARDS_ADDRESS as string;
@@ -19,22 +18,16 @@ if (!ARENA_CARDS_ADDRESS) {
  */
 const parseTokenURI = (tokenURI: string): string => {
   try {
-    // Vérifier si c'est un data URI en base64
     if (tokenURI.startsWith('data:application/json;base64,')) {
-      // Extraire la partie base64
       const base64Data = tokenURI.replace('data:application/json;base64,', '');
 
-      // Décoder le base64
       const jsonString = atob(base64Data);
 
-      // Parser le JSON
       const metadata = JSON.parse(jsonString);
 
-      // Retourner l'URL de l'image
       return metadata.image || '';
     }
 
-    // Si ce n'est pas un data URI, retourner tel quel (ancien format)
     return tokenURI;
   } catch (error) {
     console.error('Erreur lors du parsing du tokenURI:', error);
@@ -60,7 +53,6 @@ export const loadUserCards = async (
   try {
     const contract = getArenaCardsContract(signer);
 
-    // Récupérer le balance de l'utilisateur
     const balance = await contract.balanceOf(userAddress);
     const balanceNum = Number(balance);
 
@@ -68,7 +60,6 @@ export const loadUserCards = async (
       return [];
     }
 
-    // Récupérer tous les tokenIds
     const tokenCounter = await contract.tokenCounter();
     const cards: ArenaCard[] = [];
 
@@ -77,11 +68,9 @@ export const loadUserCards = async (
         const owner = await contract.ownerOf(i);
 
         if (owner.toLowerCase() === userAddress.toLowerCase()) {
-          // Cette carte appartient à l'utilisateur
           const tokenURI = await contract.tokenURI(i);
           const lockUntil = await contract.lockUntil(i);
 
-          // Récupérer les stats via getCardStats (retourne: name, rarity, level, attack)
           const stats = await contract.getCardStats(i);
 
           const now = Math.floor(Date.now() / 1000);
@@ -89,19 +78,18 @@ export const loadUserCards = async (
 
           cards.push({
             tokenId: i.toString(),
-            name: stats.name || stats[0],           // stats.name ou stats[0]
-            rarity: stats.rarity || stats[1],       // stats.rarity ou stats[1]
-            level: Number(stats.level || stats[2]), // stats.level ou stats[2]
-            attack: Number(stats.attack || stats[3]), // stats.attack ou stats[3] ← NOUVELLE STAT
+            name: stats.name || stats[0],
+            rarity: stats.rarity || stats[1],
+            level: Number(stats.level || stats[2]),
+            attack: Number(stats.attack || stats[3]),
             imageURI: parseTokenURI(tokenURI),
-            createdAt: 0, // Non disponible via getCardStats
-            lastTransferAt: 0, // Non disponible via getCardStats
+            createdAt: 0,
+            lastTransferAt: 0,
             isLocked: isLocked,
             unlockTime: Number(lockUntil),
           });
         }
       } catch (error) {
-        // Token brûlé ou n'existe pas, continuer
         console.warn(`Token ${i} skip:`, error);
         continue;
       }
@@ -136,7 +124,7 @@ export const getCardDetails = async (
       name: stats.name || stats[0],
       rarity: stats.rarity || stats[1],
       level: Number(stats.level || stats[2]),
-      attack: Number(stats.attack || stats[3]), // ← NOUVELLE STAT
+      attack: Number(stats.attack || stats[3]),
       imageURI: parseTokenURI(tokenURI),
       createdAt: 0,
       lastTransferAt: 0,
@@ -148,68 +136,6 @@ export const getCardDetails = async (
     return null;
   }
 };
-
-/**
- * Mint une nouvelle carte (owner seulement)
- */
-export const mintCard = async (
-  signer: Signer,
-  name: string,
-  rarity: string
-): Promise<boolean> => {
-  try {
-    const contract = getArenaCardsContract(signer);
-
-    const userAddress = await signer.getAddress();
-    const tx = await contract.mintCard(userAddress, name, rarity);
-    await tx.wait();
-
-    console.log('✅ Carte mintée avec succès!');
-    return true;
-  } catch (error) {
-    console.error('❌ Erreur lors du mint:', error);
-    notifyError(error);
-    return false;
-  }
-};
-
-/**
- * Vérifie si une carte est verrouillée
- */
-export const isCardLocked = async (
-  signer: Signer,
-  tokenId: string
-): Promise<boolean> => {
-  try {
-    const contract = getArenaCardsContract(signer);
-    const lockUntil = await contract.lockUntil(tokenId);
-    const now = Math.floor(Date.now() / 1000);
-    return Number(lockUntil) > now;
-  } catch (error) {
-    console.error('Erreur lors de la vérification du lock:', error);
-    return false;
-  }
-};
-
-/**
- * Récupère le temps restant avant déverrouillage
- */
-export const getTimeUntilUnlock = async (
-  signer: Signer,
-  tokenId: string
-): Promise<number> => {
-  try {
-    const contract = getArenaCardsContract(signer);
-    const lockUntil = await contract.lockUntil(tokenId);
-    const now = Math.floor(Date.now() / 1000);
-    const remaining = Number(lockUntil) - now;
-    return Math.max(0, remaining);
-  } catch (error) {
-    console.error('Erreur lors du calcul du temps restant:', error);
-    return 0;
-  }
-};
-
 /**
  * Interface pour une carte unique (nom + niveau)
  */
@@ -324,58 +250,3 @@ export const ALL_GAME_CARDS: GameCard[] = [
     imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigv2gtaeq2htdrpadaewbjhdth2j6kcgolgmbhq57knvssdmospe4"
   }
 ];
-
-/**
- * Récupère toutes les cartes uniques existantes (basé sur nom + niveau)
- * Utile pour afficher les options de cartes demandées dans le marketplace
- */
-export const loadAllUniqueCards = async (signer: Signer): Promise<UniqueCard[]> => {
-  try {
-    const contract = getArenaCardsContract(signer);
-    const tokenCounter = await contract.tokenCounter();
-    
-    const uniqueCardsMap = new Map<string, UniqueCard>();
-
-    // Parcourir tous les tokens pour trouver les combinaisons uniques
-    for (let i = 0; i < Number(tokenCounter); i++) {
-      try {
-        // Vérifier que le token existe (pas brûlé)
-        await contract.ownerOf(i);
-        
-        const stats = await contract.getCardStats(i);
-        const tokenURI = await contract.tokenURI(i);
-        
-        const name = stats.name || stats[0];
-        const level = Number(stats.level || stats[2]);
-        const rarity = stats.rarity || stats[1];
-        
-        // Créer une clé unique basée sur nom + niveau
-        const key = `${name}-${level}`;
-        
-        // Si cette combinaison n'existe pas encore, l'ajouter
-        if (!uniqueCardsMap.has(key)) {
-          uniqueCardsMap.set(key, {
-            name,
-            level,
-            rarity,
-            imageURI: parseTokenURI(tokenURI),
-          });
-        }
-      } catch (error) {
-        // Token brûlé ou n'existe pas, continuer
-        continue;
-      }
-    }
-
-    // Convertir la Map en tableau et trier par nom puis niveau
-    return Array.from(uniqueCardsMap.values()).sort((a, b) => {
-      if (a.name !== b.name) {
-        return a.name.localeCompare(b.name);
-      }
-      return a.level - b.level;
-    });
-  } catch (error) {
-    console.error('Erreur lors du chargement des cartes uniques:', error);
-    return [];
-  }
-};

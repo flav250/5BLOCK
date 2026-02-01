@@ -45,7 +45,6 @@ contract PremiumBooster {
      * @dev Initialise les templates (PAS de communes)
      */
     function _initializeCardTemplates() private {
-        // LÉGENDAIRES (0-1) - 2 cartes
         cardTemplates.push(CardTemplate({
             name: "Dragon Dore",
             rarity: "legendaire",
@@ -58,7 +57,6 @@ contract PremiumBooster {
             imageURI: "https://via.placeholder.com/300x400/FF6347/FFFFFF?text=Phoenix"
         }));
 
-        // ÉPIQUES (2-4) - 3 cartes
         cardTemplates.push(CardTemplate({
             name: "Chevalier Noir",
             rarity: "epique",
@@ -77,7 +75,6 @@ contract PremiumBooster {
             imageURI: "https://via.placeholder.com/300x400/9370DB/FFFFFF?text=Assassin"
         }));
 
-        // RARES (5-7) - 3 cartes
         cardTemplates.push(CardTemplate({
             name: "Archer Elfe",
             rarity: "rare",
@@ -96,7 +93,6 @@ contract PremiumBooster {
             imageURI: "https://via.placeholder.com/300x400/32CD32/000000?text=Druide"
         }));
 
-        // PEU COMMUNES (8-10) - 3 cartes
         cardTemplates.push(CardTemplate({
             name: "Guerrier Brave",
             rarity: "peu commune",
@@ -132,22 +128,18 @@ contract PremiumBooster {
         uint256 randomNum = _random(seed) % 100;
 
         if (randomNum < 1) {
-            // Légendaire: 1%
             uint256 index = _random(seed + 1) % 2;
             return cardTemplates[index];
         }
         else if (randomNum < 21) {
-            // Épique: 20%
             uint256 index = 2 + (_random(seed + 2) % 3);
             return cardTemplates[index];
         }
         else if (randomNum < 61) {
-            // Rare: 40%
             uint256 index = 5 + (_random(seed + 3) % 3);
             return cardTemplates[index];
         }
         else {
-            // Peu Commune: 39%
             uint256 index = 8 + (_random(seed + 4) % 3);
             return cardTemplates[index];
         }

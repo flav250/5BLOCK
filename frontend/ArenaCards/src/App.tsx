@@ -21,7 +21,6 @@ function App() {
         <Toaster />
         <div className="app">
           <Header />
-          {/* Navigation */}
           <nav className="main-nav">
             <button
                 className={`nav-btn ${currentView === 'team' ? 'active' : ''}`}
@@ -60,7 +59,6 @@ function App() {
             </button>
           </nav>
 
-          {/* Main Content */}
           <main className="main-content">
             {currentView === 'team' && <TeamBuilder />}
             {currentView === 'booster' && <BoosterOpener />}

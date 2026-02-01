@@ -42,7 +42,6 @@ const Fusion: React.FC = () => {
     const [draggedCard, setDraggedCard] = useState<ArenaCard | null>(null);
     const [dragY, setDragY] = useState<number>(0);
 
-    // Auto-scroll pendant le drag
     useEffect(() => {
         if (!draggedCard) return;
 
@@ -74,7 +73,6 @@ const Fusion: React.FC = () => {
         };
     }, [draggedCard, dragY]);
 
-    // Tracker la position Y du curseur pendant le drag
     useEffect(() => {
         if (!draggedCard) return;
 
@@ -192,10 +190,6 @@ const Fusion: React.FC = () => {
 
         setIsFusing(true);
         try {
-            console.log('🔥 Fusion en cours...', {
-                card1: fusionSlots[0].card.tokenId,
-                card2: fusionSlots[1].card.tokenId,
-            });
 
             await fuseCards(
                 signer,
@@ -285,7 +279,6 @@ const Fusion: React.FC = () => {
 
     return (
         <div className="fusion-container">
-            {/* Header */}
             <div className="fusion-header">
                 <h1>Fusion de Cartes</h1>
                 <p className="fusion-subtitle">
@@ -293,7 +286,6 @@ const Fusion: React.FC = () => {
                 </p>
             </div>
 
-            {/* Règles de fusion */}
             <div className="fusion-rules-box">
                 <h3 className="fusion-rules-title">Règles de Fusion</h3>
 
@@ -320,12 +312,10 @@ const Fusion: React.FC = () => {
                 </div>
             </div>
 
-            {/* Zone de fusion */}
             <div className="fusion-zone">
                 <h2>Zone de Fusion</h2>
 
                 <div className="fusion-slots-container">
-                    {/* Slot 1 */}
                     <div
                         className="fusion-slot"
                         onDragOver={(e) => e.preventDefault()}
@@ -362,7 +352,6 @@ const Fusion: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Icône de fusion */}
                     <div className="fusion-icon">
                         <div className="fusion-plus">+</div>
                         <div className="fusion-arrow-down">
@@ -373,7 +362,6 @@ const Fusion: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Slot 2 */}
                     <div
                         className="fusion-slot"
                         onDragOver={(e) => e.preventDefault()}
@@ -411,7 +399,6 @@ const Fusion: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Bouton de fusion */}
                 <div className="fusion-action">
                     {cooldownTime > 0 ? (
                         <button className="btn-fusion" disabled>
@@ -432,7 +419,6 @@ const Fusion: React.FC = () => {
                 </div>
             </div>
 
-            {/* Inventaire */}
             <div className="fusion-inventory">
                 <div className="inventory-header">
                     <h2>🎒 Mon Inventaire</h2>
@@ -518,7 +504,6 @@ const Fusion: React.FC = () => {
                 )}
             </div>
 
-            {/* Modal de résultat */}
             {showResult && fusionResult && (
                 <div className="fusion-result-modal" onClick={() => setShowResult(false)}>
                     <div className="result-content" onClick={(e) => e.stopPropagation()}>

@@ -10,7 +10,6 @@ export const parseContractError = (error: unknown): string => {
 
   const errorMessage = error instanceof Error ? error.message : String(error);
 
-  // Erreurs MetaMask/Wallet
   if (errorMessage.includes('user rejected') || errorMessage.includes('User denied')) {
     return 'Transaction annulée par l\'utilisateur';
   }
@@ -19,7 +18,6 @@ export const parseContractError = (error: unknown): string => {
     return 'Fonds insuffisants pour cette transaction';
   }
 
-  // Erreurs réseau
   if (errorMessage.includes('network') || errorMessage.includes('NETWORK_ERROR')) {
     return 'Erreur de connexion au réseau blockchain';
   }
@@ -28,7 +26,6 @@ export const parseContractError = (error: unknown): string => {
     return 'La transaction a expiré, veuillez réessayer';
   }
 
-  // Erreurs de contrat - Boosters
   if (errorMessage.includes('Booster cooldown active')) {
     return 'Tu dois attendre avant d\'ouvrir un nouveau booster gratuit';
   }
@@ -41,7 +38,6 @@ export const parseContractError = (error: unknown): string => {
     return 'Le paiement est insuffisant pour ce booster';
   }
 
-  // Erreurs de contrat - Cards
   if (errorMessage.includes('Max cards reached')) {
     return 'Tu as déjà le maximum de cartes autorisées';
   }
@@ -54,7 +50,6 @@ export const parseContractError = (error: unknown): string => {
     return 'Cette carte est verrouillée et ne peut pas être utilisée';
   }
 
-  // Erreurs de contrat - Fusion
   if (errorMessage.includes('Must own both cards')) {
     return 'Tu dois posséder les deux cartes pour les fusionner';
   }
@@ -124,9 +119,7 @@ export const parseContractError = (error: unknown): string => {
     return 'Une des cartes n\'est plus possédée par son propriétaire';
   }
 
-  // Erreurs génériques
   if (errorMessage.includes('execution reverted')) {
-    // Tenter d'extraire le message custom après "execution reverted:"
     const match = errorMessage.match(/execution reverted:?\s*(.+?)(?:\n|$)/i);
     if (match && match[1]) {
       return `Transaction échouée: ${match[1].trim()}`;
@@ -142,8 +135,6 @@ export const parseContractError = (error: unknown): string => {
     return 'Erreur de nonce, rafraîchis la page et réessaye';
   }
 
-  // Si aucune correspondance, retourner un message générique avec l'erreur
-  // Limiter la longueur pour éviter les messages trop longs
   const shortError = errorMessage.substring(0, 100);
   return `Erreur: ${shortError}${errorMessage.length > 100 ? '...' : ''}`;
 };
@@ -158,16 +149,13 @@ export const getErrorType = (error: unknown): ErrorType => {
 
   const errorMessage = error instanceof Error ? error.message : String(error);
 
-  // Warnings - actions annulées par l'utilisateur
   if (errorMessage.includes('user rejected') || errorMessage.includes('User denied')) {
     return 'warning';
   }
 
-  // Info - cooldowns
   if (errorMessage.includes('cooldown') || errorMessage.includes('wait')) {
     return 'info';
   }
 
-  // Tout le reste est une erreur
   return 'error';
 };

@@ -24,7 +24,6 @@ export async function fuseCards(
         const tx = await contract.fuseCards(tokenId1, tokenId2);
         const receipt = await tx.wait();
 
-        // Extraire le niveau de la nouvelle carte fusionnée depuis les events
         let newLevel = 0;
         for (const log of receipt.logs) {
             try {
@@ -33,8 +32,7 @@ export async function fuseCards(
                     data: log.data,
                 });
                 if (parsed?.name === 'CardsFused') {
-                    // L'event contient le nouveau token ID et potentiellement d'autres infos
-                    newLevel = Number(parsed.args[2] || 0) + 1; // Approximation du niveau
+                    newLevel = Number(parsed.args[2] || 0) + 1;
                 }
             } catch {}
         }
@@ -45,7 +43,6 @@ export async function fuseCards(
             notifySuccess('Fusion réussie !');
         }
 
-        console.log('✅ Fusion effectuée avec succès');
         return true;
     } catch (error) {
         console.error('❌ Erreur lors de la fusion:', error);

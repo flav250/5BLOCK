@@ -34,7 +34,6 @@ export const simulateBattle = (team: ArenaCard[], monster: Monster): BattleResul
   const teamAttack = team.reduce((sum, card) => sum + card.attack, 0);
   const teamHealth = teamAttack * 2; // HP = ATK × 2
 
-  // Combat simplifié
   const turnsToKill = Math.ceil(monster.health / teamAttack);
   const turnsToLose = Math.ceil(teamHealth / monster.attack);
 

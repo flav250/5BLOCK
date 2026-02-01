@@ -53,7 +53,6 @@ const CardSlot: React.FC<CardSlotProps> = ({
             onDrop={handleDrop}
         >
             {isEmpty ? (
-                // Slot vide
                 <div className="empty-slot-content">
                     <div className="slot-number">{slotIndex + 1}</div>
                     <div className="slot-placeholder">
@@ -62,17 +61,14 @@ const CardSlot: React.FC<CardSlotProps> = ({
                     </div>
                 </div>
             ) : (
-                // Slot avec carte
                 <div
                     className="filled-slot-content"
                     draggable
                     onDragStart={() => slot.card && onDragStart(slot.card)}
                     onDragEnd={onDragEnd}
                 >
-                    {/* Badge de position */}
                     <div className="position-badge">{slotIndex + 1}</div>
 
-                    {/* Bouton de suppression */}
                     <button
                         className="remove-btn2"
                         onClick={(e) => {
@@ -84,7 +80,6 @@ const CardSlot: React.FC<CardSlotProps> = ({
                         ✕
                     </button>
 
-                    {/* Image de la carte */}
                     <div className="card-image-container">
                         <div className="card-image">
                             {slot.card!.imageURI ? (
@@ -95,7 +90,6 @@ const CardSlot: React.FC<CardSlotProps> = ({
                         </div>
                     </div>
 
-                    {/* Badge de rareté */}
                     <div
                         className={`rarity-badge bg-gradient-to-r ${
                             RARITY_GRADIENT[slot.card!.rarity.toLowerCase()] || 'from-gray-400 to-gray-600'
@@ -104,7 +98,6 @@ const CardSlot: React.FC<CardSlotProps> = ({
                         {slot.card!.rarity}
                     </div>
 
-                    {/* Informations de la carte */}
                     <div className="card-info">
                         <h3 className="card-name">{slot.card!.name}</h3>
                         <div className="card-stats-row">
@@ -119,7 +112,6 @@ const CardSlot: React.FC<CardSlotProps> = ({
                         </div>
                     </div>
 
-                    {/* Indicateur de lock */}
                     {slot.card!.isLocked && (
                         <div className="lock-indicator">
                             🔒 Verrouillée

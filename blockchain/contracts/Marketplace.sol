@@ -50,13 +50,10 @@ contract Marketplace is Ownable, ReentrancyGuard {
         uint256 createdAt;
     }
 
-    // Mapping tradeId => Trade
     mapping(uint256 => Trade) public trades;
 
-    // Mapping directTradeId => DirectTrade
     mapping(uint256 => DirectTrade) public directTrades;
 
-    // Mapping pour vérifier qu'un token n'est pas déjà dans un trade actif
     mapping(uint256 => bool) public tokenInTrade;
 
     // Events
@@ -111,30 +108,25 @@ contract Marketplace is Ownable, ReentrancyGuard {
         uint256 requestedLevel,
         string memory requestedRarity
     ) external nonReentrant {
-        // Vérifications
         require(arenaCards.ownerOf(offeredTokenId) == msg.sender, "Not owner of offered card");
         require(!tokenInTrade[offeredTokenId], "Card already in active trade");
         require(bytes(requestedCardName).length > 0, "Card name required");
         require(requestedLevel > 0, "Level must be greater than 0");
         require(bytes(requestedRarity).length > 0, "Rarity required");
 
-        // Vérifier que le contrat a l'approval
         require(
             arenaCards.getApproved(offeredTokenId) == address(this) ||
             arenaCards.isApprovedForAll(msg.sender, address(this)),
             "Marketplace not approved"
         );
 
-        // Obtenir les stats de la carte offerte
         (string memory offeredName, string memory offeredRarity, uint256 offeredLevel, ) = arenaCards.getCardStats(offeredTokenId);
         
-        // Vérifier que ce n'est pas la même carte
         require(
             keccak256(bytes(offeredName)) != keccak256(bytes(requestedCardName)),
             "Cannot trade the same card"
         );
         
-        // Vérifier que la carte offerte a la même rareté et le même niveau que la carte demandée
         require(
             keccak256(bytes(offeredRarity)) == keccak256(bytes(requestedRarity)),
             "Offered card rarity must match requested card rarity"
@@ -168,15 +160,12 @@ contract Marketplace is Ownable, ReentrancyGuard {
     function acceptTrade(uint256 tradeId, uint256 offeredCardTokenId) external nonReentrant {
         Trade storage trade = trades[tradeId];
 
-        // Vérifications
         require(trade.isActive, "Trade not active");
         require(trade.creator != msg.sender, "Cannot accept own trade");
         require(arenaCards.ownerOf(offeredCardTokenId) == msg.sender, "Not owner of offered card");
 
-        // Vérifier que la carte offerte appartient toujours au créateur
         require(arenaCards.ownerOf(trade.offeredTokenId) == trade.creator, "Creator no longer owns offered card");
 
-        // Vérifier que la carte correspond aux critères demandés
         (string memory name, string memory rarity, uint256 level, ) = arenaCards.getCardStats(offeredCardTokenId);
         
         require(
@@ -189,22 +178,18 @@ contract Marketplace is Ownable, ReentrancyGuard {
             "Card rarity does not match"
         );
 
-        // Vérifier les approvals
         require(
             arenaCards.getApproved(offeredCardTokenId) == address(this) ||
             arenaCards.isApprovedForAll(msg.sender, address(this)),
             "Marketplace not approved for your card"
         );
 
-        // Effectuer l'échange
         address creator = trade.creator;
         uint256 offeredToken = trade.offeredTokenId;
 
-        // Marquer le trade comme inactif
         trade.isActive = false;
         tokenInTrade[offeredToken] = false;
 
-        // Transférer les cartes
         arenaCards.safeTransferFrom(creator, msg.sender, offeredToken);
         arenaCards.safeTransferFrom(msg.sender, creator, offeredCardTokenId);
 
@@ -232,7 +217,6 @@ contract Marketplace is Ownable, ReentrancyGuard {
      * Note: En production, utiliser plutôt une pagination
      */
     function getActiveTrades() external view returns (Trade[] memory) {
-        // Compter les trades actifs
         uint256 activeCount = 0;
         for (uint256 i = 0; i < tradeCounter; i++) {
             if (trades[i].isActive) {
@@ -240,7 +224,6 @@ contract Marketplace is Ownable, ReentrancyGuard {
             }
         }
 
-        // Créer le tableau
         Trade[] memory activeTrades = new Trade[](activeCount);
         uint256 currentIndex = 0;
 
@@ -260,14 +243,12 @@ contract Marketplace is Ownable, ReentrancyGuard {
     function getUserTrades(address user) external view returns (Trade[] memory) {
         uint256 userTradeCount = 0;
         
-        // Compter les trades de l'utilisateur
         for (uint256 i = 0; i < tradeCounter; i++) {
             if (trades[i].creator == user && trades[i].isActive) {
                 userTradeCount++;
             }
         }
 
-        // Créer le tableau
         Trade[] memory userTrades = new Trade[](userTradeCount);
         uint256 currentIndex = 0;
 
@@ -306,27 +287,22 @@ contract Marketplace is Ownable, ReentrancyGuard {
         require(arenaCards.ownerOf(offeredTokenId) == msg.sender, "Not owner of offered card");
         require(!tokenInTrade[offeredTokenId], "Card already in active trade");
         
-        // Vérifier que la carte demandée appartient à la target
         require(arenaCards.ownerOf(requestedTokenId) == target, "Target does not own requested card");
 
-        // Vérifier que le contrat a l'approval
         require(
             arenaCards.getApproved(offeredTokenId) == address(this) ||
             arenaCards.isApprovedForAll(msg.sender, address(this)),
             "Marketplace not approved"
         );
 
-        // Obtenir les stats des deux cartes
         (string memory offeredName, string memory offeredRarity, uint256 offeredLevel, ) = arenaCards.getCardStats(offeredTokenId);
         (string memory requestedName, string memory requestedRarity, uint256 requestedLevel, ) = arenaCards.getCardStats(requestedTokenId);
         
-        // Vérifier que ce ne sont pas les mêmes cartes
         require(
             keccak256(bytes(offeredName)) != keccak256(bytes(requestedName)),
             "Cannot trade the same card"
         );
         
-        // Vérifier que les deux cartes ont la même rareté et le même niveau
         require(
             keccak256(bytes(offeredRarity)) == keccak256(bytes(requestedRarity)),
             "Cards must have the same rarity"
@@ -358,29 +334,24 @@ contract Marketplace is Ownable, ReentrancyGuard {
     function acceptDirectTrade(uint256 tradeId) external nonReentrant {
         DirectTrade storage trade = directTrades[tradeId];
 
-        // Vérifications
         require(trade.isActive, "Trade not active");
         require(trade.target == msg.sender, "Not the target of this trade");
         require(arenaCards.ownerOf(trade.requestedTokenId) == msg.sender, "You no longer own the requested card");
         require(arenaCards.ownerOf(trade.offeredTokenId) == trade.creator, "Creator no longer owns offered card");
 
-        // Vérifier les approvals
         require(
             arenaCards.getApproved(trade.requestedTokenId) == address(this) ||
             arenaCards.isApprovedForAll(msg.sender, address(this)),
             "Marketplace not approved for your card"
         );
 
-        // Effectuer l'échange
         address creator = trade.creator;
         uint256 offeredToken = trade.offeredTokenId;
         uint256 requestedToken = trade.requestedTokenId;
 
-        // Marquer le trade comme inactif
         trade.isActive = false;
         tokenInTrade[offeredToken] = false;
 
-        // Transférer les cartes
         arenaCards.safeTransferFrom(creator, msg.sender, offeredToken);
         arenaCards.safeTransferFrom(msg.sender, creator, requestedToken);
 
