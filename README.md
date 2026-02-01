@@ -129,8 +129,8 @@ Sepolia ETH (testnet)
 
 ### 1. Cloner le repo
 ```bash
-git clone https://github.com/votre-username/arena-cards.git
-cd arena-cards
+git clone https://github.com/votre-username/5BLOCK.git
+cd 5BLOCK
 ```
 
 ### 2. Smart Contracts (blockchain/)
@@ -170,7 +170,8 @@ cp ../blockchain/artifacts/contracts/CardFusion.sol/CardFusion.json src/abis/
 
 ### 3. Frontend ()
 ```bash
-cd ../frontend/ArenaCards/
+cd ..
+cd frontend/ArenaCards/
 
 # Installer les dépendances
 npm install
