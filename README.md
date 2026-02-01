@@ -150,11 +150,16 @@ cp ../blockchain/artifacts/contracts/FreeBooster.sol/FreeBooster.json src/abis/
 cp ../blockchain/artifacts/contracts/PremiumBooster.sol/PremiumBooster.json src/abis/
 cp ../blockchain/artifacts/contracts/Marketplace.sol/Marketplace.json src/abis/
 cp ../blockchain/artifacts/contracts/CardFusion.sol/CardFusion.json src/abis/
+
+# Collez les à cet emplacement :
+
+/frontend/ArenaCards/src/abis/ ->
 ```
 
-### 3. Frontend (public/)
+
+### 3. Frontend ()
 ```bash
-cd ../public
+cd ../frontend/ArenaCards/
 
 # Installer les dépendances
 npm install
