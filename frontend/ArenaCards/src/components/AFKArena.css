@@ -1,0 +1,961 @@
+/* ============================================================
+   AFK ARENA - CSS CLEAN
+   ============================================================ */
+
+:root {
+  --afk-bg: #0d1117;
+  --afk-surface: #131825;
+  --afk-border: rgba(255, 255, 255, 0.07);
+  --afk-text-primary: #eee;
+  --afk-text-secondary: #8a8f9e;
+  --afk-accent-gold: #feca57;
+  --afk-accent-red: #ff6b6b;
+  --afk-accent-green: #00e676;
+  --afk-transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.afk-arena {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  color: var(--afk-text-primary);
+}
+
+/* ============================================================
+   GAME OVERLAY POPUP
+   ============================================================ */
+.game-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.game-overlay-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(5px);
+}
+
+.game-overlay-panel {
+  position: relative;
+  width: 100%;
+  max-width: 550px;
+  max-height: 90vh;
+  background: linear-gradient(145deg, #12162a, #1c2040);
+  border: 2px solid rgba(254, 202, 87, 0.4);
+  border-radius: 20px;
+  overflow-y: auto;
+  box-shadow: 0 0 50px rgba(254, 202, 87, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: rgba(254, 202, 87, 0.1);
+  border-bottom: 1px solid rgba(254, 202, 87, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.overlay-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--afk-accent-gold);
+}
+
+.overlay-close {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(255, 107, 107, 0.2);
+  border: 2px solid rgba(255, 107, 107, 0.5);
+  color: #ff6b6b;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.overlay-close:hover {
+  background: rgba(255, 107, 107, 0.4);
+  transform: rotate(90deg);
+}
+
+.overlay-body {
+  padding: 1.5rem;
+}
+
+/* Stats */
+.overlay-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.overlay-stat {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(254, 202, 87, 0.2);
+  border-radius: 10px;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.overlay-stat .stat-icon {
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.overlay-stat .stat-value {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--afk-accent-gold);
+  margin-bottom: 0.1rem;
+}
+
+.overlay-stat .stat-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--afk-text-secondary);
+  text-transform: uppercase;
+}
+
+/* Result */
+.overlay-result {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.overlay-result.win {
+  background: linear-gradient(135deg, #00e676, #00c853);
+}
+
+.overlay-result.lose {
+  background: linear-gradient(135deg, #ff6b6b, #dc2626);
+}
+
+.overlay-result .result-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.overlay-result .result-points {
+  font-size: 1.1rem;
+  color: white;
+}
+
+/* Section */
+.overlay-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.overlay-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  color: var(--afk-accent-gold);
+}
+
+/* Monster */
+.monster-display {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.monster-icon {
+  font-size: 4rem;
+  flex-shrink: 0;
+}
+
+.monster-info {
+  flex: 1;
+}
+
+.monster-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--afk-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.monster-level {
+  font-size: 0.9rem;
+  color: var(--afk-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.monster-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--afk-text-primary);
+}
+
+/* Team */
+.team-display {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+.team-card-mini {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(254, 202, 87, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.card-mini-img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-mini-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-mini-img span {
+  font-size: 2rem;
+}
+
+.card-mini-name {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--afk-text-primary);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-mini-atk {
+  font-size: 0.6rem;
+  color: var(--afk-accent-red);
+  font-weight: 700;
+}
+
+/* Timer */
+.overlay-timer {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(254, 202, 87, 0.1);
+  border: 2px solid rgba(254, 202, 87, 0.3);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.timer-label {
+  font-size: 0.9rem;
+  color: var(--afk-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.timer-countdown {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--afk-accent-gold);
+}
+
+/* Stop button */
+.overlay-stop-btn {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff6b6b, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.overlay-stop-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+}
+
+/* ============================================================
+   PAGE NORMALE (visible quand jeu arrêté)
+   ============================================================ */
+.afk-arena .afk-header {
+  text-align: center;
+  padding: 2.5rem 2rem;
+  background: linear-gradient(145deg, #12162a, #1c2040);
+  border: 1px solid rgba(255, 140, 0, 0.3);
+  border-radius: 20px;
+  margin-bottom: 2rem;
+  box-shadow: 0 0 30px rgba(255, 140, 0, 0.2);
+}
+
+.afk-arena .afk-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ff6b6b, #feca57);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.afk-arena .afk-header p {
+  margin: 0;
+  color: var(--afk-text-secondary);
+  font-size: 1.1rem;
+}
+
+.afk-arena .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.afk-arena .stat-box {
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--afk-border);
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  transition: all var(--afk-transition);
+}
+
+.afk-arena .stat-box:hover {
+  border-color: rgba(254, 202, 87, 0.3);
+  box-shadow: 0 0 20px rgba(254, 202, 87, 0.2);
+}
+
+.afk-arena .stat-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.afk-arena .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--afk-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.afk-arena .stat-label {
+  font-size: 0.85rem;
+  color: var(--afk-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.afk-arena .battle-result {
+  padding: 1.5rem;
+  border-radius: 15px;
+  text-align: center;
+  margin-bottom: 2rem;
+  animation: afk-slideIn 0.3s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.afk-arena .battle-result.win {
+  background: linear-gradient(135deg, #00e676, #00c853);
+  color: white;
+  border: 1px solid rgba(0, 230, 118, 0.5);
+}
+
+.afk-arena .battle-result.lose {
+  background: linear-gradient(135deg, #ff6b6b, #dc2626);
+  color: white;
+  border: 1px solid rgba(255, 107, 107, 0.5);
+}
+
+@keyframes afk-slideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.afk-arena .result-text {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.afk-arena .result-points {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.afk-arena .monster-section {
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--afk-border);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.afk-arena .monster-section h2 {
+  color: var(--afk-accent-gold);
+  margin: 0 0 1.5rem 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.afk-arena .monster-card {
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.5), rgba(15, 15, 25, 0.8));
+  border-radius: 15px;
+  border: 3px solid var(--afk-accent-red);
+  box-shadow: 0 0 25px rgba(255, 107, 107, 0.3);
+}
+
+.afk-arena .monster-image {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 1rem;
+  background: radial-gradient(circle, rgba(255, 107, 107, 0.2), transparent);
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.4), inset 0 0 20px rgba(255, 107, 107, 0.2);
+}
+
+.afk-arena .monster-emoji {
+  font-size: 5rem;
+  filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.5));
+  animation: afk-bounce 2s infinite;
+}
+
+@keyframes afk-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.afk-arena .monster-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--afk-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.afk-arena .monster-level {
+  font-size: 1rem;
+  color: var(--afk-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.afk-arena .monster-stats {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 1rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.afk-arena .monster-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--afk-text-primary);
+}
+
+.afk-arena .team-section {
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--afk-border);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.afk-arena .team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.afk-arena .team-header h2 {
+  margin: 0;
+  color: var(--afk-accent-gold);
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.afk-arena .team-power {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--afk-accent-gold);
+  padding: 0.5rem 1rem;
+  background: rgba(254, 202, 87, 0.1);
+  border: 1px solid rgba(254, 202, 87, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(254, 202, 87, 0.2);
+}
+
+.afk-arena .team-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.afk-arena .team-slot {
+  aspect-ratio: 3/4;
+}
+
+.afk-arena .empty-slot {
+  height: 100%;
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.3), rgba(15, 15, 25, 0.6));
+  border: 3px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--afk-text-secondary);
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: all var(--afk-transition);
+}
+
+.afk-arena .empty-slot:hover {
+  border-color: rgba(254, 202, 87, 0.3);
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.4), rgba(15, 15, 25, 0.7));
+}
+
+.afk-arena .team-card {
+  height: 100%;
+  background: linear-gradient(145deg, rgba(30, 30, 50, 0.8), rgba(15, 15, 25, 0.9));
+  border: 3px solid rgba(254, 202, 87, 0.5);
+  border-radius: 15px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 0 20px rgba(254, 202, 87, 0.3);
+  transition: all var(--afk-transition);
+}
+
+.afk-arena .team-card:hover {
+  border-color: rgba(254, 202, 87, 0.7);
+  box-shadow: 0 0 30px rgba(254, 202, 87, 0.5);
+  transform: translateY(-3px);
+}
+
+.afk-arena .remove-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--afk-accent-red);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all var(--afk-transition);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+.afk-arena .remove-btn:hover:not(:disabled) {
+  background: #dc2626;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.7);
+}
+
+.afk-arena .remove-btn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.afk-arena .card-img {
+  flex: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.5), rgba(15, 15, 25, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.afk-arena .card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.afk-arena .placeholder {
+  font-size: 3rem;
+  opacity: 0.3;
+}
+
+.afk-arena .card-name {
+  font-weight: 700;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--afk-text-primary);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.afk-arena .card-attack {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--afk-accent-red);
+  font-weight: 700;
+  padding: 0.25rem;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.2);
+}
+
+.afk-arena .controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.afk-arena .btn-start {
+  width: 100%;
+  padding: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #00e676, #00c853);
+  color: white;
+  border: 2px solid rgba(0, 230, 118, 0.5);
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all var(--afk-transition);
+  box-shadow: 0 0 25px rgba(0, 230, 118, 0.4);
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.afk-arena .btn-start:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 0 35px rgba(0, 230, 118, 0.6);
+  border-color: rgba(0, 230, 118, 0.7);
+}
+
+.afk-arena .btn-start.active {
+  background: linear-gradient(135deg, #ff6b6b, #dc2626);
+  border-color: rgba(255, 107, 107, 0.5);
+  box-shadow: 0 0 25px rgba(255, 107, 107, 0.4);
+}
+
+.afk-arena .btn-start.active:hover:not(:disabled) {
+  box-shadow: 0 0 35px rgba(255, 107, 107, 0.6);
+}
+
+.afk-arena .btn-start:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--afk-text-secondary);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.afk-arena .timer {
+  text-align: center;
+  padding: 1rem;
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.5), rgba(15, 15, 25, 0.8));
+  border: 1px solid rgba(254, 202, 87, 0.3);
+  border-radius: 10px;
+  font-size: 1.2rem;
+  color: var(--afk-text-primary);
+  box-shadow: 0 0 15px rgba(254, 202, 87, 0.2);
+}
+
+.afk-arena .timer strong {
+  color: var(--afk-accent-gold);
+  font-size: 1.4rem;
+  text-shadow: 0 0 10px rgba(254, 202, 87, 0.5);
+}
+
+.afk-arena .btn-reset {
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--afk-text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all var(--afk-transition);
+}
+
+.afk-arena .btn-reset:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--afk-text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.afk-arena .btn-reset:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.afk-arena .inventory-section {
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--afk-border);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.afk-arena .inventory-section h2 {
+  margin: 0 0 1.5rem 0;
+  color: var(--afk-accent-gold);
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.afk-arena .inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.afk-arena .inv-card {
+  background: linear-gradient(145deg, rgba(30, 30, 50, 0.6), rgba(15, 15, 25, 0.8));
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all var(--afk-transition);
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.afk-arena .inv-card:hover:not(.disabled):not(.selected) {
+  transform: translateY(-4px);
+  border-color: rgba(254, 202, 87, 0.4);
+  box-shadow: 0 0 20px rgba(254, 202, 87, 0.3);
+}
+
+.afk-arena .inv-card.selected {
+  border-color: rgba(254, 202, 87, 0.6);
+  background: linear-gradient(145deg, rgba(254, 202, 87, 0.15), rgba(118, 75, 162, 0.1));
+  box-shadow: 0 0 25px rgba(254, 202, 87, 0.4);
+}
+
+.afk-arena .inv-card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.afk-arena .inv-img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  border-radius: 8px;
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(40, 40, 60, 0.5), rgba(15, 15, 25, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.afk-arena .inv-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.afk-arena .inv-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--afk-text-primary);
+  text-align: center;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.afk-arena .inv-attack {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--afk-accent-red);
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
+}
+
+.afk-arena .selected-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 30px;
+  height: 30px;
+  background: var(--afk-accent-green);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 0 15px rgba(0, 230, 118, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.afk-arena .message-box,
+.afk-arena .empty-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(145deg, #0f1325, #1a1f3d);
+  border: 1px solid var(--afk-border);
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.afk-arena .message-box h2 {
+  color: var(--afk-accent-gold);
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.afk-arena .message-box p,
+.afk-arena .empty-message p {
+  color: var(--afk-text-secondary);
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+}
+
+.afk-arena .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--afk-accent-gold);
+  border-radius: 50%;
+  animation: afk-spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes afk-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .afk-arena .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .afk-arena .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .afk-arena .inventory-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .afk-arena .team-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .overlay-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .team-display {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .afk-arena {
+    padding: 1rem;
+  }
+
+  .afk-arena .afk-header h1 {
+    font-size: 2rem;
+  }
+
+  .afk-arena .team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-overlay-panel {
+    max-width: 95%;
+  }
+
+  .overlay-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .timer-countdown {
+    font-size: 2rem;
+  }
+}
