@@ -1,4 +1,4 @@
-// components/AFKArena.tsx
+// components/AFKArena.tsx - VERSION CLEAN
 
 import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '../hooks/useWeb3';
@@ -42,23 +42,20 @@ const AFKArena: React.FC = () => {
       if (!signer || !account) return;
       setIsLoadingCards(true);
       try {
-        // 1. Charger toutes les cartes
         const userCards = await loadUserCards(signer, account);
         setCards(userCards);
 
-        // 2. Charger l'équipe depuis le MÊME localStorage que TeamBuilder
         const teamData = localStorage.getItem(TEAM_STORAGE_KEY + account);
         if (teamData) {
           const parsed = JSON.parse(teamData);
           const teamCardIds = parsed.cardIds || [];
 
-          // 3. Reconstituer l'équipe avec les cartes chargées
           const team = userCards
               .filter(card => teamCardIds.includes(card.tokenId))
-              .slice(0, 5); // Max 5 cartes pour AFK Arena
+              .slice(0, 5);
 
           setSelectedTeam(team);
-          console.log('✅ Équipe synchronisée depuis TeamBuilder:', team.length, 'cartes');
+          console.log('✅ Équipe synchronisée:', team.length, 'cartes');
         }
       } catch (error) {
         console.error('Erreur:', error);
@@ -69,44 +66,39 @@ const AFKArena: React.FC = () => {
     loadCardsAndTeam();
   }, [signer, account]);
 
-  // Sauvegarder progression (séparé de l'équipe)
+  // Sauvegarder progression
   useEffect(() => {
     if (account) {
       localStorage.setItem(PROGRESS_STORAGE_KEY + account, JSON.stringify(progress));
     }
   }, [progress, account]);
 
-  // 🔄 SYNCHRONISATION EN TEMPS RÉEL avec TeamBuilder
+  // Synchronisation avec TeamBuilder
   useEffect(() => {
     if (!account || !signer) return;
 
     const handleStorageChange = async (e: StorageEvent) => {
-      // Écouter les changements du localStorage de TeamBuilder
       if (e.key === TEAM_STORAGE_KEY + account && e.newValue) {
-        console.log('🔄 Changement détecté dans TeamBuilder !');
+        console.log('🔄 Changement détecté depuis TeamBuilder !');
 
         try {
           const teamData = JSON.parse(e.newValue);
           const teamCardIds = teamData.cardIds || [];
 
-          // Recharger les cartes pour être sûr d'avoir les bonnes
           const userCards = await loadUserCards(signer, account);
 
-          // Reconstituer l'équipe
           const newTeam = userCards
               .filter(card => teamCardIds.includes(card.tokenId))
               .slice(0, 5);
 
           setSelectedTeam(newTeam);
           setCards(userCards);
-          console.log('✅ Équipe mise à jour automatiquement:', newTeam.length, 'cartes');
         } catch (error) {
           console.error('Erreur sync:', error);
         }
       }
     };
 
-    // Écouter les changements de localStorage
     window.addEventListener('storage', handleStorageChange);
 
     return () => {
@@ -137,7 +129,6 @@ const AFKArena: React.FC = () => {
 
     setLastResult(result);
 
-    // Calculer la nouvelle vague AVANT de mettre à jour l'état
     const newWave = result.victory ? progress.wave + 1 : 1;
 
     setProgress(prev => ({
@@ -148,7 +139,6 @@ const AFKArena: React.FC = () => {
       totalKills: result.victory ? prev.totalKills + 1 : prev.totalKills,
     }));
 
-    // Utiliser newWave au lieu de progress.wave
     setCurrentMonster(generateMonster(newWave));
 
     setTimeout(() => setLastResult(null), 2000);
@@ -164,12 +154,10 @@ const AFKArena: React.FC = () => {
     const isSelected = selectedTeam.find(c => c.tokenId === card.tokenId);
 
     if (isSelected) {
-      // Retirer la carte
       const newTeam = selectedTeam.filter(c => c.tokenId !== card.tokenId);
       setSelectedTeam(newTeam);
       saveTeamToLocalStorage(newTeam);
     } else if (selectedTeam.length < 5) {
-      // Ajouter la carte
       const newTeam = [...selectedTeam, card];
       setSelectedTeam(newTeam);
       saveTeamToLocalStorage(newTeam);
@@ -178,7 +166,7 @@ const AFKArena: React.FC = () => {
     }
   };
 
-  // Sauvegarder l'équipe dans localStorage (même clé que TeamBuilder)
+  // Sauvegarder l'équipe
   const saveTeamToLocalStorage = (team: ArenaCard[]) => {
     if (!account) return;
 
@@ -190,7 +178,6 @@ const AFKArena: React.FC = () => {
     localStorage.setItem(TEAM_STORAGE_KEY + account, JSON.stringify(teamData));
     console.log('💾 Équipe sauvegardée:', teamData.cardIds);
 
-    // Déclencher un événement storage pour notifier TeamBuilder
     window.dispatchEvent(new StorageEvent('storage', {
       key: TEAM_STORAGE_KEY + account,
       newValue: JSON.stringify(teamData),
@@ -254,31 +241,108 @@ const AFKArena: React.FC = () => {
 
   return (
       <div className="afk-arena">
-        {/* Header */}
-        {/* Header + Info */}
-        <div className="afk-top">
-          <div className="afk-header">
-            <h1>🎮 AFK Arena</h1>
-            <p>Combat automatique toutes les 5 secondes</p>
-          </div>
+        {/* GAME OVERLAY - Popup quand le jeu tourne */}
+        {progress.isRunning && (
+            <div className="game-overlay">
+              <div className="game-overlay-backdrop" onClick={toggleGame}></div>
+              <div className="game-overlay-panel">
+                <div className="overlay-header">
+                  <h2>🎮 Combat en cours</h2>
+                  <button className="overlay-close" onClick={toggleGame}>✕</button>
+                </div>
 
-          <div className="howto-card">
-            <div className="howto-title">📘 Comment ça marche ?</div>
+                <div className="overlay-body">
+                  {/* Stats */}
+                  <div className="overlay-stats">
+                    <div className="overlay-stat">
+                      <span className="stat-icon">💰</span>
+                      <span className="stat-value">{formatNumber(progress.totalPoints)}</span>
+                      <span className="stat-label">Points</span>
+                    </div>
+                    <div className="overlay-stat">
+                      <span className="stat-icon">🌊</span>
+                      <span className="stat-value">{progress.wave}</span>
+                      <span className="stat-label">Vague</span>
+                    </div>
+                    <div className="overlay-stat">
+                      <span className="stat-icon">🏆</span>
+                      <span className="stat-value">{progress.highestWave}</span>
+                      <span className="stat-label">Record</span>
+                    </div>
+                    <div className="overlay-stat">
+                      <span className="stat-icon">💀</span>
+                      <span className="stat-value">{progress.totalKills}</span>
+                      <span className="stat-label">Kills</span>
+                    </div>
+                  </div>
 
-            <ul className="howto-list">
-              <li><strong>1)</strong> Connecte ton wallet.</li>
-              <li><strong>2)</strong> Ton équipe est synchronisée depuis <em>Mon Équipe</em>.</li>
-              <li><strong>3)</strong> Sélectionne <strong>5 cartes</strong> (sinon tu ne peux pas démarrer).</li>
-              <li><strong>4)</strong> Clique <strong>▶️ DÉMARRER</strong> : un combat se lance toutes les <strong>5s</strong>.</li>
-              <li><strong>5)</strong> En cas de victoire : <strong>vague +1</strong> et tu gagnes des <strong>points</strong>.</li>
-              <li><strong>6)</strong> En cas de défaite : retour à la <strong>vague 1</strong> (tu gardes tes points).</li>
-            </ul>
+                  {/* Result */}
+                  {lastResult && (
+                      <div className={`overlay-result ${lastResult.victory ? 'win' : 'lose'}`}>
+                        <div className="result-title">
+                          {lastResult.victory ? '✅ VICTOIRE !' : '💀 DÉFAITE !'}
+                        </div>
+                        <div className="result-points">+{formatNumber(lastResult.points)} pts</div>
+                      </div>
+                  )}
 
-            <div className="howto-tip">
-              💡 Astuce : augmente l’ATK total de ton équipe pour battre plus de vagues.
+                  {/* Monster */}
+                  <div className="overlay-section">
+                    <h3>👹 Vague {progress.wave}</h3>
+                    <div className="monster-display">
+                      <div className="monster-icon">👹</div>
+                      <div className="monster-info">
+                        <div className="monster-name">{currentMonster.name}</div>
+                        <div className="monster-level">Niveau {currentMonster.level}</div>
+                        <div className="monster-stats">
+                          <span>❤️ {formatNumber(currentMonster.health)}</span>
+                          <span>⚔️ {currentMonster.attack}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Team */}
+                  <div className="overlay-section">
+                    <h3>👥 Équipe (💪 {teamAttack} ATK)</h3>
+                    <div className="team-display">
+                      {selectedTeam.map(card => (
+                          <div key={card.tokenId} className="team-card-mini">
+                            <div className="card-mini-img">
+                              {card.imageURI ? (
+                                  <img src={card.imageURI} alt={card.name} />
+                              ) : (
+                                  <span>🃏</span>
+                              )}
+                            </div>
+                            <div className="card-mini-name">{card.name}</div>
+                            <div className="card-mini-atk">⚔️ {card.attack}</div>
+                          </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Timer */}
+                  <div className="overlay-timer">
+                    <div className="timer-label">⏱️ Prochain combat</div>
+                    <div className="timer-countdown">{countdown}s</div>
+                  </div>
+
+                  {/* Stop button */}
+                  <button className="overlay-stop-btn" onClick={toggleGame}>
+                    ⏸️ ARRÊTER
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+        )}
+
+        {/* Header */}
+        <div className="afk-header">
+          <h1>🎮 AFK Arena</h1>
+          <p>Combat automatique toutes les 5 secondes</p>
         </div>
+
         {/* Stats */}
         <div className="stats-grid">
           <div className="stat-box">
@@ -339,9 +403,7 @@ const AFKArena: React.FC = () => {
         <div className="team-section">
           <div className="team-header">
             <h2>👥 Ton Équipe</h2>
-            <div className="team-power">
-              💪 {teamAttack} ATK Total
-            </div>
+            <div className="team-power">💪 {teamAttack} ATK Total</div>
           </div>
 
           <div className="team-grid">
