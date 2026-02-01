@@ -620,16 +620,46 @@
     box-shadow: 0 0 20px rgba(255, 184, 64, 0.4);
 }
 
+.card-image-container {
+    width: 100%;
+    height: 160px;
+    margin: 0.5rem auto;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+.new-card:hover .card-image {
+    transform: scale(1.05);
+}
+
 .card-placeholder {
     font-size: 3rem;
     margin: 0.5rem 0;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 160px;
 }
 
 .card-name {
     font-weight: 700;
     color: var(--booster-text-primary);
     font-size: 0.9rem;
+    margin-top: 0.5rem;
 }
 
 .card-rarity-badge {

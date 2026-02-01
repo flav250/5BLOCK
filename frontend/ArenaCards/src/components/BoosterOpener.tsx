@@ -31,7 +31,7 @@ const BoosterOpener: React.FC = () => {
   const [canOpenFree, setCanOpenFree] = useState(false);
   const [timeUntilNext, setTimeUntilNext] = useState(0);
   const [premiumPrice, setPremiumPrice] = useState('0');
-  const [newCards, setNewCards] = useState<Array<{ name: string; rarity: string }>>([]);
+  const [newCards, setNewCards] = useState<Array<{ name: string; rarity: string; imageURI: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<BoosterType>('free');
 
@@ -376,7 +376,17 @@ const BoosterOpener: React.FC = () => {
                   {newCards.map((card, index) => (
                       <div key={index} className={`new-card rarity-${card.rarity.replace(' ', '-')}`}>
                         <div className="card-rarity-badge">{card.rarity}</div>
-                        <div className="card-placeholder">🃏</div>
+                        <div className="card-image-container">
+                          {card.imageURI ? (
+                            <img 
+                              src={card.imageURI} 
+                              alt={card.name}
+                              className="card-image"
+                            />
+                          ) : (
+                            <div className="card-placeholder">🃏</div>
+                          )}
+                        </div>
                         <div className="card-name">{card.name}</div>
                       </div>
                   ))}
