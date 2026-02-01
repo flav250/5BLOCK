@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { Web3Provider } from './hooks/useWeb3.ts';
 import TeamBuilder from './components/TeamBuilder.tsx';
 import Header from './components/Header.tsx';
@@ -17,6 +18,7 @@ function App() {
 
   return (
       <Web3Provider>
+        <Toaster />
         <div className="app">
           <Header />
           {/* Navigation */}

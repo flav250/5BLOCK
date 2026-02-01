@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { ethers } from 'ethers';
 import type { BrowserProvider, Signer } from 'ethers';
+import { notifyError, notifyWarning, blockchainNotifications } from '../utils/notificationService';
 
 interface Web3ContextType {
   account: string | null;
@@ -93,7 +94,7 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
 
   const connectWallet = async (): Promise<void> => {
     if (!window.ethereum) {
-      alert("MetaMask n'est pas installé ! Installe-le sur metamask.io");
+      notifyError(new Error("MetaMask n'est pas installé ! Installe-le sur metamask.io"));
       return;
     }
 
@@ -116,18 +117,19 @@ export function Web3Provider({ children }: Web3ProviderProps): React.ReactNode {
       console.log('✅ Wallet connecté:', accounts[0]);
       console.log('🌐 Réseau:', network.name, '(Chain ID:', network.chainId, ')');
 
+      blockchainNotifications.walletConnected(accounts[0]);
+
       const allowedChainIds = [31337, 11155111];
 
       if (!allowedChainIds.includes(Number(network.chainId))) {
-        alert("Mauvais réseau. Mets-toi sur Localhost 8545 (31337) ou Sepolia (11155111).");
+        notifyWarning("Mauvais réseau. Mets-toi sur Localhost 8545 (31337) ou Sepolia (11155111).");
       }
     } catch (error) {
       console.error('❌ Erreur de connexion:', error);
       if (error && typeof error === 'object' && 'code' in error && error.code === 4001) {
-        alert('Connexion refusée. Clique sur "Suivant" puis "Connecter" dans MetaMask.');
+        notifyWarning('Connexion refusée. Clique sur "Suivant" puis "Connecter" dans MetaMask.');
       } else {
-        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-        alert('Erreur lors de la connexion au wallet: ' + errorMessage);
+        notifyError(error);
       }
     } finally {
       setIsConnecting(false);
