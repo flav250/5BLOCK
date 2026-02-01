@@ -45,6 +45,16 @@ async function main() {
     const tx3 = await arenaCards.setFusionContract(fusionAddr);
     await tx3.wait();
 
+    console.log("\nDéploiement Shop...");
+    const Shop = await hre.ethers.getContractFactory("Shop");
+    const shop = await Shop.deploy(arenaAddr);
+    await shop.waitForDeployment();
+    const shopAddr = await shop.getAddress();
+
+    console.log("\nAutorisation du Shop comme minter...");
+    const tx4 = await arenaCards.setAuthorizedMinter(shopAddr, true);
+    await tx4.wait();
+
     console.log("\nMise à jour du fichier");
 
     const envPath = path.join(__dirname, "..", "..", "frontend", "ArenaCards", ".env");
@@ -53,6 +63,7 @@ VITE_FREE_BOOSTER_ADDRESS=${freeBoosterAddr}
 VITE_PREMIUM_BOOSTER_ADDRESS=${premiumBoosterAddr}
 VITE_MARKETPLACE_ADDRESS=${marketplaceAddr}
 VITE_CARDFUSION_ADDRESS=${fusionAddr}
+VITE_SHOP_ADDRESS=${shopAddr}
 `;
 
     fs.writeFileSync(envPath, envContent);
@@ -65,6 +76,7 @@ VITE_CARDFUSION_ADDRESS=${fusionAddr}
     console.log("PremiumBooster :", premiumBoosterAddr);
     console.log("Marketplace    :", marketplaceAddr);
     console.log("CardFusion     :", fusionAddr);
+    console.log("Shop           :", shopAddr);
     console.log("\nDeployment completed successfully!");
 }
 
