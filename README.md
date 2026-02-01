@@ -214,50 +214,53 @@ arena-cards/
 │   ├── package.json
 │   └── README.md
 │
-└── public/                        # Frontend React
-    └── src/
-        ├── abis/                  # ABIs des contrats
-        │   ├── ArenaCards.json
-        │   ├── CardFusion.json
-        │   ├── FreeBooster.json
-        │   ├── Marketplace.json
-        │   ├── PremiumBooster.json
-        │   └── Shop.json
-        ├── assets/
-        │   └── react.svg
-        ├── components/
-        │   ├── AFKArena.css
-        │   ├── AFKArena.tsx       # Jeu de combat
-        │   ├── BoosterOpener.css
-        │   ├── BoosterOpener.tsx  # Ouverture boosters
-        │   ├── CardSlot.css
-        │   ├── CardSlot.tsx       # Slot d'équipe
-        │   ├── Fusion.css
-        │   ├── Fusion.tsx         # Fusion de cartes
-        │   ├── Header.css
-        │   ├── Header.tsx         # Header de l'app
-        │   ├── InventoryCard.css
-        │   ├── InventoryCard.tsx  # Carte inventaire
-        │   ├── Marketplace.css
-        │   ├── Marketplace.tsx    # Marketplace
-        │   ├── Shop.css
-        │   ├── Shop.tsx           # Boutique exclusive
-        │   ├── TeamBuilder.css
-        │   └── TeamBuilder.tsx    # Composition d'équipe
-        ├── hooks/
-        │   └── useWeb3.tsx        # Hook Web3/MetaMask
-        ├── types/
-        │   ├── AFKArena.ts        # Types jeu
-        │   └── ArenaCard.ts       # Types cartes
-        ├── utils/
-        │   ├── afkArenaLogic.ts   # Logique jeu
-        │   ├── contractHelpers.ts # Helpers contrats
-        │   └── teamHelpers.ts     # Helpers équipe
-        ├── App.css
-        ├── App.tsx                # App principale
-        ├── index.css
-        ├── main.tsx
-        └── vite-env.d.ts
+└────── frontend/ ArenaCards/
+                        └────── public/
+                            │      └── assets/
+                            │            └── boosters /
+                            │                    ├── booster-2-stars.png
+                            │                    └── booster-3-stars.png
+                            └── src/
+                                ├── abis/                  
+                                │   ├── ArenaCards.json
+                                │   ├── CardFusion.json
+                                │   ├── FreeBooster.json
+                                │   ├── Marketplace.json
+                                │   ├── PremiumBooster.json
+                                │   └── Shop.json
+                                ├── components/
+                                │   ├── AFKArena.css
+                                │   ├── AFKArena.tsx       # Jeu de combat
+                                │   ├── BoosterOpener.css
+                                │   ├── BoosterOpener.tsx  # Ouverture boosters
+                                │   ├── CardSlot.css
+                                │   ├── CardSlot.tsx       # Slot d'équipe
+                                │   ├── Fusion.css
+                                │   ├── Fusion.tsx         # Fusion de cartes
+                                │   ├── Header.css
+                                │   ├── Header.tsx         # Header de l'app
+                                │   ├── InventoryCard.css
+                                │   ├── InventoryCard.tsx  # Carte inventaire
+                                │   ├── Marketplace.css
+                                │   ├── Marketplace.tsx    # Marketplace
+                                │   ├── Shop.css
+                                │   ├── Shop.tsx           # Boutique exclusive
+                                │   ├── TeamBuilder.css
+                                │   └── TeamBuilder.tsx    # Composition d'équipe
+                                ├── hooks/
+                                │   └── useWeb3.tsx        # Hook Web3/MetaMask
+                                ├── types/
+                                │   ├── AFKArena.ts        # Types jeu
+                                │   └── ArenaCard.ts       # Types cartes
+                                ├── utils/
+                                │   ├── afkArenaLogic.ts   # Logique jeu
+                                │   ├── contractHelpers.ts # Helpers contrats
+                                │   └── teamHelpers.ts     # Helpers équipe
+                                ├── App.css
+                                ├── App.tsx                # App principale
+                                ├── index.css
+                                ├── main.tsx
+                                └── vite-env.d.ts
 ```
 
 ---
