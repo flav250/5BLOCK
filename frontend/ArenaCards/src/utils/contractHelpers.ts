@@ -218,3 +218,173 @@ export const getTimeUntilUnlock = async (
     return 0;
   }
 };
+
+/**
+ * Interface pour une carte unique (nom + niveau)
+ */
+export interface UniqueCard {
+  name: string;
+  level: number;
+  rarity: string;
+  imageURI: string;
+}
+
+/**
+ * Interface pour une carte statique du jeu (définition complète)
+ */
+export interface GameCard {
+  name: string;
+  rarity: string;
+  imageURI: string;
+}
+
+/**
+ * Liste statique de toutes les cartes du jeu
+ * Cette liste définit toutes les cartes possibles, indépendamment de celles qui ont été mintées
+ */
+export const ALL_GAME_CARDS: GameCard[] = [
+  // LÉGENDAIRES (2)
+  {
+    name: "Dragon Dore",
+    rarity: "legendaire",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeia43c7zri7lz66ta4bpqbjpzr23rsmh6etvejlg3lurwdfhb44shm"
+  },
+  {
+    name: "Phoenix Immortel",
+    rarity: "legendaire",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigsbr2x5mcfgi2cstnrd7x3gyottx5222pj4rk7qv3gv5pohp5h6q"
+  },
+  
+  // ÉPIQUES (3)
+  {
+    name: "Chevalier Noir",
+    rarity: "epique",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeidum46xrosdt4dkefhlaketrqg45s6tluh7evrzihwzlvolp3nstq"
+  },
+  {
+    name: "Mage des Glaces",
+    rarity: "epique",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeicud2dj6mo5dmpbto7jeoalhpdkjawxkva5omvyvrelrnsowcmuae"
+  },
+  {
+    name: "Assassin Fantome",
+    rarity: "epique",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeihhh4pnl6pt2udkzaqmhrplzwuwfox3ew34ezpy7s4nd32mo6s7zi"
+  },
+  
+  // RARES (3)
+  {
+    name: "Archer Elfe",
+    rarity: "rare",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeic522zqehxs73b7abqqsuq533xcjh4vgthqhkfotomnf6oega5ic4"
+  },
+  {
+    name: "Paladin Sacre",
+    rarity: "rare",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeidsl2aey225cdyn6l7fhg4ndkqn24rtckxmy5tloheq5k4bpo5oxy"
+  },
+  {
+    name: "Druide Ancien",
+    rarity: "rare",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeidzn5kxyxjlf5glprjyp2trm5zpl46kl3wjx4x4sxkduandrfkh5q"
+  },
+  
+  // PEU COMMUNES (3)
+  {
+    name: "Guerrier Brave",
+    rarity: "peu commune",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigovwwksezfwbbbrd63qhfeezqgxwnxn7acv2r5qbrsxnc3fr4n5i"
+  },
+  {
+    name: "Voleur Agile",
+    rarity: "peu commune",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeih5kflnip2ck7qirtlsda55l3aejqph4sq63v6zlg2zdqmdwyilcm"
+  },
+  {
+    name: "Pretre Sage",
+    rarity: "peu commune",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeih5smlhdwqf44lby2mzevq6jhov5cu3exxo2ddkzujpnstn6q7p34"
+  },
+  
+  // COMMUNES (5)
+  {
+    name: "Gobelin Ruse",
+    rarity: "commune",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeievkzzzu73l5xdonrv62nd2jwhuugcxi3ljvecbdnyuwn7rognzfy"
+  },
+  {
+    name: "Sorciere Noire",
+    rarity: "commune",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeidv6iqhv2mq7km6t5m4wyjkayptnh76uw333fkalrz3kyb6lz2qma"
+  },
+  {
+    name: "Barbare Sauvage",
+    rarity: "commune",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeibzxkvxmmxxd366bmenxs6iqpqjnbmdfqvxufte5i64232hafxuny"
+  },
+  {
+    name: "Squelette Soldat",
+    rarity: "commune",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeid37l65fyisxqbaz53an3zaqpozcfrlkhcahjdktbetdgvsnuh3dy"
+  },
+  {
+    name: "Slime Gluant",
+    rarity: "commune",
+    imageURI: "https://red-ready-catfish-554.mypinata.cloud/ipfs/bafybeigv2gtaeq2htdrpadaewbjhdth2j6kcgolgmbhq57knvssdmospe4"
+  }
+];
+
+/**
+ * Récupère toutes les cartes uniques existantes (basé sur nom + niveau)
+ * Utile pour afficher les options de cartes demandées dans le marketplace
+ */
+export const loadAllUniqueCards = async (signer: Signer): Promise<UniqueCard[]> => {
+  try {
+    const contract = getArenaCardsContract(signer);
+    const tokenCounter = await contract.tokenCounter();
+    
+    const uniqueCardsMap = new Map<string, UniqueCard>();
+
+    // Parcourir tous les tokens pour trouver les combinaisons uniques
+    for (let i = 0; i < Number(tokenCounter); i++) {
+      try {
+        // Vérifier que le token existe (pas brûlé)
+        await contract.ownerOf(i);
+        
+        const stats = await contract.getCardStats(i);
+        const tokenURI = await contract.tokenURI(i);
+        
+        const name = stats.name || stats[0];
+        const level = Number(stats.level || stats[2]);
+        const rarity = stats.rarity || stats[1];
+        
+        // Créer une clé unique basée sur nom + niveau
+        const key = `${name}-${level}`;
+        
+        // Si cette combinaison n'existe pas encore, l'ajouter
+        if (!uniqueCardsMap.has(key)) {
+          uniqueCardsMap.set(key, {
+            name,
+            level,
+            rarity,
+            imageURI: parseTokenURI(tokenURI),
+          });
+        }
+      } catch (error) {
+        // Token brûlé ou n'existe pas, continuer
+        continue;
+      }
+    }
+
+    // Convertir la Map en tableau et trier par nom puis niveau
+    return Array.from(uniqueCardsMap.values()).sort((a, b) => {
+      if (a.name !== b.name) {
+        return a.name.localeCompare(b.name);
+      }
+      return a.level - b.level;
+    });
+  } catch (error) {
+    console.error('Erreur lors du chargement des cartes uniques:', error);
+    return [];
+  }
+};

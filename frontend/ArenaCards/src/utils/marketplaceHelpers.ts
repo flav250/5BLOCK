@@ -15,6 +15,18 @@ export interface Trade {
   tradeId: string;
   creator: string;
   offeredTokenId: string;
+  requestedCardName: string;
+  requestedLevel: number;
+  requestedRarity: string;
+  isActive: boolean;
+  createdAt: number;
+}
+
+export interface DirectTrade {
+  tradeId: string;
+  creator: string;
+  target: string;
+  offeredTokenId: string;
   requestedTokenId: string;
   isActive: boolean;
   createdAt: number;
@@ -24,6 +36,18 @@ export interface Trade {
 interface ContractTrade {
   tradeId: bigint;
   creator: string;
+  offeredTokenId: bigint;
+  requestedCardName: string;
+  requestedLevel: bigint;
+  requestedRarity: string;
+  isActive: boolean;
+  createdAt: bigint;
+}
+
+interface ContractDirectTrade {
+  tradeId: bigint;
+  creator: string;
+  target: string;
   offeredTokenId: bigint;
   requestedTokenId: bigint;
   isActive: boolean;
@@ -67,13 +91,15 @@ export const approveMarketplace = async (signer: Signer): Promise<boolean> => {
 export const createTrade = async (
     signer: Signer,
     offeredTokenId: string,
-    requestedTokenId: string
+    requestedCardName: string,
+    requestedLevel: number,
+    requestedRarity: string
 ): Promise<boolean> => {
   try {
     const marketplace = getMarketplaceContract(signer);
 
     console.log('📝 Création du trade...');
-    const tx = await marketplace.createTrade(offeredTokenId, requestedTokenId);
+    const tx = await marketplace.createTrade(offeredTokenId, requestedCardName, requestedLevel, requestedRarity);
     await tx.wait();
 
     console.log('✅ Trade créé avec succès !');
@@ -89,6 +115,10 @@ export const createTrade = async (
       alert('Cette carte est déjà dans un échange actif !');
     } else if (errorMessage.includes('not approved')) {
       alert('Tu dois d\'abord approuver le marketplace !');
+    } else if (errorMessage.includes('rarity must match')) {
+      alert('La rareté de la carte offerte doit correspondre à la rareté demandée !');
+    } else if (errorMessage.includes('level must match')) {
+      alert('Le niveau de la carte offerte doit correspondre au niveau demandé !');
     } else {
       alert('Erreur: ' + errorMessage);
     }
@@ -102,13 +132,14 @@ export const createTrade = async (
  */
 export const acceptTrade = async (
     signer: Signer,
-    tradeId: string
+    tradeId: string,
+    offeredCardTokenId: string
 ): Promise<boolean> => {
   try {
     const marketplace = getMarketplaceContract(signer);
 
-    console.log('🤝 Acceptation du trade #' + tradeId);
-    const tx = await marketplace.acceptTrade(tradeId);
+    console.log('🤝 Acceptation du trade #' + tradeId + ' avec la carte #' + offeredCardTokenId);
+    const tx = await marketplace.acceptTrade(tradeId, offeredCardTokenId);
     await tx.wait();
 
     console.log('✅ Trade accepté ! Échange effectué !');
@@ -118,8 +149,10 @@ export const acceptTrade = async (
 
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    if (errorMessage.includes('Not owner of requested card')) {
-      alert('Tu ne possèdes pas la carte demandée !');
+    if (errorMessage.includes('Not owner')) {
+      alert('Tu ne possèdes pas cette carte !');
+    } else if (errorMessage.includes('does not match')) {
+      alert('La carte ne correspond pas aux critères demandés !');
     } else if (errorMessage.includes('not approved')) {
       alert('Tu dois d\'abord approuver le marketplace !');
     } else if (errorMessage.includes('not active')) {
@@ -162,7 +195,9 @@ const formatTrade = (trade: ContractTrade): Trade => ({
   tradeId: trade.tradeId.toString(),
   creator: trade.creator,
   offeredTokenId: trade.offeredTokenId.toString(),
-  requestedTokenId: trade.requestedTokenId.toString(),
+  requestedCardName: trade.requestedCardName,
+  requestedLevel: Number(trade.requestedLevel),
+  requestedRarity: trade.requestedRarity,
   isActive: trade.isActive,
   createdAt: Number(trade.createdAt),
 });
@@ -219,5 +254,169 @@ export const isCardInTrade = async (
   } catch (error) {
     console.error('❌ Erreur vérification trade:', error);
     return false;
+  }
+};
+
+// ========== DIRECT P2P TRADES ==========
+
+/**
+ * Convertir un DirectTrade du contrat en DirectTrade formaté
+ */
+const formatDirectTrade = (trade: ContractDirectTrade): DirectTrade => ({
+  tradeId: trade.tradeId.toString(),
+  creator: trade.creator,
+  target: trade.target,
+  offeredTokenId: trade.offeredTokenId.toString(),
+  requestedTokenId: trade.requestedTokenId.toString(),
+  isActive: trade.isActive,
+  createdAt: Number(trade.createdAt),
+});
+
+/**
+ * Créer une offre d'échange direct P2P
+ */
+export const createDirectTrade = async (
+    signer: Signer,
+    targetAddress: string,
+    offeredTokenId: string,
+    requestedTokenId: string
+): Promise<boolean> => {
+  try {
+    const marketplace = getMarketplaceContract(signer);
+
+    console.log('📝 Création du trade direct P2P...');
+    const tx = await marketplace.createDirectTrade(targetAddress, offeredTokenId, requestedTokenId);
+    await tx.wait();
+
+    console.log('✅ Trade direct créé avec succès !');
+    return true;
+  } catch (error) {
+    console.error('❌ Erreur création trade direct:', error);
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('Invalid target')) {
+      alert('Adresse invalide !');
+    } else if (errorMessage.includes('Cannot trade with yourself')) {
+      alert('Tu ne peux pas échanger avec toi-même !');
+    } else if (errorMessage.includes('Not owner')) {
+      alert('Tu ne possèdes pas cette carte !');
+    } else if (errorMessage.includes('already in active trade')) {
+      alert('Cette carte est déjà dans un échange actif !');
+    } else if (errorMessage.includes('not approved')) {
+      alert('Tu dois d\'abord approuver le marketplace !');
+    } else if (errorMessage.includes('does not own requested')) {
+      alert('Le destinataire ne possède pas la carte demandée !');
+    } else {
+      alert('Erreur: ' + errorMessage);
+    }
+
+    return false;
+  }
+};
+
+/**
+ * Accepter un échange direct P2P
+ */
+export const acceptDirectTrade = async (
+    signer: Signer,
+    tradeId: string
+): Promise<boolean> => {
+  try {
+    const marketplace = getMarketplaceContract(signer);
+
+    console.log('🤝 Acceptation du trade direct #' + tradeId);
+    const tx = await marketplace.acceptDirectTrade(tradeId);
+    await tx.wait();
+
+    console.log('✅ Trade direct accepté ! Échange effectué !');
+    return true;
+  } catch (error) {
+    console.error('❌ Erreur acceptation trade direct:', error);
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('Not the target')) {
+      alert('Cet échange ne t\'est pas destiné !');
+    } else if (errorMessage.includes('no longer own')) {
+      alert('Une des cartes n\'est plus possédée par son propriétaire !');
+    } else if (errorMessage.includes('not approved')) {
+      alert('Tu dois d\'abord approuver le marketplace !');
+    } else if (errorMessage.includes('not active')) {
+      alert('Ce trade n\'est plus actif !');
+    } else {
+      alert('Erreur: ' + errorMessage);
+    }
+
+    return false;
+  }
+};
+
+/**
+ * Annuler un trade direct P2P
+ */
+export const cancelDirectTrade = async (
+    signer: Signer,
+    tradeId: string
+): Promise<boolean> => {
+  try {
+    const marketplace = getMarketplaceContract(signer);
+
+    console.log('❌ Annulation du trade direct #' + tradeId);
+    const tx = await marketplace.cancelDirectTrade(tradeId);
+    await tx.wait();
+
+    console.log('✅ Trade direct annulé !');
+    return true;
+  } catch (error) {
+    console.error('❌ Erreur annulation trade direct:', error);
+    alert('Erreur: ' + (error instanceof Error ? error.message : String(error)));
+    return false;
+  }
+};
+
+/**
+ * Récupérer les trades directs reçus par l'utilisateur
+ */
+export const getReceivedDirectTrades = async (
+    signer: Signer,
+    userAddress: string
+): Promise<DirectTrade[]> => {
+  try {
+    const marketplace = getMarketplaceContract(signer);
+
+    console.log('🔍 Chargement des trades directs reçus...');
+    const trades = await marketplace.getReceivedDirectTrades(userAddress) as ContractDirectTrade[];
+
+    const formattedTrades: DirectTrade[] = trades.map(formatDirectTrade);
+
+    console.log('✅ Trades directs reçus chargés:', formattedTrades.length);
+    return formattedTrades;
+  } catch (error) {
+    console.error('❌ Erreur chargement trades directs reçus:', error);
+    return [];
+  }
+};
+
+/**
+ * Récupérer les trades directs envoyés par l'utilisateur
+ */
+export const getSentDirectTrades = async (
+    signer: Signer,
+    userAddress: string
+): Promise<DirectTrade[]> => {
+  try {
+    const marketplace = getMarketplaceContract(signer);
+
+    console.log('🔍 Chargement des trades directs envoyés...');
+    const trades = await marketplace.getSentDirectTrades(userAddress) as ContractDirectTrade[];
+
+    const formattedTrades: DirectTrade[] = trades.map(formatDirectTrade);
+
+    console.log('✅ Trades directs envoyés chargés:', formattedTrades.length);
+    return formattedTrades;
+  } catch (error) {
+    console.error('❌ Erreur chargement trades directs envoyés:', error);
+    return [];
   }
 };
