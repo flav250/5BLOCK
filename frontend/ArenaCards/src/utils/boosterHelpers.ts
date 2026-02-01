@@ -4,6 +4,7 @@ import type { Signer } from "ethers";
 
 import FreeBoosterABI from "../abis/FreeBooster.json";
 import PremiumBoosterABI from "../abis/PremiumBooster.json";
+import { notifyError, notifySuccess } from "./notificationService";
 
 const FREE_BOOSTER_ADDRESS = import.meta.env.VITE_FREE_BOOSTER_ADDRESS as string;
 const PREMIUM_BOOSTER_ADDRESS = import.meta.env.VITE_PREMIUM_BOOSTER_ADDRESS as string;
@@ -40,16 +41,8 @@ export const openFreeBooster = async (signer: Signer) => {
 
     return { success: true, cards };
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-
-    if (msg.includes("Booster cooldown active")) {
-      alert("Tu dois attendre avant d’ouvrir un booster gratuit !");
-    } else if (msg.includes("Not enough space")) {
-      alert("Pas assez de place pour les cartes du booster (limite MAX_CARDS).");
-    } else {
-      alert("Erreur: " + msg);
-    }
-
+    console.error('❌ Erreur ouverture booster gratuit:', error);
+    notifyError(error);
     return { success: false, cards: [] };
   }
 };
@@ -81,16 +74,8 @@ export const openPremiumBooster = async (signer: Signer) => {
 
     return { success: true, cards };
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-
-    if (msg.includes("Insufficient payment")) {
-      alert("Paiement insuffisant pour le booster premium !");
-    } else if (msg.includes("Not enough space")) {
-      alert("Pas assez de place pour les cartes du booster (limite MAX_CARDS).");
-    } else {
-      alert("Erreur: " + msg);
-    }
-
+    console.error('❌ Erreur ouverture booster premium:', error);
+    notifyError(error);
     return { success: false, cards: [] };
   }
 };

@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import type { Signer } from 'ethers';
 import MarketplaceABI from '../abis/Marketplace.json';
 import { getArenaCardsContract } from './contractHelpers';
+import { notifyError, notifySuccess, notifyInfo } from './notificationService';
 
 const MARKETPLACE_ADDRESS = import.meta.env.VITE_MARKETPLACE_ADDRESS as string;
 
@@ -106,23 +107,7 @@ export const createTrade = async (
     return true;
   } catch (error) {
     console.error('❌ Erreur création trade:', error);
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    if (errorMessage.includes('Not owner')) {
-      alert('Tu ne possèdes pas cette carte !');
-    } else if (errorMessage.includes('already in active trade')) {
-      alert('Cette carte est déjà dans un échange actif !');
-    } else if (errorMessage.includes('not approved')) {
-      alert('Tu dois d\'abord approuver le marketplace !');
-    } else if (errorMessage.includes('rarity must match')) {
-      alert('La rareté de la carte offerte doit correspondre à la rareté demandée !');
-    } else if (errorMessage.includes('level must match')) {
-      alert('Le niveau de la carte offerte doit correspondre au niveau demandé !');
-    } else {
-      alert('Erreur: ' + errorMessage);
-    }
-
+    notifyError(error);
     return false;
   }
 };
@@ -146,21 +131,7 @@ export const acceptTrade = async (
     return true;
   } catch (error) {
     console.error('❌ Erreur acceptation:', error);
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    if (errorMessage.includes('Not owner')) {
-      alert('Tu ne possèdes pas cette carte !');
-    } else if (errorMessage.includes('does not match')) {
-      alert('La carte ne correspond pas aux critères demandés !');
-    } else if (errorMessage.includes('not approved')) {
-      alert('Tu dois d\'abord approuver le marketplace !');
-    } else if (errorMessage.includes('not active')) {
-      alert('Ce trade n\'est plus actif !');
-    } else {
-      alert('Erreur: ' + errorMessage);
-    }
-
+    notifyError(error);
     return false;
   }
 };
@@ -183,7 +154,7 @@ export const cancelTrade = async (
     return true;
   } catch (error) {
     console.error('❌ Erreur annulation:', error);
-    alert('Erreur: ' + (error instanceof Error ? error.message : String(error)));
+    notifyError(error);
     return false;
   }
 };
@@ -292,25 +263,7 @@ export const createDirectTrade = async (
     return true;
   } catch (error) {
     console.error('❌ Erreur création trade direct:', error);
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    if (errorMessage.includes('Invalid target')) {
-      alert('Adresse invalide !');
-    } else if (errorMessage.includes('Cannot trade with yourself')) {
-      alert('Tu ne peux pas échanger avec toi-même !');
-    } else if (errorMessage.includes('Not owner')) {
-      alert('Tu ne possèdes pas cette carte !');
-    } else if (errorMessage.includes('already in active trade')) {
-      alert('Cette carte est déjà dans un échange actif !');
-    } else if (errorMessage.includes('not approved')) {
-      alert('Tu dois d\'abord approuver le marketplace !');
-    } else if (errorMessage.includes('does not own requested')) {
-      alert('Le destinataire ne possède pas la carte demandée !');
-    } else {
-      alert('Erreur: ' + errorMessage);
-    }
-
+    notifyError(error);
     return false;
   }
 };
@@ -333,21 +286,7 @@ export const acceptDirectTrade = async (
     return true;
   } catch (error) {
     console.error('❌ Erreur acceptation trade direct:', error);
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    if (errorMessage.includes('Not the target')) {
-      alert('Cet échange ne t\'est pas destiné !');
-    } else if (errorMessage.includes('no longer own')) {
-      alert('Une des cartes n\'est plus possédée par son propriétaire !');
-    } else if (errorMessage.includes('not approved')) {
-      alert('Tu dois d\'abord approuver le marketplace !');
-    } else if (errorMessage.includes('not active')) {
-      alert('Ce trade n\'est plus actif !');
-    } else {
-      alert('Erreur: ' + errorMessage);
-    }
-
+    notifyError(error);
     return false;
   }
 };
@@ -370,7 +309,7 @@ export const cancelDirectTrade = async (
     return true;
   } catch (error) {
     console.error('❌ Erreur annulation trade direct:', error);
-    alert('Erreur: ' + (error instanceof Error ? error.message : String(error)));
+    notifyError(error);
     return false;
   }
 };

@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import type { Signer, Contract } from 'ethers';
 import type { ArenaCard } from '../types/ArenaCard';
 import ArenaCardsABI from '../abis/ArenaCards.json';
+import { notifyError } from './notificationService';
 
 
 const ARENA_CARDS_ADDRESS = import.meta.env.VITE_ARENA_CARDS_ADDRESS as string;
@@ -167,17 +168,7 @@ export const mintCard = async (
     return true;
   } catch (error) {
     console.error('❌ Erreur lors du mint:', error);
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    if (errorMessage.includes('Max cards reached')) {
-      alert('Tu as déjà le maximum de cartes !');
-    } else if (errorMessage.includes('Action on cooldown')) {
-      alert('Tu dois attendre 5 minutes entre chaque action !');
-    } else {
-      alert('Erreur: ' + errorMessage);
-    }
-
+    notifyError(error);
     return false;
   }
 };
